@@ -8,7 +8,7 @@
     "settings": [
         {
             "type": "list",
-            "label": "Retrieve",
+            "label": "&Retrieve",
             "key": "type",
             "value": "",
             "options": [
@@ -31,7 +31,7 @@
 
         {
             "type": "list",
-            "label": "Image format",
+            "label": "&Image format",
             "key": "imageFormat",
             "value": "orig",
             "options": [
@@ -59,7 +59,7 @@
         
         {
             "type": "list",
-            "label": "Video format",
+            "label": "&Video format",
             "key": "videoFormat",
             "value": "orig",
             "options": [
