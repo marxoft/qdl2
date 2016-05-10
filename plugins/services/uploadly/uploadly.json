@@ -1,0 +1,78 @@
+{
+    "type": "js",
+    "id": "uploadly",
+    "name": "Uploadly",
+    "icon": "uploadly.png",
+    "file": "uploadly.js",
+    "regExp": "http(s|)://((i|v)\\.|)uploadly\\.com/\\w+",
+    "settings": [
+        {
+            "type": "list",
+            "label": "Retrieve",
+            "key": "type",
+            "value": "",
+            "options": [
+                {
+                    "label": "Images",
+                    "value": "Image"
+                },
+
+                {
+                    "label": "Videos",
+                    "value": "Video"
+                },
+
+                {
+                    "label": "Images/videos",
+                    "value": ""
+                }
+            ]
+        },
+
+        {
+            "type": "list",
+            "label": "Image format",
+            "key": "imageFormat",
+            "value": "orig",
+            "options": [
+                {
+                    "label": "Original",
+                    "value": "orig"
+                },
+
+                {
+                    "label": "Full",
+                    "value": "full"
+                },
+
+                {
+                    "label": "Share",
+                    "value": "share"
+                },
+
+                {
+                    "label": "Thumbnail",
+                    "value": "thumb"
+                }
+            ]
+        },
+        
+        {
+            "type": "list",
+            "label": "Video format",
+            "key": "videoFormat",
+            "value": "orig",
+            "options": [
+                {
+                    "label": "Original",
+                    "value": "orig"
+                },
+
+                {
+                    "label": "MP4",
+                    "value": "mp4"
+                }
+            ]
+        }
+    ]
+}

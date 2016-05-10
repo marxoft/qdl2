@@ -1,0 +1,143 @@
+body {
+    background-color: #383c45;
+    color: #fff;
+    font-family: "Droid Sans", Helvetica, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: #5294e2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+th {
+    text-align: left;
+    font-weight: inherit;
+}
+
+.NoWrap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.TableRow .Button {
+    height: 24px;
+}
+
+.TransferIconColumn {
+    width: 20px;
+}
+
+.TransferNameColumn {
+    width: 30%;
+    float: left;
+    padding-right: 4px;
+}
+
+.TransferPriorityColumn {
+    width: 10%;
+}
+
+.TransferProgressColumn {
+    width: 20%;
+}
+
+.TransferSpeedColumn {
+    width: 10%;
+}
+
+.TransferStatusColumn {
+    width: 20%;
+}
+
+#statusBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#toolBar {
+    width: 100%;
+}
+
+#actionSelector {
+    height: 100%;
+}
+
+#settingsButtonGroup {
+    float: right;
+    height: 100%;
+}
+
+#activeLabel {
+    text-align: center;
+}
+
+#speedLabel {
+    position: absolute;
+    right: 8px;
+    bottom: 0;
+}
+
+#transfersTable {
+    width: 100%;
+}
+
+#addUrlsDialog {
+    width: 400px;
+    height: 360px;
+    margin: -180px -200px;
+}
+
+#addUrlsEdit {
+    width: 100%;
+    resize: none;
+}
+
+#retrieveUrlsDialog {
+    width: 400px;
+    height: 380px;
+    margin: -190px -200px;
+}
+
+#retrieveUrlsEdit {
+    width: 100%;
+    resize: none;
+}
+
+#retrieveUrlsAddButton {
+    width: 100%;
+}
+
+#urlCheckDialog {
+    width: 400px;
+    height: 380px;
+    margin: -190px -200px;
+}
+
+#urlCheckTable {
+    width: 100%;
+    height: 200px;
+}
+
+.UrlCheckUrlColumn {
+    width: 85%;
+}
+
+.UrlCheckOkColumn {
+    width: 10%;
+}
+
+#settingsDialog {
+    width: 600px;
+    height: 380px;
+    margin: -190px -300px;
+}

@@ -1,0 +1,8 @@
+{
+    "type": "js",
+    "id": "sendvid",
+    "name": "Sendvid",
+    "icon": "sendvid.jpg",
+    "file": "sendvid.js",
+    "regExp": "http(s|)://(www\\.|\\d+\\.|)sendvid\\.com/\\w+"
+}

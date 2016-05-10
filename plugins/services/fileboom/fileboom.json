@@ -1,0 +1,34 @@
+{
+    "type": "qt",
+    "id": "fileboom",
+    "name": "FileBoom",
+    "icon": "fileboom.jpg",
+    "file": "libfileboom.so",
+    "regExp": "http(s|)://(www\\.|)f(ile|)boom\\.me/file/\\w+",
+    "settings": [
+        {
+            "type": "group",
+            "label": "&Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use &login",
+                    "key": "useLogin"
+                },
+                
+                {
+                    "type": "text",
+                    "label": "&Username",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "&Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}

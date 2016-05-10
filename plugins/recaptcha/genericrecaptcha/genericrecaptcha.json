@@ -1,0 +1,7 @@
+{
+    "type": "qt",
+    "id": "genericrecaptcha",
+    "name": "Generic",
+    "icon": "genericrecaptcha.jpg",
+    "file": "libgenericrecaptcha.so"
+}

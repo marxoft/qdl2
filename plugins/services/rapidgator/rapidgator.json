@@ -1,0 +1,34 @@
+{
+    "type": "qt",
+    "id": "rapidgator",
+    "name": "RapidGator",
+    "icon": "rapidgator.jpg",
+    "file": "librapidgator.so",
+    "regExp": "http(s|)://(www\\.|)(rg\\.to|rapidgator\\.net)/file/\\S+",
+    "settings": [
+        {
+            "type": "group",
+            "label": "&Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use &login",
+                    "key": "useLogin"
+                },
+                
+                {
+                    "type": "text",
+                    "label": "&Username",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "&Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}

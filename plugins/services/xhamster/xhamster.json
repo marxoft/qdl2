@@ -1,0 +1,44 @@
+{
+    "type": "js",
+    "id": "xhamster",
+    "name": "XHamster",
+    "icon": "xhamster.jpg",
+    "file": "xhamster.js",
+    "regExp": "http(s|)://(www\\.|)xhamster\\.com/movies/\\d+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use &default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Video &format",
+            "key": "videoFormat",
+            "value": "1080p",
+            "options": [
+                {
+                    "label": "1080P",
+                    "value": "1080p"
+                },
+
+                {
+                    "label": "720P",
+                    "value": "720p"
+                },
+
+                {
+                    "label": "480P",
+                    "value": "480p"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "240p"
+                }
+            ]
+        }
+    ]
+}

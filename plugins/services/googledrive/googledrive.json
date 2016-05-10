@@ -1,0 +1,79 @@
+{
+    "type": "qt",
+    "id": "googledrive",
+    "name": "Google Drive",
+    "icon": "googledrive.jpg",
+    "file": "libgoogledrive.so",
+    "regExp": "http(s|)://(drive|docs)\\.google\\.com/file/d/[\\w_-]+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use &YouTube video formats",
+            "key": "useYouTubeFormats"
+            "value": false
+        },
+
+        {
+            "type": "list",
+            "label": "Video format",
+            "key": "videoFormat",
+            "value": "37",
+            "options": [
+                {
+                    "label": "1080P MP4",
+                    "value": "37"
+                },
+
+                {
+                    "label": "1080P WebM",
+                    "value": "46"
+                },
+
+                {
+                    "label": "720P MP4",
+                    "value": "22"
+                },
+
+                {
+                    "label": "720P WebM",
+                    "value": "45"
+                },
+
+                {
+                    "label": "480P WebM",
+                    "value": "44"
+                },
+
+                {
+                    "label": "480P FLV",
+                    "value": "35"
+                },
+
+                {
+                    "label": "360P MP4",
+                    "value": "18"
+                }
+
+                {
+                    "label": "360P WebM",
+                    "value": "43"
+                },
+
+                {
+                    "label": "360P FLV",
+                    "value": "34"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "36"
+                },
+
+                {
+                    "label": "144P",
+                    "value": "17"
+                }
+            ]
+        }
+    ]
+}

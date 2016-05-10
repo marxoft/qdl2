@@ -1,0 +1,44 @@
+{
+    "type": "js",
+    "id": "pornhub",
+    "name": "Pornhub",
+    "icon": "pornhub.jpg",
+    "file": "pornhub.js",
+    "regExp": "http(s|)://www\\.pornhub\\.com/view_video\\.php\\?viewkey=\\w+"
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use &default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Video &format",
+            "key": "videoFormat",
+            "value": "1080",
+            "options": [
+                {
+                    "label": "1080P",
+                    "value": "1080"
+                },
+
+                {
+                    "label": "720P",
+                    "value": "720"
+                },
+
+                {
+                    "label": "480P",
+                    "value": "480"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "240"
+                }
+            ]
+        }
+    ]
+}

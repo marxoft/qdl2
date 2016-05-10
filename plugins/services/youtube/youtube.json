@@ -1,0 +1,79 @@
+{
+    "type": "qt",
+    "id": "youtube",
+    "name": "YouTube",
+    "icon": "youtube.jpg",
+    "file": "libyoutube.so",
+    "regExp": "(http(s|)://(www.|m.|)youtube.com/(v/|.+)(v=|list=|)|http(s|)://youtu.be/)",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use &default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Default video format",
+            "key": "videoFormat",
+            "value": "37",
+            "options": [
+                {
+                    "label": "1080P MP4",
+                    "value": "37"
+                },
+
+                {
+                    "label": "1080P WebM",
+                    "value": "46"
+                },
+
+                {
+                    "label": "720P MP4",
+                    "value": "22"
+                },
+
+                {
+                    "label": "720P WebM",
+                    "value": "45"
+                },
+
+                {
+                    "label": "480P WebM",
+                    "value": "44"
+                },
+
+                {
+                    "label": "480P FLV",
+                    "value": "35"
+                },
+
+                {
+                    "label": "360P MP4",
+                    "value": "18"
+                }
+
+                {
+                    "label": "360P WebM",
+                    "value": "43"
+                },
+
+                {
+                    "label": "360P FLV",
+                    "value": "34"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "36"
+                },
+
+                {
+                    "label": "144P",
+                    "value": "17"
+                }
+            ]
+        }
+    ]
+}

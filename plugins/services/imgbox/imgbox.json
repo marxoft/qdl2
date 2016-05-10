@@ -1,0 +1,15 @@
+{
+    "type": "js",
+    "id": "imgbox",
+    "file": "imgbox.js",
+    "name": "imgbox",
+    "icon": "imgbox.jpg",
+    "regExp": "http(s|)://imgbox\\.com/(g/|)\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Retrieve &gallery for images",
+            "key": "retrieveGallery"
+        }
+    ]
+}

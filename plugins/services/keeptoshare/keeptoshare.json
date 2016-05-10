@@ -1,0 +1,34 @@
+{
+    "type": "qt",
+    "id": "keeptoshare",
+    "name": "Keep2Share",
+    "icon": "keeptoshare.jpg",
+    "file": "libkeeptoshare.so",
+    "regExp": "http(s|)://(www\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
+    "settings": [
+        {
+            "type": "group",
+            "label": "&Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use &login",
+                    "key": "useLogin"
+                },
+                
+                {
+                    "type": "text",
+                    "label": "&Email",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "&Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}

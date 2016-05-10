@@ -1,0 +1,27 @@
+{
+    "type": "qt",
+    "id": "deathbycaptcha",
+    "name": "Death By Captcha",
+    "icon": "deathbycaptcha.jpg",
+    "file": "libdeathbycaptcha.so",
+    "settings": [
+        {
+            "type": "group",
+            "label": "&Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "text",
+                    "label": "&Username",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "&Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}

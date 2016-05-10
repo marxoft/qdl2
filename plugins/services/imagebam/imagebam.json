@@ -1,0 +1,15 @@
+{
+    "type": "js",
+    "id": "imagebam",
+    "file": "imagebam.js",
+    "name": "imagebam",
+    "icon": "imagebam.jpg",
+    "regExp": "http(s|)://(www\\.|)imagebam\\.com/(image|gallery)/\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Retrieve &gallery for images",
+            "key": "retrieveGallery"
+        }
+    ]
+}
