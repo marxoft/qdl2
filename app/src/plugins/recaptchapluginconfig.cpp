@@ -42,6 +42,10 @@ QString RecaptchaPluginConfig::id() const {
     return m_id;
 }
 
+QString RecaptchaPluginConfig::pluginFilePath() const {
+    return m_pluginFilePath;
+}
+
 QString RecaptchaPluginConfig::pluginType() const {
     return m_pluginType;
 }
@@ -50,11 +54,12 @@ QVariantList RecaptchaPluginConfig::settings() const {
     return m_settings;
 }
 
-bool RecaptchaPluginConfig::load(const QString &configFileName) {
-    QFile file(configFileName);
+bool RecaptchaPluginConfig::load(const QString &filePath) {
+    m_filePath = filePath;
+    QFile file(filePath);
 
     if ((!file.exists()) || (!file.open(QFile::ReadOnly))) {
-        Logger::log("RecaptchaPluginConfig::load(): Unable to open config file: " + configFileName);
+        Logger::log("RecaptchaPluginConfig::load(): Unable to open config file: " + filePath);
         return false;
     }
 
@@ -63,7 +68,7 @@ bool RecaptchaPluginConfig::load(const QString &configFileName) {
     file.close();
 
     if (!ok) {
-        Logger::log("RecaptchaPluginConfig::load(): Error parsing config file: " + configFileName);
+        Logger::log("RecaptchaPluginConfig::load(): Error parsing config file: " + filePath);
         return false;
     }
 
@@ -74,11 +79,11 @@ bool RecaptchaPluginConfig::load(const QString &configFileName) {
         return false;
     }
 
-    Logger::log("RecaptchaPluginConfig::load(): Config file loaded: " + configFileName);
+    Logger::log("RecaptchaPluginConfig::load(): Config file loaded: " + filePath);
     m_displayName = config.value("name").toString();
-    m_filePath = RECAPTCHA_PLUGIN_PATH + config.value("file").toString();
     m_iconFilePath = config.contains("icon") ? PLUGIN_ICON_PATH + config.value("icon").toString() : DEFAULT_ICON;
     m_id = config.value("id").toString();
+    m_pluginFilePath = RECAPTCHA_PLUGIN_PATH + config.value("file").toString();
     m_pluginType = config.value("type").toString();
     m_settings = config.value("settings").toList();
     emit changed();

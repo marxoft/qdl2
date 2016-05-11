@@ -20,10 +20,13 @@
 #include "addurlsdialog.h"
 #include "categories.h"
 #include "clipboardmonitor.h"
+#include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "packagepropertiesdialog.h"
 #include "qdl.h"
+#include "recaptchapluginmanager.h"
 #include "retrieveurlsdialog.h"
+#include "servicepluginmanager.h"
 #include "settings.h"
 #include "settingsdialog.h"
 #include "transferdelegate.h"
@@ -63,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("search"), tr("&Retrieve URLs"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
+    m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
     m_quitAction(new QAction(QIcon::fromTheme("application-exit"), tr("&Quit"), this)),
     m_transferPropertiesAction(new QAction(QIcon::fromTheme("document-properties"), tr("&Properties"), this)),
     m_transferQueueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start"), this)),
@@ -108,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_addUrlsAction->setShortcut(tr("Ctrl+A"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+R"));
+    m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_quitAction->setShortcut(tr("Ctrl+Q"));
 
     m_fileMenu->addAction(m_addUrlsAction);
@@ -116,6 +121,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_queueAction);
     m_fileMenu->addAction(m_pauseAction);
+    m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_pluginsAction);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_quitAction);
 
@@ -258,6 +265,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
     connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
+    connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
     connect(m_quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 
     connect(m_transferPropertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentTransferProperties()));
@@ -613,6 +621,18 @@ void MainWindow::showSettingsDialog() {
 
 void MainWindow::showAboutDialog() {
     AboutDialog(this).exec();
+}
+
+void MainWindow::loadPlugins() {
+    const int count = DecaptchaPluginManager::instance()->load() + RecaptchaPluginManager::instance()->load()
+                      + ServicePluginManager::instance()->load();
+
+    if (count > 0) {
+        QMessageBox::information(this, tr("Load plugins"), tr("%1 new plugins found").arg(count));
+    }
+    else {
+        QMessageBox::information(this, tr("Load plugins"), tr("No new plugins found"));
+    }
 }
 
 void MainWindow::onActiveTransfersChanged(int active) {

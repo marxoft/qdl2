@@ -17,7 +17,7 @@
 #ifndef RECAPTCHAPLUGINCONFIGMODEL_H
 #define RECAPTCHAPLUGINCONFIGMODEL_H
 
-#include "recaptchapluginconfig.h"
+#include "recaptchapluginmanager.h"
 #include <QAbstractListModel>
 
 class RecaptchaPluginConfigModel : public QAbstractListModel
@@ -32,6 +32,7 @@ public:
         FilePathRole = Qt::UserRole + 1,
         IconFilePathRole,
         IdRole,
+        PluginFilePathRole,
         PluginTypeRole,
         SettingsRole
     };
@@ -63,7 +64,7 @@ Q_SIGNALS:
     void countChanged(int count);
     
 protected:
-    QList<RecaptchaPluginConfig*> m_items;
+    RecaptchaPluginList m_items;
     QHash<int, QByteArray> m_roles;
 };
 

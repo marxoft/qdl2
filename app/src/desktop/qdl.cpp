@@ -74,6 +74,7 @@ static QVariantMap configToVariantMap(const DecaptchaPluginConfig *config) {
     map["filePath"] = config->filePath();
     map["iconFilePath"] = config->iconFilePath();
     map["id"] = config->id();
+    map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
     return map;
 }
@@ -84,6 +85,7 @@ static QVariantMap configToVariantMap(const RecaptchaPluginConfig *config) {
     map["filePath"] = config->filePath();
     map["iconFilePath"] = config->iconFilePath();
     map["id"] = config->id();
+    map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
     return map;
 }
@@ -94,6 +96,7 @@ static QVariantMap configToVariantMap(const ServicePluginConfig *config) {
     map["filePath"] = config->filePath();
     map["iconFilePath"] = config->iconFilePath();
     map["id"] = config->id();
+    map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
     map["regExp"] = config->regExp().pattern();
     return map;
@@ -376,8 +379,8 @@ bool Qdl::removeCategory(const QString &name) {
 QVariantList Qdl::getDecaptchaPlugins() {
     QVariantList list;
 
-    foreach (const DecaptchaPluginConfig *config, DecaptchaPluginManager::instance()->configs()) {
-        list << configToVariantMap(config);
+    foreach (const DecaptchaPluginPair &pair, DecaptchaPluginManager::instance()->plugins()) {
+        list << configToVariantMap(pair.config);
     }
 
     return list;
@@ -422,8 +425,8 @@ bool Qdl::setDecaptchaPluginSettings(const QString &id, const QVariantMap &prope
 QVariantList Qdl::getRecaptchaPlugins() {
     QVariantList list;
 
-    foreach (const RecaptchaPluginConfig *config, RecaptchaPluginManager::instance()->configs()) {
-        list << configToVariantMap(config);
+    foreach (const RecaptchaPluginPair &pair, RecaptchaPluginManager::instance()->plugins()) {
+        list << configToVariantMap(pair.config);
     }
 
     return list;
@@ -468,8 +471,8 @@ bool Qdl::setRecaptchaPluginSettings(const QString &id, const QVariantMap &prope
 QVariantList Qdl::getServicePlugins() {
     QVariantList list;
 
-    foreach (const ServicePluginConfig *config, ServicePluginManager::instance()->configs()) {
-        list << configToVariantMap(config);
+    foreach (const ServicePluginPair &pair, ServicePluginManager::instance()->plugins()) {
+        list << configToVariantMap(pair.config);
     }
 
     return list;

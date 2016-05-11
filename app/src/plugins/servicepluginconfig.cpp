@@ -42,6 +42,10 @@ QString ServicePluginConfig::id() const {
     return m_id;
 }
 
+QString ServicePluginConfig::pluginFilePath() const {
+    return m_pluginFilePath;
+}
+
 QString ServicePluginConfig::pluginType() const {
     return m_pluginType;
 }
@@ -54,11 +58,12 @@ QVariantList ServicePluginConfig::settings() const {
     return m_settings;
 }
 
-bool ServicePluginConfig::load(const QString &configFileName) {
-    QFile file(configFileName);
+bool ServicePluginConfig::load(const QString &filePath) {
+    m_filePath = filePath;
+    QFile file(filePath);
 
     if ((!file.exists()) || (!file.open(QFile::ReadOnly))) {
-        Logger::log("ServicePluginConfig::load(): Unable to open config file: " + configFileName);
+        Logger::log("ServicePluginConfig::load(): Unable to open config file: " + filePath);
         return false;
     }
 
@@ -67,7 +72,7 @@ bool ServicePluginConfig::load(const QString &configFileName) {
     file.close();
 
     if (!ok) {
-        Logger::log("ServicePluginConfig::load(): Error parsing config file: " + configFileName);
+        Logger::log("ServicePluginConfig::load(): Error parsing config file: " + filePath);
         return false;
     }
 
@@ -79,11 +84,11 @@ bool ServicePluginConfig::load(const QString &configFileName) {
         return false;
     }
 
-    Logger::log("ServicePluginConfig::load(): Config file loaded: " + configFileName);
+    Logger::log("ServicePluginConfig::load(): Config file loaded: " + filePath);
     m_displayName = config.value("name").toString();
-    m_filePath = SERVICE_PLUGIN_PATH + config.value("file").toString();
     m_iconFilePath = config.contains("icon") ? PLUGIN_ICON_PATH + config.value("icon").toString() : DEFAULT_ICON;
     m_id = config.value("id").toString();
+    m_pluginFilePath = SERVICE_PLUGIN_PATH + config.value("file").toString();
     m_pluginType = config.value("type").toString();
     m_regExp = QRegExp(config.value("regExp").toString());
     m_settings = config.value("settings").toList();

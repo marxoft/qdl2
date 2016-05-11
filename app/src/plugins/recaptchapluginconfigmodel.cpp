@@ -15,8 +15,6 @@
  */
 
 #include "recaptchapluginconfigmodel.h"
-#include "definitions.h"
-#include "recaptchapluginmanager.h"
 #include <QIcon>
 
 RecaptchaPluginConfigModel::RecaptchaPluginConfigModel(QObject *parent) :
@@ -26,6 +24,7 @@ RecaptchaPluginConfigModel::RecaptchaPluginConfigModel(QObject *parent) :
     m_roles[FilePathRole] = "filePath";
     m_roles[IconFilePathRole] = "iconFilePath";
     m_roles[IdRole] = "id";
+    m_roles[PluginFilePathRole] = "pluginFilePath";
     m_roles[PluginTypeRole] = "pluginType";
     m_roles[SettingsRole] = "settings";
 #if QT_VERSION < 0x050000
@@ -49,7 +48,7 @@ QVariant RecaptchaPluginConfigModel::data(const QModelIndex &index, int role) co
         return QVariant();
     }
 
-    const RecaptchaPluginConfig *config = m_items.at(index.row());
+    const RecaptchaPluginConfig *config = m_items.at(index.row()).config;
 
     if (!config) {
         return QVariant();
@@ -70,6 +69,8 @@ QVariant RecaptchaPluginConfigModel::data(const QModelIndex &index, int role) co
         return config->iconFilePath();
     case IdRole:
         return config->id();
+    case PluginFilePathRole:
+        return config->pluginFilePath();
     case PluginTypeRole:
         return config->pluginType();
     case SettingsRole:
@@ -125,7 +126,7 @@ void RecaptchaPluginConfigModel::clear() {
 void RecaptchaPluginConfigModel::reload() {
     clear();
     beginResetModel();
-    m_items = RecaptchaPluginManager::instance()->configs();
+    m_items = RecaptchaPluginManager::instance()->plugins();
     endResetModel();
     emit countChanged(rowCount());
 }

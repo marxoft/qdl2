@@ -20,6 +20,22 @@
 
 #include "decaptchaplugin.h"
 #include "decaptchapluginconfig.h"
+#include <QDateTime>
+#include <QPointer>
+
+struct DecaptchaPluginPair
+{
+    DecaptchaPluginPair(DecaptchaPluginConfig* c, DecaptchaPlugin* p) :
+        config(c),
+        plugin(p)
+    {
+    }
+
+    QPointer<DecaptchaPluginConfig> config;
+    QPointer<DecaptchaPlugin> plugin;
+};
+
+typedef QList<DecaptchaPluginPair> DecaptchaPluginList;
 
 class DecaptchaPluginManager : public QObject
 {
@@ -30,21 +46,21 @@ public:
 
     static DecaptchaPluginManager* instance();
 
-    QList<DecaptchaPluginConfig*> configs() const;
-    QList<DecaptchaPlugin*> plugins() const;
+    DecaptchaPluginList plugins() const;
 
 public Q_SLOTS:
     DecaptchaPluginConfig* getConfigById(const QString &id) const;
 
-    DecaptchaPlugin* getPlugin(DecaptchaPluginConfig *config) const;
     DecaptchaPlugin* getPluginById(const QString &id) const;
 
     DecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
 
-    void load();
+    int load();
 
 private:
     DecaptchaPluginManager();
+
+    DecaptchaPluginConfig* getConfigByFilePath(const QString &filePath) const;
 
     QNetworkAccessManager* networkAccessManager();
 
@@ -52,7 +68,9 @@ private:
 
     QNetworkAccessManager *m_nam;
 
-    QHash<DecaptchaPluginConfig*, DecaptchaPlugin*> m_plugins;
+    QDateTime m_lastLoaded;
+
+    DecaptchaPluginList m_plugins;
 };
 
 #endif // DECAPTCHAPLUGINMANAGER_H

@@ -20,6 +20,22 @@
 
 #include "serviceplugin.h"
 #include "servicepluginconfig.h"
+#include <QDateTime>
+#include <QPointer>
+
+struct ServicePluginPair
+{
+    ServicePluginPair(ServicePluginConfig* c, ServicePlugin* p) :
+        config(c),
+        plugin(p)
+    {
+    }
+
+    QPointer<ServicePluginConfig> config;
+    QPointer<ServicePlugin> plugin;
+};
+
+typedef QList<ServicePluginPair> ServicePluginList;
 
 class ServicePluginManager : public QObject
 {
@@ -30,34 +46,36 @@ public:
 
     static ServicePluginManager* instance();
 
-    QList<ServicePluginConfig*> configs() const;
-    QList<ServicePlugin*> plugins() const;
+    ServicePluginList plugins() const;
 
 public Q_SLOTS:
     ServicePluginConfig* getConfigById(const QString &id) const;
     ServicePluginConfig* getConfigByUrl(const QString &url) const;
 
-    ServicePlugin* getPlugin(ServicePluginConfig *config) const;
     ServicePlugin* getPluginById(const QString &id) const;
-    ServicePlugin* getPluginByUrl(const QString &url) const;    
+    ServicePlugin* getPluginByUrl(const QString &url) const;
 
     ServicePlugin* createPluginById(const QString &id, QObject *parent = 0) const;
     ServicePlugin* createPluginByUrl(const QString &url, QObject *parent = 0) const;
 
     bool urlIsSupported(const QString &url) const;
 
-    void load();
+    int load();
 
 private:
     ServicePluginManager();
+
+    ServicePluginConfig* getConfigByFilePath(const QString &filePath) const;
 
     QNetworkAccessManager* networkAccessManager();
 
     static ServicePluginManager *self;
 
     QNetworkAccessManager *m_nam;
-    
-    QHash<ServicePluginConfig*, ServicePlugin*> m_plugins;
+
+    QDateTime m_lastLoaded;
+
+    ServicePluginList m_plugins;
 };
 
 #endif // SERVICEPLUGINMANAGER_H

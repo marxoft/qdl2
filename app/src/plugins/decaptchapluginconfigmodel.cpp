@@ -15,8 +15,6 @@
  */
 
 #include "decaptchapluginconfigmodel.h"
-#include "decaptchapluginmanager.h"
-#include "definitions.h"
 #include <QIcon>
 
 DecaptchaPluginConfigModel::DecaptchaPluginConfigModel(QObject *parent) :
@@ -26,6 +24,7 @@ DecaptchaPluginConfigModel::DecaptchaPluginConfigModel(QObject *parent) :
     m_roles[FilePathRole] = "filePath";
     m_roles[IconFilePathRole] = "iconFilePath";
     m_roles[IdRole] = "id";
+    m_roles[PluginFilePathRole] = "pluginFilePath";
     m_roles[PluginTypeRole] = "pluginType";
     m_roles[SettingsRole] = "settings";
 #if QT_VERSION < 0x050000
@@ -49,7 +48,7 @@ QVariant DecaptchaPluginConfigModel::data(const QModelIndex &index, int role) co
         return QVariant();
     }
 
-    const DecaptchaPluginConfig *config = m_items.at(index.row());
+    const DecaptchaPluginConfig *config = m_items.at(index.row()).config;
 
     if (!config) {
         return QVariant();
@@ -70,6 +69,8 @@ QVariant DecaptchaPluginConfigModel::data(const QModelIndex &index, int role) co
         return config->iconFilePath();
     case IdRole:
         return config->id();
+    case PluginFilePathRole:
+        return config->pluginFilePath();
     case PluginTypeRole:
         return config->pluginType();
     case SettingsRole:
@@ -125,7 +126,7 @@ void DecaptchaPluginConfigModel::clear() {
 void DecaptchaPluginConfigModel::reload() {
     clear();
     beginResetModel();
-    m_items = DecaptchaPluginManager::instance()->configs();
+    m_items = DecaptchaPluginManager::instance()->plugins();
     endResetModel();
     emit countChanged(rowCount());
 }

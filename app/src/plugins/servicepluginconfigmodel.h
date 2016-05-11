@@ -17,7 +17,7 @@
 #ifndef SERVICEPLUGINCONFIGMODEL_H
 #define SERVICEPLUGINCONFIGMODEL_H
 
-#include "servicepluginconfig.h"
+#include "servicepluginmanager.h"
 #include <QAbstractListModel>
 
 class ServicePluginConfigModel : public QAbstractListModel
@@ -32,6 +32,7 @@ public:
         FilePathRole = Qt::UserRole + 1,
         IconFilePathRole,
         IdRole,
+        PluginFilePathRole,
         PluginTypeRole,
         RegExpRole,
         SettingsRole
@@ -64,7 +65,7 @@ Q_SIGNALS:
     void countChanged(int count);
     
 protected:
-    QList<ServicePluginConfig*> m_items;
+    ServicePluginList m_items;
     QHash<int, QByteArray> m_roles;
 };
 

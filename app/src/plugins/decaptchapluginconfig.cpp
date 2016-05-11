@@ -42,6 +42,10 @@ QString DecaptchaPluginConfig::id() const {
     return m_id;
 }
 
+QString DecaptchaPluginConfig::pluginFilePath() const {
+    return m_pluginFilePath;
+}
+
 QString DecaptchaPluginConfig::pluginType() const {
     return m_pluginType;
 }
@@ -50,11 +54,12 @@ QVariantList DecaptchaPluginConfig::settings() const {
     return m_settings;
 }
 
-bool DecaptchaPluginConfig::load(const QString &configFileName) {
-    QFile file(configFileName);
+bool DecaptchaPluginConfig::load(const QString &filePath) {
+    m_filePath = filePath;
+    QFile file(filePath);
 
     if ((!file.exists()) || (!file.open(QFile::ReadOnly))) {
-        Logger::log("DecaptchaPluginConfig::load(): Unable to open config file: " + configFileName);
+        Logger::log("DecaptchaPluginConfig::load(): Unable to open config file: " + filePath);
         return false;
     }
 
@@ -63,7 +68,7 @@ bool DecaptchaPluginConfig::load(const QString &configFileName) {
     file.close();
 
     if (!ok) {
-        Logger::log("DecaptchaPluginConfig::load(): Error parsing config file: " + configFileName);
+        Logger::log("DecaptchaPluginConfig::load(): Error parsing config file: " + filePath);
         return false;
     }
 
@@ -74,11 +79,11 @@ bool DecaptchaPluginConfig::load(const QString &configFileName) {
         return false;
     }
 
-    Logger::log("DecaptchaPluginConfig::load(): Config file loaded: " + configFileName);
+    Logger::log("DecaptchaPluginConfig::load(): Config file loaded: " + filePath);
     m_displayName = config.value("name").toString();
-    m_filePath = DECAPTCHA_PLUGIN_PATH + config.value("file").toString();
     m_iconFilePath = config.contains("icon") ? PLUGIN_ICON_PATH + config.value("icon").toString() : DEFAULT_ICON;
     m_id = config.value("id").toString();
+    m_pluginFilePath = DECAPTCHA_PLUGIN_PATH + config.value("file").toString();
     m_pluginType = config.value("type").toString();
     m_settings = config.value("settings").toList();
     emit changed();

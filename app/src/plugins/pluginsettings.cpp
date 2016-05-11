@@ -41,7 +41,7 @@ void PluginSettings::setPluginId(const QString &id) {
 }
 
 bool PluginSettings::remove(const QString &key) {
-    if ((!pluginId().isEmpty()) && (key != this->value(key))) {
+    if ((!pluginId().isEmpty()) && (key != value(key))) {
         QSettings settings(PLUGIN_CONFIG_PATH + pluginId(), QSettings::IniFormat);
 
         if (settings.contains(key)) {

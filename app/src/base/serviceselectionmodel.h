@@ -37,8 +37,8 @@ public Q_SLOTS:
         clear();
         append(tr("Any"), QString());
         
-        foreach (const ServicePluginConfig *config, ServicePluginManager::instance()->configs()) {
-            append(config->displayName(), config->id());
+        foreach (const ServicePluginPair &pair, ServicePluginManager::instance()->plugins()) {
+            append(pair.config->displayName(), pair.config->id());
         }
     }
 };

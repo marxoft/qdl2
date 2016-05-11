@@ -20,11 +20,12 @@
 #include "javascriptserviceplugin.h"
 #include "logger.h"
 #include <QDir>
+#include <QFileInfo>
 #include <QNetworkAccessManager>
 #include <QPluginLoader>
 
-static bool displayNameLessThan(const ServicePluginConfig *config, const ServicePluginConfig *other) {
-    return QString::localeAwareCompare(config->displayName(), other->displayName()) < 0;
+static bool displayNameLessThan(const ServicePluginPair &pair, const ServicePluginPair &other) {
+    return QString::localeAwareCompare(pair.config->displayName(), other.config->displayName()) < 0;
 }
 
 ServicePluginManager* ServicePluginManager::self = 0;
@@ -43,21 +44,15 @@ ServicePluginManager* ServicePluginManager::instance() {
     return self ? self : self = new ServicePluginManager;
 }
 
-QList<ServicePluginConfig*> ServicePluginManager::configs() const {
-    QList<ServicePluginConfig*> list = m_plugins.keys();
-    qSort(list.begin(), list.end(), displayNameLessThan);
-    return list;
-}
-
-QList<ServicePlugin*> ServicePluginManager::plugins() const {
-    return m_plugins.values();
+ServicePluginList ServicePluginManager::plugins() const {
+    return m_plugins;
 }
 
 ServicePluginConfig* ServicePluginManager::getConfigById(const QString &id) const {
-    foreach (ServicePluginConfig *config, m_plugins.keys()) {
-        if (config->id() == id) {
+    foreach (const ServicePluginPair &pair, m_plugins) {
+        if (pair.config->id() == id) {
             Logger::log("ServicePluginManager::getConfigById(). PluginFound: " + id);
-            return config;
+            return pair.config;
         }
     }
     
@@ -65,11 +60,23 @@ ServicePluginConfig* ServicePluginManager::getConfigById(const QString &id) cons
     return 0;
 }
 
+ServicePluginConfig* ServicePluginManager::getConfigByFilePath(const QString &filePath) const {
+    foreach (const ServicePluginPair &pair, m_plugins) {
+        if (pair.config->filePath() == filePath) {
+            Logger::log("ServicePluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id());
+            return pair.config;
+        }
+    }
+    
+    Logger::log("ServicePluginManager::getConfigByFilePath(). No Plugin found");
+    return 0;
+}
+
 ServicePluginConfig* ServicePluginManager::getConfigByUrl(const QString &url) const {
-    foreach (ServicePluginConfig *config, m_plugins.keys()) {
-        if (config->urlIsSupported(url)) {
-            Logger::log("ServicePluginManager::getConfigByUrl(). Plugin found: " + config->id());
-            return config;
+    foreach (const ServicePluginPair &pair, m_plugins) {
+        if (pair.config->urlIsSupported(url)) {
+            Logger::log("ServicePluginManager::getConfigByUrl(). PluginFound: " + pair.config->id());
+            return pair.config;
         }
     }
     
@@ -77,23 +84,27 @@ ServicePluginConfig* ServicePluginManager::getConfigByUrl(const QString &url) co
     return 0;
 }
 
-ServicePlugin* ServicePluginManager::getPlugin(ServicePluginConfig *config) const {
-    return m_plugins.value(config, 0);
-}
-
 ServicePlugin* ServicePluginManager::getPluginById(const QString &id) const {
-    if (ServicePluginConfig *config = getConfigById(id)) {
-        return getPlugin(config);
+    foreach (const ServicePluginPair &pair, m_plugins) {
+        if (pair.config->id() == id) {
+            Logger::log("ServicePluginManager::getPluginById(). PluginFound: " + id);
+            return pair.plugin;
+        }
     }
-
+    
+    Logger::log("ServicePluginManager::getPluginById(). No Plugin found");
     return 0;
 }
 
 ServicePlugin* ServicePluginManager::getPluginByUrl(const QString &url) const {
-    if (ServicePluginConfig *config = getConfigByUrl(url)) {
-        return getPlugin(config);
+    foreach (const ServicePluginPair &pair, m_plugins) {
+        if (pair.config->urlIsSupported(url)) {
+            Logger::log("ServicePluginManager::getPluginByUrl(). PluginFound: " + pair.config->id());
+            return pair.plugin;
+        }
     }
-
+    
+    Logger::log("ServicePluginManager::getPluginByUrl(). No Plugin found");
     return 0;
 }
 
@@ -121,52 +132,73 @@ bool ServicePluginManager::urlIsSupported(const QString &url) const {
     return false;
 }
 
-void ServicePluginManager::load() {
-    if (!m_plugins.isEmpty()) {
-        return;
-    }
-    
-    QDir dir(SERVICE_PLUGIN_PATH);
-
-    foreach (const QString &fileName, dir.entryList(QStringList() << "*.json", QDir::Files)) {
-        ServicePluginConfig *config = new ServicePluginConfig(this);
-
-        if (config->load(dir.absoluteFilePath(fileName))) {
-            if (config->pluginType() == "js") {
-                JavaScriptServicePlugin *js = new JavaScriptServicePlugin(config->id(), config->filePath(), this);
-                m_plugins.insert(config, js);
-                Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id());
-            }
-            else {
-                QPluginLoader loader(config->filePath());
-                QObject *obj = loader.instance();
-
-                if (obj) {
-                    if (ServicePlugin *plugin = qobject_cast<ServicePlugin*>(obj)) {
-                        plugin->setNetworkAccessManager(networkAccessManager());
-                        m_plugins.insert(config, plugin);
-                        Logger::log("ServicePluginManager::load(). Qt plugin loaded: " + config->id());
-                    }
-                    else {
-                        loader.unload();
-                        Logger::log("ServicePluginManager::load(). Error loading Qt plugin: " + config->id());
-                    }
-                }
-                else {
-                    Logger::log("ServicePluginManager::load(). Qt plugin is NULL: " + config->id());
-                }
-            }
-        }
-        else {
-            delete config;
-        }
-    }
-}
-
 QNetworkAccessManager* ServicePluginManager::networkAccessManager() {
     if (!m_nam) {
         m_nam = new QNetworkAccessManager(this);
     }
 
     return m_nam;
+}
+
+int ServicePluginManager::load() {
+    Logger::log("ServicePluginManager::load(): Loading plugins modified since "
+                + m_lastLoaded.toString(Qt::ISODate));
+    int count = 0;
+    QDir dir(SERVICE_PLUGIN_PATH);
+    
+    foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
+        if (info.lastModified() > m_lastLoaded) {
+            ServicePluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
+
+            if (!config) {
+                config = new ServicePluginConfig(this);
+                
+                if (config->load(info.absoluteFilePath())) {
+                    if (config->pluginType() == "js") {
+                        JavaScriptServicePlugin *js =
+                        new JavaScriptServicePlugin(config->id(), config->pluginFilePath(), this);
+                        m_plugins << ServicePluginPair(config, js);
+                        ++count;
+                        Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id());
+                    }
+                    else {
+                        QPluginLoader loader(config->pluginFilePath());
+                        QObject *obj = loader.instance();
+                        
+                        if (obj) {
+                            if (ServicePlugin *plugin = qobject_cast<ServicePlugin*>(obj)) {
+                                plugin->setNetworkAccessManager(networkAccessManager());
+                                m_plugins << ServicePluginPair(config, plugin);
+                                ++count;
+                                Logger::log("ServicePluginManager::load(). Qt Plugin loaded: " + config->id());
+                            }
+                            else {
+                                loader.unload();
+                                Logger::log("ServicePluginManager::load(). Error loading Qt plugin: "
+                                            + config->id());
+                            }
+                        }
+                        else {
+                            Logger::log("ServicePluginManager::load(). Qt plugin is NULL: " + config->id());
+                        }
+                    }
+                }
+                else {
+                    delete config;
+                }
+            }
+        }
+        else {
+            break;
+        }
+    }
+
+    Logger::log(QString("ServicePluginManager::load() %1 new plugins loaded").arg(count));
+
+    if (count > 0) {
+        qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);
+    }
+
+    m_lastLoaded = QDateTime::currentDateTime();
+    return count;
 }

@@ -29,6 +29,7 @@ class RecaptchaPluginConfig : public QObject
     Q_PROPERTY(QString filePath READ filePath NOTIFY changed)
     Q_PROPERTY(QString iconFilePath READ iconFilePath NOTIFY changed)
     Q_PROPERTY(QString id READ id NOTIFY changed)
+    Q_PROPERTY(QString pluginFilePath READ pluginFilePath NOTIFY changed)
     Q_PROPERTY(QString pluginType READ pluginType NOTIFY changed)
     Q_PROPERTY(QVariantList settings READ settings NOTIFY changed)
 
@@ -42,13 +43,15 @@ public:
     QString iconFilePath() const;
     
     QString id() const;
+
+    QString pluginFilePath() const;
     
     QString pluginType() const;
         
     QVariantList settings() const;
 
 public Q_SLOTS:
-    bool load(const QString &configFileName);
+    bool load(const QString &filePath);
 
 Q_SIGNALS:
     void changed();
@@ -58,6 +61,7 @@ private:
     QString m_filePath;
     QString m_iconFilePath;
     QString m_id;
+    QString m_pluginFilePath;
     QString m_pluginType;
         
     QVariantList m_settings;

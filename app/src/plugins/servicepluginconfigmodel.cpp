@@ -15,8 +15,6 @@
  */
 
 #include "servicepluginconfigmodel.h"
-#include "definitions.h"
-#include "servicepluginmanager.h"
 #include <QIcon>
 
 ServicePluginConfigModel::ServicePluginConfigModel(QObject *parent) :
@@ -26,6 +24,7 @@ ServicePluginConfigModel::ServicePluginConfigModel(QObject *parent) :
     m_roles[FilePathRole] = "filePath";
     m_roles[IconFilePathRole] = "iconFilePath";
     m_roles[IdRole] = "id";
+    m_roles[PluginFilePathRole] = "pluginFilePath";
     m_roles[PluginTypeRole] = "pluginType";
     m_roles[RegExpRole] = "regExp";
     m_roles[SettingsRole] = "settings";
@@ -50,7 +49,7 @@ QVariant ServicePluginConfigModel::data(const QModelIndex &index, int role) cons
         return QVariant();
     }
 
-    const ServicePluginConfig *config = m_items.at(index.row());
+    const ServicePluginConfig *config = m_items.at(index.row()).config;
 
     if (!config) {
         return QVariant();
@@ -71,6 +70,8 @@ QVariant ServicePluginConfigModel::data(const QModelIndex &index, int role) cons
         return config->iconFilePath();
     case IdRole:
         return config->id();
+    case PluginFilePathRole:
+        return config->pluginFilePath();
     case PluginTypeRole:
         return config->pluginType();
     case RegExpRole:
@@ -128,7 +129,7 @@ void ServicePluginConfigModel::clear() {
 void ServicePluginConfigModel::reload() {
     clear();
     beginResetModel();
-    m_items = ServicePluginManager::instance()->configs();
+    m_items = ServicePluginManager::instance()->plugins();
     endResetModel();
     emit countChanged(rowCount());
 }

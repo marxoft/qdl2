@@ -70,6 +70,8 @@ private Q_SLOTS:
     void showSettingsDialog();
     void showAboutDialog();
 
+    void loadPlugins();
+
     void onActiveTransfersChanged(int active);
     void onCurrentRowChanged(const QModelIndex &index);
     void onMaximumConcurrentTransfersChanged(int maximum);
@@ -99,6 +101,7 @@ private:
     QAction *m_retrieveUrlsAction;
     QAction *m_queueAction;
     QAction *m_pauseAction;
+    QAction *m_pluginsAction;
     QAction *m_quitAction;
 
     QAction *m_transferPropertiesAction;

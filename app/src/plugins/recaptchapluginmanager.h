@@ -20,6 +20,22 @@
 
 #include "recaptchaplugin.h"
 #include "recaptchapluginconfig.h"
+#include <QDateTime>
+#include <QPointer>
+
+struct RecaptchaPluginPair
+{
+    RecaptchaPluginPair(RecaptchaPluginConfig* c, RecaptchaPlugin* p) :
+        config(c),
+        plugin(p)
+    {
+    }
+
+    QPointer<RecaptchaPluginConfig> config;
+    QPointer<RecaptchaPlugin> plugin;
+};
+
+typedef QList<RecaptchaPluginPair> RecaptchaPluginList;
 
 class RecaptchaPluginManager : public QObject
 {
@@ -30,29 +46,31 @@ public:
 
     static RecaptchaPluginManager* instance();
 
-    QList<RecaptchaPluginConfig*> configs() const;
-    QList<RecaptchaPlugin*> plugins() const;
+    RecaptchaPluginList plugins() const;
 
 public Q_SLOTS:
     RecaptchaPluginConfig* getConfigById(const QString &id) const;
 
-    RecaptchaPlugin* getPlugin(RecaptchaPluginConfig *config) const;
     RecaptchaPlugin* getPluginById(const QString &id) const;
 
     RecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
 
-    void load();
+    int load();
 
 private:
     RecaptchaPluginManager();
+
+    RecaptchaPluginConfig* getConfigByFilePath(const QString &filePath) const;
 
     QNetworkAccessManager* networkAccessManager();
 
     static RecaptchaPluginManager *self;
 
     QNetworkAccessManager *m_nam;
-    
-    QHash<RecaptchaPluginConfig*, RecaptchaPlugin*> m_plugins;
+
+    QDateTime m_lastLoaded;
+
+    RecaptchaPluginList m_plugins;
 };
 
 #endif // RECAPTCHAPLUGINMANAGER_H

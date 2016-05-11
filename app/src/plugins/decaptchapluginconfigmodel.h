@@ -17,7 +17,7 @@
 #ifndef DECAPTCHAPLUGINCONFIGMODEL_H
 #define DECAPTCHAPLUGINCONFIGMODEL_H
 
-#include "decaptchapluginconfig.h"
+#include "decaptchapluginmanager.h"
 #include <QAbstractListModel>
 
 class DecaptchaPluginConfigModel : public QAbstractListModel
@@ -32,6 +32,7 @@ public:
         FilePathRole = Qt::UserRole + 1,
         IconFilePathRole,
         IdRole,
+        PluginFilePathRole,
         PluginTypeRole,
         SettingsRole
     };
@@ -63,7 +64,7 @@ Q_SIGNALS:
     void countChanged(int count);
     
 protected:
-    QList<DecaptchaPluginConfig*> m_items;
+    DecaptchaPluginList m_items;
     QHash<int, QByteArray> m_roles;
 };
 
