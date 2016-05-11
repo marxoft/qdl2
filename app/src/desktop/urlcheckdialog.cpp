@@ -27,8 +27,8 @@
 UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     QDialog(parent),
     m_view(new QTreeView(this)),
-    m_statusLabel(new QLabel(this)),
     m_progressBar(new QProgressBar(this)),
+    m_statusLabel(new QLabel(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
     m_layout(new QVBoxLayout(this))
 {
@@ -59,8 +59,8 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     m_progressBar->setValue(UrlCheckModel::instance()->progress());
 
     m_layout->addWidget(m_view);
-    m_layout->addWidget(m_statusLabel);
     m_layout->addWidget(m_progressBar);
+    m_layout->addWidget(m_statusLabel);
     m_layout->addWidget(m_buttonBox);
 
     connect(UrlCheckModel::instance(), SIGNAL(progressChanged(int)), m_progressBar, SLOT(setValue(int)));

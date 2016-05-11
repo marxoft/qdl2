@@ -46,10 +46,10 @@ private Q_SLOTS:
     
 private:
     QTreeView *m_view;
-
-    QLabel *m_statusLabel;
     
     QProgressBar *m_progressBar;
+
+    QLabel *m_statusLabel;
 
     QDialogButtonBox *m_buttonBox;
 
