@@ -79,7 +79,7 @@ function checkUrl(url) {
             else {
                 // Image
                 try {
-                    if (settings.value("retrieveGallery" , false)) {
+                    if (settings.value("retrieveGallery", false) == true) {
                         // Try to retrieve the gallery
                         var galleryLink = /\/gallery\/\w+/.exec(request.responseText);
                         

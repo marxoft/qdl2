@@ -15,7 +15,7 @@
         
         {
             "type": "list",
-            "label": "Video &format",
+            "label": "Default video &format",
             "key": "videoFormat",
             "value": "1080p",
             "options": [

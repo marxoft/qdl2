@@ -51,7 +51,7 @@ function getDownloadRequest(url) {
                 var page = request.responseText;
                 var format = settings.value("videoFormat", "1080");
 
-                if (settings.value("useDefaultVideoFormat", true)) {
+                if (settings.value("useDefaultVideoFormat", true) == true) {
                     for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
                         try {
                             var videoUrl = page.split("var player_quality_" + VIDEO_FORMATS[i] + "p = '")[1].split("'")[0];

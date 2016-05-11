@@ -15,7 +15,7 @@
         
         {
             "type": "list",
-            "label": "Default video format",
+            "label": "Default video &format",
             "key": "videoFormat",
             "value": "37",
             "options": [

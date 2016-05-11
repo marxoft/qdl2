@@ -52,7 +52,7 @@ function getDownloadRequest(url) {
                 var videoUrls = JSON.parse(vars["new"].videoUrls);
                 var format = settings.value("videoFormat", "1080p");
 
-                if (settings.value("useDefaultVideoFormat", true)) {
+                if (settings.value("useDefaultVideoFormat", true) == true) {
                     for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
                         try {
                             var videoUrl = videoUrls[VIDEO_FORMATS[i]][0];
