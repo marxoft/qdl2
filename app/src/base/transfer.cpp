@@ -140,7 +140,7 @@ bool Transfer::setData(int role, const QVariant &value) {
         setId(value.toString());
         return true;
     case PriorityRole:
-        setPriority(Transfer::Priority(value.toInt()));
+        setPriority(TransferItem::Priority(value.toInt()));
         return true;
     case RequestedSettingsRole:
         return submitSettingsResponse(value.toMap());
@@ -401,11 +401,11 @@ void Transfer::setPluginName(const QString &n) {
     }
 }
 
-Transfer::Priority Transfer::priority() const {
+TransferItem::Priority Transfer::priority() const {
     return m_priority;
 }
 
-void Transfer::setPriority(Transfer::Priority p) {
+void Transfer::setPriority(TransferItem::Priority p) {
     if (p != priority()) {
         m_priority = p;
         emit dataChanged(this, PriorityRole);
@@ -495,13 +495,14 @@ int Transfer::requestedSettingsTimeout() const {
     }
 }
 
-Transfer::Status Transfer::status() const {
+TransferItem::Status Transfer::status() const {
     return m_status;
 }
 
-void Transfer::setStatus(Transfer::Status s) {
+void Transfer::setStatus(TransferItem::Status s) {
     if (s != status()) {
         m_status = s;
+        Logger::log(QString("Transfer::setStatus(): ID: %1, Status: %2").arg(id()).arg(statusString()));
 
         switch (s) {
         case Canceled:
@@ -750,8 +751,20 @@ void Transfer::restore(const QSettings &settings) {
     setId(settings.value("id").toString());
     setPriority(TransferItem::Priority(settings.value("priority").toInt()));
     setSize(qMax(qlonglong(0), settings.value("size").toLongLong()));
-    setStatus(TransferItem::Status(settings.value("status").toInt()));
     setUrl(settings.value("url").toString());
+
+    const TransferItem::Status status = TransferItem::Status(settings.value("status").toInt());
+
+    switch (status) {
+    case Paused:
+    case Failed:
+    case Completed:
+        setStatus(status);
+        break;
+    default:
+        setStatus(Paused);
+        break;
+    }
 }
 
 void Transfer::save(QSettings &settings) {
@@ -761,8 +774,18 @@ void Transfer::save(QSettings &settings) {
     settings.setValue("id", id());
     settings.setValue("priority", TransferItem::Priority(priority()));
     settings.setValue("size", size());
-    settings.setValue("status", TransferItem::Status(status()));
     settings.setValue("url", url());
+
+    switch (status()) {
+    case Paused:
+    case Failed:
+    case Completed:
+        settings.setValue("status", TransferItem::Status(status()));
+        break;
+    default:
+        settings.setValue("status", TransferItem::Status(Paused));
+        break;
+    }
 }
 
 bool Transfer::submitCaptchaResponse(const QString &response) {

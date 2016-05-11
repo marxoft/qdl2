@@ -86,7 +86,7 @@ bool Package::setData(int role, const QVariant &value) {
         setName(value.toString());
         return true;
     case PriorityRole:
-        setPriority(Package::Priority(value.toInt()));
+        setPriority(TransferItem::Priority(value.toInt()));
         return true;
     case StatusRole:
         switch (value.toInt()) {
@@ -289,13 +289,14 @@ QString Package::progressString() const {
     return tr("%1 of %2 (%3%)").arg(completed).arg(rowCount()).arg(completed > 0 ? completed * 100 / rowCount() : 0);
 }
 
-Package::Status Package::status() const {
+TransferItem::Status Package::status() const {
     return m_status;
 }
 
-void Package::setStatus(Package::Status s) {
+void Package::setStatus(TransferItem::Status s) {
     if (s != status()) {
         m_status = s;
+        Logger::log(QString("Package::setStatus(): ID: %1, Status: %2").arg(id()).arg(statusString()));
 
         switch (s) {
         case Canceled:
@@ -345,8 +346,19 @@ void Package::restore(const QSettings &settings) {
     setId(settings.value("id").toString());
     setName(settings.value("name").toString());
     setPriority(TransferItem::Priority(settings.value("priority").toInt()));
-    setStatus(TransferItem::Status(settings.value("status").toInt()));
     setSuffix(settings.value("suffix").toString());
+
+    const TransferItem::Status status = TransferItem::Status(settings.value("status").toInt());
+
+    switch (status) {
+    case Null:
+    case Failed:
+        setStatus(status);
+        break;
+    default:
+        setStatus(Null);
+        break;
+    }
 }
 
 void Package::save(QSettings &settings) {
@@ -356,8 +368,17 @@ void Package::save(QSettings &settings) {
     settings.setValue("id", id());
     settings.setValue("name", name());
     settings.setValue("priority", TransferItem::Priority(priority()));
-    settings.setValue("status", TransferItem::Status(status()));
     settings.setValue("suffix", suffix());
+
+    switch (status()) {
+    case Null:
+    case Failed:
+        settings.setValue("status", TransferItem::Status(status()));
+        break;
+    default:
+        settings.setValue("status", TransferItem::Status(Null));
+        break;
+    }
 }
 
 void Package::childItemFinished(TransferItem *item) {
