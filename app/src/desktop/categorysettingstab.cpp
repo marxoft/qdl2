@@ -67,6 +67,8 @@ CategorySettingsTab::CategorySettingsTab(QWidget *parent) :
 
 void CategorySettingsTab::addCategory() {
     m_model->append(m_nameEdit->text(), m_pathEdit->text());
+    m_nameEdit->clear();
+    m_pathEdit->clear();
 }
 
 void CategorySettingsTab::setCurrentCategory(const QModelIndex &index) {
