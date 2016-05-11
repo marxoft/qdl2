@@ -40,7 +40,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     setWindowTitle(tr("About"));
 
     m_iconLabel->setAlignment(Qt::AlignCenter);
-    m_iconLabel->setPixmap(QPixmap(APP_ICON_PATH + "qdl.png"));
+    m_iconLabel->setPixmap(QPixmap(DEFAULT_ICON));
     
     m_textLabel->setWordWrap(true);
     m_textLabel->setTextFormat(Qt::RichText);
