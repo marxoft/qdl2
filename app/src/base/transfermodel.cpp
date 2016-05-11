@@ -628,7 +628,7 @@ void TransferModel::startNextTransfers() {
                 addActiveTransfer(transfer);
 
                 if (activeTransfers() == maximum) {
-                    break;
+                    return;
                 }
             }
         }
