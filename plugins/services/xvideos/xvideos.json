@@ -1,0 +1,34 @@
+{
+    "type": "js",
+    "id": "xvideos",
+    "name": "XVideos",
+    "icon": "xvideos.jpg",
+    "file": "xvideos.js",
+    "regExp": "http://www\\.xvideos\\.com/video\\d+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use &default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+
+        {
+            "type": "list",
+            "label": "Default video &format",
+            "key": "videoFormat",
+            "value": "mp4",
+            "options": [
+                {
+                    "label": "MP4",
+                    "value": "mp4"
+                },
+
+                {
+                    "label": "3GP",
+                    "value": "3gp"
+                }
+            ]
+        }
+    ]
+}
