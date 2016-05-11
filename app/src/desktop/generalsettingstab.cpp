@@ -105,6 +105,7 @@ void GeneralSettingsTab::showFileDialog() {
 
 void GeneralSettingsTab::addPassword() {
     m_passwordModel->append(m_passwordEdit->text());
+    m_passwordEdit->clear();
 }
 
 void GeneralSettingsTab::showPasswordContextMenu(const QPoint &pos) {
