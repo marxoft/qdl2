@@ -36,9 +36,11 @@ public:
     explicit ClipboardUrlsDialog(QWidget *parent = 0);
 
     Qdl::UrlAction action() const;
-    void setAction(Qdl::UrlAction action);
     
     QStringList urls() const;
+
+public Q_SLOTS:
+    void setAction(Qdl::UrlAction action);
 
 private Q_SLOTS:
     void showContextMenu(const QPoint &pos);
