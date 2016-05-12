@@ -48,6 +48,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     m_textLabel->setText(QString("<div style='text-align: center'><p style='font-size: 16pt; font-weight: bold;'>QDL</p><p>Version: %1</p><p>A plugin-based download manager.</p><p>&copy; Stuart Howarth 2016</p><p><a href='http://marxoft.co.uk/projects/qdl'>marxoft.co.uk</a></p></div><p>Installed plugins:</p>").arg(VERSION_NUMBER));
 
     m_view->setUniformItemSizes(true);
+    m_view->setSelectionMode(QListView::NoSelection);
     
     m_tabBar->addTab(tr("Services"));
     m_tabBar->addTab(tr("Recaptcha"));
