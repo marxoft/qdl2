@@ -31,7 +31,7 @@ bool FileServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     QString filePath = request->path();
     const QString dir = filePath.left(filePath.lastIndexOf("/") + 1);
     
-    if ((dir != APP_ICON_PATH) && (dir != PLUGIN_ICON_PATH)) {
+    if (!WEB_INTERFACE_ALLOWED_PATHS.contains(dir)) {
         filePath = filePath.mid(filePath.indexOf("/") + 1);
         filePath.prepend(WEB_INTERFACE_PATH);
     }
