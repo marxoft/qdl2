@@ -17,11 +17,12 @@
 #include "clipboardurlsdialog.h"
 #include "clipboardurlmodel.h"
 #include <QAction>
+#include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFormLayout>
 #include <QListView>
 #include <QMenu>
 #include <QPushButton>
-#include <QVBoxLayout>
 
 static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
     return index.row() < other.row();
@@ -29,9 +30,11 @@ static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
 
 ClipboardUrlsDialog::ClipboardUrlsDialog(QWidget *parent) :
     QDialog(parent),
+    m_actionModel(new UrlActionModel(this)),
     m_view(new QListView(this)),
+    m_actionSelector(new QComboBox(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
-    m_layout(new QVBoxLayout(this))
+    m_layout(new QFormLayout(this))
 {
     setWindowTitle(tr("Clipboard URLs"));
 
@@ -39,16 +42,27 @@ ClipboardUrlsDialog::ClipboardUrlsDialog(QWidget *parent) :
     m_view->setSelectionMode(QListView::MultiSelection);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    m_actionSelector->setModel(m_actionModel);
+
     m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-    m_layout->addWidget(m_view);
-    m_layout->addWidget(m_buttonBox);
+    m_layout->addRow(m_view);
+    m_layout->addRow(tr("&Action:"), m_actionSelector);
+    m_layout->addRow(m_buttonBox);
 
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
             this, SLOT(onSelectionChanged()));
     connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
+Qdl::UrlAction ClipboardUrlsDialog::action() const {
+    return Qdl::UrlAction(m_actionSelector->itemData(m_actionSelector->currentIndex()).toInt());
+}
+
+void ClipboardUrlsDialog::setAction(Qdl::UrlAction action) {
+    m_actionSelector->setCurrentIndex(m_actionSelector->findData(action));
 }
 
 QStringList ClipboardUrlsDialog::urls() const {

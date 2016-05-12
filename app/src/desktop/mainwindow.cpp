@@ -595,7 +595,12 @@ void MainWindow::showClipboardUrlsDialog() {
         const QStringList urls = dialog.urls();
 
         if (!urls.isEmpty()) {
-            showAddUrlsDialog(urls);
+            if (dialog.action() == Qdl::RetrieveUrls) {
+                showRetrieveUrlsDialog(urls);
+            }
+            else {
+                showAddUrlsDialog(urls);
+            }
         }
     }
 }

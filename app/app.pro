@@ -28,6 +28,7 @@ HEADERS += \
     src/base/transferitem.h \
     src/base/transferitemprioritymodel.h \
     src/base/transfermodel.h \
+    src/base/urlactionmodel.h \
     src/base/urlcheckmodel.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \

@@ -17,21 +17,27 @@
 #ifndef CLIPBOARDURLSDIALOG_H
 #define CLIPBOARDURLSDIALOG_H
 
+#include "urlactionmodel.h"
 #include <QDialog>
 
+class QComboBox;
 class QDialogButtonBox;
+class QFormLayout;
 class QListView;
-class QVBoxLayout;
 
 class ClipboardUrlsDialog : public QDialog
 {
     Q_OBJECT
 
+    Q_PROPERTY(Qdl::UrlAction action READ action WRITE setAction)
     Q_PROPERTY(QStringList urls READ urls)
 
 public:
     explicit ClipboardUrlsDialog(QWidget *parent = 0);
 
+    Qdl::UrlAction action() const;
+    void setAction(Qdl::UrlAction action);
+    
     QStringList urls() const;
 
 private Q_SLOTS:
@@ -40,11 +46,15 @@ private Q_SLOTS:
     void onSelectionChanged();
     
 private:
+    UrlActionModel *m_actionModel;
+    
     QListView *m_view;
+
+    QComboBox *m_actionSelector;
 
     QDialogButtonBox *m_buttonBox;
 
-    QVBoxLayout *m_layout;
+    QFormLayout *m_layout;
 };
 
 #endif // CLIPBOARDURLSDIALOG_H

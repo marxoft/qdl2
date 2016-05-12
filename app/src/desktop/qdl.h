@@ -27,7 +27,7 @@ class Qdl : public QObject
 {
     Q_OBJECT
 
-    Q_ENUMS(Action)
+    Q_ENUMS(Action UrlAction)
 
     Q_CLASSINFO("D-Bus Interface", "org.marxoft.qdl2")
 
@@ -36,6 +36,11 @@ public:
         Continue = 0,
         Stop,
         Quit
+    };
+
+    enum UrlAction {
+        AddUrls = 0,
+        RetrieveUrls
     };
     
     ~Qdl();
