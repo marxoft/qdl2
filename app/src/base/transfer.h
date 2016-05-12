@@ -28,7 +28,6 @@ class DecaptchaPlugin;
 class PluginSettingsDialog;
 class RecaptchaPlugin;
 class ServicePlugin;
-class QBuffer;
 class QFile;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -203,7 +202,6 @@ private:
     QNetworkAccessManager *m_nam;
     QNetworkReply *m_reply;
     QFile *m_file;
-    QBuffer *m_buffer;
     QTimer *m_timer;
 
     QPointer<CaptchaDialog> m_captchaDialog;

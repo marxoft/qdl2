@@ -46,7 +46,6 @@ Transfer::Transfer(QObject *parent) :
     m_nam(0),
     m_reply(0),
     m_file(0),
-    m_buffer(0),
     m_timer(0),
     m_captchaDialog(0),
     m_settingsDialog(0),
@@ -508,6 +507,8 @@ void Transfer::setStatus(TransferItem::Status s) {
         case Canceled:
         case CanceledAndDeleted:
         case Failed:
+            emit finished(this);
+            break;
         case Completed:
             cleanup();
             emit finished(this);
@@ -898,28 +899,23 @@ bool Transfer::submitSettingsResponse(const QVariantMap &settings) {
 
 void Transfer::cleanup() {
     if (m_decaptchaPlugin) {
-        delete m_decaptchaPlugin;
+        m_decaptchaPlugin->deleteLater();
         m_decaptchaPlugin = 0;
     }
 
     if (m_recaptchaPlugin) {
-        delete m_recaptchaPlugin;
+        m_recaptchaPlugin->deleteLater();
         m_recaptchaPlugin = 0;
     }
 
     if (m_servicePlugin) {
-        delete m_servicePlugin;
+        m_servicePlugin->deleteLater();
         m_servicePlugin = 0;
     }
 
     if (m_nam) {
-        delete m_nam;
+        m_nam->deleteLater();
         m_nam = 0;
-    }
-
-    if (m_buffer) {
-        delete m_buffer;
-        m_buffer = 0;
     }
 }
 
@@ -1019,16 +1015,6 @@ void Transfer::initNetworkAccessManager() {
     if (!m_nam) {
         m_nam = new QNetworkAccessManager(this);
     }
-}
-
-bool Transfer::openBuffer(const QByteArray &data) {
-    if (!m_buffer) {
-        m_buffer = new QBuffer(this);
-    }
-
-    m_buffer->close();
-    m_buffer->setData(data);
-    return m_buffer->open(QBuffer::ReadOnly);
 }
 
 bool Transfer::openFile() {
@@ -1192,17 +1178,17 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
         connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
         connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
     }
-    else if (openBuffer(data)) {
+    else {
         setStatus(Downloading);
         startSpeedTimer();
-        m_reply = m_nam->sendCustomRequest(request, method, m_buffer);
+        QBuffer *buffer = new QBuffer;
+        buffer->setData(data);
+        buffer->open(QBuffer::ReadOnly);
+        m_reply = m_nam->sendCustomRequest(request, method, buffer);
+        buffer->setParent(m_reply);
         connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
         connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
         connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
-    }
-    else {
-        setErrorString(m_buffer->errorString());
-        setStatus(Failed);
     }
 }
 
