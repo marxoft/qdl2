@@ -33,13 +33,13 @@ static const QString HOME_PATH(QDesktopServices::storageLocation(QDesktopService
 
 // Plugins
 static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/decaptcha/")
-                                                                << QString(HOME_PATH + "/qdl2/plugins/decaptcha");
+                                                                << QString(HOME_PATH + "/qdl2/plugins/decaptcha/");
 
 static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/recaptcha/")
-                                                                << QString(HOME_PATH + "/qdl2/plugins/recaptcha");
+                                                                << QString(HOME_PATH + "/qdl2/plugins/recaptcha/");
 
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/services/")
-                                                              << QString(HOME_PATH + "/qdl2/plugins/services");
+                                                              << QString(HOME_PATH + "/qdl2/plugins/services/");
 
 // Icons
 static const QString DEFAULT_ICON("/opt/qdl2/icons/qdl2.png");
