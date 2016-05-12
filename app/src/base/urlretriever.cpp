@@ -194,64 +194,59 @@ void UrlProcessor::processUrls(const QString &baseUrl, const QString &response, 
     QRegExp re("(http(s|):/|href=\"|src=\")/[^'\"<\\s]+");
     int pos = 0;
 
+    ServicePluginConfig *config = 0;
+
     if (!pluginId.isEmpty()) {
-        ServicePluginConfig *config = ServicePluginManager::instance()->getConfigById(pluginId);
+        config = ServicePluginManager::instance()->getConfigById(pluginId);
 
         if (!config) {
             emit finished(urls);
             return;
         }
+    }
 
-        while ((pos = re.indexIn(response, pos)) != -1) {
-            QString url = re.cap(0);
-            const int quote = url.indexOf('"');
-
-            if (quote != -1) {
-                url = url.mid(quote + 1);
-
-                if (url.startsWith("//")) {
-                    url.prepend(baseUrl.left(baseUrl.indexOf("/")));
-                }
-                else {
-                    url.prepend(baseUrl);
-                }
-            }
-
-            Logger::log("UrlProcessor::processUrls(): Checking URL " + url);
-
-            if (config->urlIsSupported(url)) {
-                urls << url;
-            }
+    while ((pos = re.indexIn(response, pos)) != -1) {
+        QString url = re.cap(0);
+        const int quote = url.indexOf('"');
+        
+        if (quote != -1) {
+            url = url.mid(quote + 1);
             
-            pos += re.matchedLength();
+            if (url.startsWith("//")) {
+                url.prepend(baseUrl.left(baseUrl.indexOf("/")));
+            }
+            else {
+                url.prepend(baseUrl);
+            }
+        }
+
+        if (!urls.contains(url)) {
+            urls << url;
+        }
+        
+        pos += re.matchedLength();
+    }
+
+    if (config) {
+        for (int i = urls.size() -1; i >= 0; i--) {
+            const QString &url = urls.at(i);
+            Logger::log("UrlProcessor::processUrls(): Checking URL " + url);
+        
+            if (!config->urlIsSupported(url)) {
+                urls.removeAt(i);
+            }
         }
     }
     else {
-        while ((pos = re.indexIn(response, pos)) != -1) {
-            QString url = re.cap(0);
-            const int quote = url.indexOf('"');
-
-            if (quote != -1) {
-                url = url.mid(quote + 1);
-
-                if (url.startsWith("//")) {
-                    url.prepend(baseUrl.left(baseUrl.indexOf("/")));
-                }
-                else {
-                    url.prepend(baseUrl);
-                }
-            }
-
+        for (int i = urls.size() -1; i >= 0; i--) {
+            const QString &url = urls.at(i);
             Logger::log("UrlProcessor::processUrls(): Checking URL " + url);
-
-            if (ServicePluginManager::instance()->urlIsSupported(url)) {
-                urls << url;
-            }
         
-            pos += re.matchedLength();
+            if (!ServicePluginManager::instance()->urlIsSupported(url)) {
+                urls.removeAt(i);
+            }
         }
     }
-
-    urls.removeDuplicates();
+    
     emit finished(urls);
 }
