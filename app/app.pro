@@ -101,7 +101,8 @@ unix {
         src/desktop/addurlsdialog.h \
         src/desktop/captchadialog.h \
         src/desktop/categorysettingstab.h \
-        src/desktop/clipboardmonitor.h \
+        src/desktop/clipboardurlmodel.h \
+        src/desktop/clipboardurlsdialog.h \
         src/desktop/decaptchasettingstab.h \
         src/desktop/generalsettingstab.h \
         src/desktop/interfacesettingstab.h \
@@ -126,7 +127,8 @@ unix {
         src/desktop/addurlsdialog.cpp \
         src/desktop/captchadialog.cpp \
         src/desktop/categorysettingstab.cpp \
-        src/desktop/clipboardmonitor.cpp \
+        src/desktop/clipboardurlmodel.cpp \
+        src/desktop/clipboardurlsdialog.cpp \
         src/desktop/decaptchasettingstab.cpp \
         src/desktop/generalsettingstab.cpp \
         src/desktop/interfacesettingstab.cpp \
