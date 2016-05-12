@@ -144,52 +144,56 @@ int ServicePluginManager::load() {
     Logger::log("ServicePluginManager::load(): Loading plugins modified since "
                 + m_lastLoaded.toString(Qt::ISODate));
     int count = 0;
-    QDir dir(SERVICE_PLUGIN_PATH);
+    QDir dir;
     
-    foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
-        if (info.lastModified() > m_lastLoaded) {
-            ServicePluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
-
-            if (!config) {
-                config = new ServicePluginConfig(this);
+    foreach (const QString &path, SERVICE_PLUGIN_PATHS) {
+        dir.setPath(path);
+        
+        foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
+            if (info.lastModified() > m_lastLoaded) {
+                ServicePluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
                 
-                if (config->load(info.absoluteFilePath())) {
-                    if (config->pluginType() == "js") {
-                        JavaScriptServicePlugin *js =
-                        new JavaScriptServicePlugin(config->id(), config->pluginFilePath(), this);
-                        m_plugins << ServicePluginPair(config, js);
-                        ++count;
-                        Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id());
-                    }
-                    else {
-                        QPluginLoader loader(config->pluginFilePath());
-                        QObject *obj = loader.instance();
-                        
-                        if (obj) {
-                            if (ServicePlugin *plugin = qobject_cast<ServicePlugin*>(obj)) {
-                                plugin->setNetworkAccessManager(networkAccessManager());
-                                m_plugins << ServicePluginPair(config, plugin);
-                                ++count;
-                                Logger::log("ServicePluginManager::load(). Qt Plugin loaded: " + config->id());
-                            }
-                            else {
-                                loader.unload();
-                                Logger::log("ServicePluginManager::load(). Error loading Qt plugin: "
-                                            + config->id());
-                            }
+                if (!config) {
+                    config = new ServicePluginConfig(this);
+                    
+                    if (config->load(info.absoluteFilePath())) {
+                        if (config->pluginType() == "js") {
+                            JavaScriptServicePlugin *js =
+                            new JavaScriptServicePlugin(config->id(), config->pluginFilePath(), this);
+                            m_plugins << ServicePluginPair(config, js);
+                            ++count;
+                            Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id());
                         }
                         else {
-                            Logger::log("ServicePluginManager::load(). Qt plugin is NULL: " + config->id());
+                            QPluginLoader loader(config->pluginFilePath());
+                            QObject *obj = loader.instance();
+                            
+                            if (obj) {
+                                if (ServicePlugin *plugin = qobject_cast<ServicePlugin*>(obj)) {
+                                    plugin->setNetworkAccessManager(networkAccessManager());
+                                    m_plugins << ServicePluginPair(config, plugin);
+                                    ++count;
+                                    Logger::log("ServicePluginManager::load(). Qt Plugin loaded: " + config->id());
+                                }
+                                else {
+                                    loader.unload();
+                                    Logger::log("ServicePluginManager::load(). Error loading Qt plugin: "
+                                                + config->id());
+                                }
+                            }
+                            else {
+                                Logger::log("ServicePluginManager::load(). Qt plugin is NULL: " + config->id());
+                            }
                         }
                     }
-                }
-                else {
-                    delete config;
+                    else {
+                        delete config;
+                    }
                 }
             }
-        }
-        else {
-            break;
+            else {
+                break;
+            }
         }
     }
 

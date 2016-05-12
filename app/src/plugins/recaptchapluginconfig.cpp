@@ -81,9 +81,11 @@ bool RecaptchaPluginConfig::load(const QString &filePath) {
 
     Logger::log("RecaptchaPluginConfig::load(): Config file loaded: " + filePath);
     m_displayName = config.value("name").toString();
-    m_iconFilePath = config.contains("icon") ? PLUGIN_ICON_PATH + config.value("icon").toString() : DEFAULT_ICON;
+    m_iconFilePath = config.contains("icon") ? QString("%1/icons/%2").arg(filePath.section("/", 0, -3))
+                                                                     .arg(config.value("icon").toString())
+                                             : DEFAULT_ICON;
     m_id = config.value("id").toString();
-    m_pluginFilePath = RECAPTCHA_PLUGIN_PATH + config.value("file").toString();
+    m_pluginFilePath = filePath.left(filePath.lastIndexOf("/") + 1) + config.value("file").toString();
     m_pluginType = config.value("type").toString();
     m_settings = config.value("settings").toList();
     emit changed();

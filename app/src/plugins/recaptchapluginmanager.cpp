@@ -104,52 +104,58 @@ int RecaptchaPluginManager::load() {
     Logger::log("RecaptchaPluginManager::load(): Loading plugins modified since "
                 + m_lastLoaded.toString(Qt::ISODate));
     int count = 0;
-    QDir dir(RECAPTCHA_PLUGIN_PATH);
+    QDir dir;
     
-    foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
-        if (info.lastModified() > m_lastLoaded) {
-            RecaptchaPluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
-
-            if (!config) {
-                config = new RecaptchaPluginConfig(this);
+    foreach (const QString &path, RECAPTCHA_PLUGIN_PATHS) {
+        dir.setPath(path);
+        
+        foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
+            if (info.lastModified() > m_lastLoaded) {
+                RecaptchaPluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
                 
-                if (config->load(info.absoluteFilePath())) {
-                    if (config->pluginType() == "js") {
-                        JavaScriptRecaptchaPlugin *js =
-                        new JavaScriptRecaptchaPlugin(config->id(), config->pluginFilePath(), this);
-                        m_plugins << RecaptchaPluginPair(config, js);
-                        ++count;
-                        Logger::log("RecaptchaPluginManager::load(). JavaScript plugin loaded: " + config->id());
-                    }
-                    else {
-                        QPluginLoader loader(config->pluginFilePath());
-                        QObject *obj = loader.instance();
-                        
-                        if (obj) {
-                            if (RecaptchaPlugin *plugin = qobject_cast<RecaptchaPlugin*>(obj)) {
-                                plugin->setNetworkAccessManager(networkAccessManager());
-                                m_plugins << RecaptchaPluginPair(config, plugin);
-                                ++count;
-                                Logger::log("RecaptchaPluginManager::load(). Qt Plugin loaded: " + config->id());
-                            }
-                            else {
-                                loader.unload();
-                                Logger::log("RecaptchaPluginManager::load(). Error loading Qt plugin: "
-                                            + config->id());
-                            }
+                if (!config) {
+                    config = new RecaptchaPluginConfig(this);
+                    
+                    if (config->load(info.absoluteFilePath())) {
+                        if (config->pluginType() == "js") {
+                            JavaScriptRecaptchaPlugin *js =
+                            new JavaScriptRecaptchaPlugin(config->id(), config->pluginFilePath(), this);
+                            m_plugins << RecaptchaPluginPair(config, js);
+                            ++count;
+                            Logger::log("RecaptchaPluginManager::load(). JavaScript plugin loaded: "
+                                        + config->id());
                         }
                         else {
-                            Logger::log("RecaptchaPluginManager::load(). Qt plugin is NULL: " + config->id());
+                            QPluginLoader loader(config->pluginFilePath());
+                            QObject *obj = loader.instance();
+                            
+                            if (obj) {
+                                if (RecaptchaPlugin *plugin = qobject_cast<RecaptchaPlugin*>(obj)) {
+                                    plugin->setNetworkAccessManager(networkAccessManager());
+                                    m_plugins << RecaptchaPluginPair(config, plugin);
+                                    ++count;
+                                    Logger::log("RecaptchaPluginManager::load(). Qt Plugin loaded: "
+                                                + config->id());
+                                }
+                                else {
+                                    loader.unload();
+                                    Logger::log("RecaptchaPluginManager::load(). Error loading Qt plugin: "
+                                                + config->id());
+                                }
+                            }
+                            else {
+                                Logger::log("RecaptchaPluginManager::load(). Qt plugin is NULL: " + config->id());
+                            }
                         }
                     }
-                }
-                else {
-                    delete config;
+                    else {
+                        delete config;
+                    }
                 }
             }
-        }
-        else {
-            break;
+            else {
+                break;
+            }
         }
     }
 

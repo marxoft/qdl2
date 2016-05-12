@@ -17,40 +17,39 @@
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
-#include <QString>
+#include <QStringList>
 #if QT_VERSION >= 0x050000
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
 #endif
 
+// Home
+#if QT_VERSION >= 0x050000
+static const QString HOME_PATH(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
+#else
+static const QString HOME_PATH(QDesktopServices::storageLocation(QDesktopServices::HomeLocation));
+#endif
+
 // Plugins
-static const QString DECAPTCHA_PLUGIN_PATH("/opt/qdl2/plugins/decaptcha/");
-static const QString RECAPTCHA_PLUGIN_PATH("/opt/qdl2/plugins/recaptcha/");
-static const QString SERVICE_PLUGIN_PATH("/opt/qdl2/plugins/services/");
+static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/decaptcha/")
+                                                                << QString(HOME_PATH + "/qdl2/plugins/decaptcha");
+
+static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/recaptcha/")
+                                                                << QString(HOME_PATH + "/qdl2/plugins/recaptcha");
+
+static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/services/")
+                                                              << QString(HOME_PATH + "/qdl2/plugins/services");
 
 // Icons
-static const QString APP_ICON_PATH("/opt/qdl2/icons/");
-static const QString PLUGIN_ICON_PATH("/opt/qdl2/plugins/icons/");
 static const QString DEFAULT_ICON("/opt/qdl2/icons/qdl2.png");
 
 // Config
-#if QT_VERSION >= 0x050000
-static const QString APP_CONFIG_PATH(QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.config/qdl2/");
-#else
-static const QString APP_CONFIG_PATH(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                     + "/.config/qdl2/");
-#endif
+static const QString APP_CONFIG_PATH(HOME_PATH + "/.config/qdl2/");
 static const QString PLUGIN_CONFIG_PATH(APP_CONFIG_PATH + "plugins/");
 
 // Downloads
-#if QT_VERSION >= 0x050000
-static const QString DOWNLOAD_PATH(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/Downloads/qdl2/");
-#else
-static const QString DOWNLOAD_PATH(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/Downloads/qdl2/");
-#endif
+static const QString DOWNLOAD_PATH(HOME_PATH + "/Downloads/qdl2/");
 
 // Captcha
 static const int CAPTCHA_TIMEOUT = 120000;
@@ -62,7 +61,10 @@ static const int MAX_REDIRECTS = 8;
 
 // Web interface
 static const QString WEB_INTERFACE_PATH("/opt/qdl2/webif/");
-
+static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTERFACE_PATH
+                                                                     << QString("/opt/qdl2/icons/")
+                                                                     << QString("/opt/qdl2/plugins/icons/")
+                                                                     << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
 static const QString VERSION_NUMBER("2.0.0");
 

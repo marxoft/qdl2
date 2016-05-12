@@ -104,55 +104,61 @@ int DecaptchaPluginManager::load() {
     Logger::log("DecaptchaPluginManager::load(): Loading plugins modified since "
                 + m_lastLoaded.toString(Qt::ISODate));
     int count = 0;
-    QDir dir(DECAPTCHA_PLUGIN_PATH);
+    QDir dir;
     
-    foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
-        if (info.lastModified() > m_lastLoaded) {
-            DecaptchaPluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
-
-            if (!config) {
-                config = new DecaptchaPluginConfig(this);
+    foreach (const QString &path, DECAPTCHA_PLUGIN_PATHS) {
+        dir.setPath(path);
+        
+        foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
+            if (info.lastModified() > m_lastLoaded) {
+                DecaptchaPluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
                 
-                if (config->load(info.absoluteFilePath())) {
-                    if (config->pluginType() == "js") {
-                        JavaScriptDecaptchaPlugin *js =
-                        new JavaScriptDecaptchaPlugin(config->id(), config->pluginFilePath(), this);
-                        m_plugins << DecaptchaPluginPair(config, js);
-                        ++count;
-                        Logger::log("DecaptchaPluginManager::load(). JavaScript plugin loaded: " + config->id());
-                    }
-                    else {
-                        QPluginLoader loader(config->pluginFilePath());
-                        QObject *obj = loader.instance();
-                        
-                        if (obj) {
-                            if (DecaptchaPlugin *plugin = qobject_cast<DecaptchaPlugin*>(obj)) {
-                                plugin->setNetworkAccessManager(networkAccessManager());
-                                m_plugins << DecaptchaPluginPair(config, plugin);
-                                ++count;
-                                Logger::log("DecaptchaPluginManager::load(). Qt Plugin loaded: " + config->id());
-                            }
-                            else {
-                                loader.unload();
-                                Logger::log("DecaptchaPluginManager::load(). Error loading Qt plugin: "
-                                            + config->id());
-                            }
+                if (!config) {
+                    config = new DecaptchaPluginConfig(this);
+                    
+                    if (config->load(info.absoluteFilePath())) {
+                        if (config->pluginType() == "js") {
+                            JavaScriptDecaptchaPlugin *js =
+                            new JavaScriptDecaptchaPlugin(config->id(), config->pluginFilePath(), this);
+                            m_plugins << DecaptchaPluginPair(config, js);
+                            ++count;
+                            Logger::log("DecaptchaPluginManager::load(). JavaScript plugin loaded: "
+                                        + config->id());
                         }
                         else {
-                            Logger::log("DecaptchaPluginManager::load(). Qt plugin is NULL: " + config->id());
+                            QPluginLoader loader(config->pluginFilePath());
+                            QObject *obj = loader.instance();
+                            
+                            if (obj) {
+                                if (DecaptchaPlugin *plugin = qobject_cast<DecaptchaPlugin*>(obj)) {
+                                    plugin->setNetworkAccessManager(networkAccessManager());
+                                    m_plugins << DecaptchaPluginPair(config, plugin);
+                                    ++count;
+                                    Logger::log("DecaptchaPluginManager::load(). Qt Plugin loaded: "
+                                                + config->id());
+                                }
+                                else {
+                                    loader.unload();
+                                    Logger::log("DecaptchaPluginManager::load(). Error loading Qt plugin: "
+                                                + config->id());
+                                }
+                            }
+                            else {
+                                Logger::log("DecaptchaPluginManager::load(). Qt plugin is NULL: " + config->id());
+                            }
                         }
                     }
-                }
-                else {
-                    delete config;
+                    else {
+                        delete config;
+                    }
                 }
             }
-        }
-        else {
-            break;
+            else {
+                break;
+            }
         }
     }
-
+    
     Logger::log(QString("DecaptchaPluginManager::load() %1 new plugins loaded").arg(count));
 
     if (count > 0) {
