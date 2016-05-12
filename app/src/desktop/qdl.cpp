@@ -16,6 +16,7 @@
 
 #include "qdl.h"
 #include "categories.h"
+#include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
 #include "mainwindow.h"
 #include "pluginsettings.h"
@@ -198,6 +199,7 @@ Qdl* Qdl::instance() {
 }
 
 void Qdl::quit() {
+    ClipboardUrlModel::instance()->save();
     TransferModel::instance()->save();
     QCoreApplication::instance()->quit();
 }

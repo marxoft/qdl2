@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "clipboardmonitor.h"
+#include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "logger.h"
@@ -41,7 +41,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         Logger::setVerbosity(10);
     }
 
-    QScopedPointer<ClipboardMonitor> monitor(ClipboardMonitor::instance());
+    QScopedPointer<ClipboardUrlModel> clipboard(ClipboardUrlModel::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
     QScopedPointer<Qdl> qdl(Qdl::instance());
     QScopedPointer<RecaptchaPluginManager> recaptchaManager(RecaptchaPluginManager::instance());
@@ -50,8 +50,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<TransferModel> transfers(TransferModel::instance());
     QScopedPointer<UrlCheckModel> checker(UrlCheckModel::instance());
     QScopedPointer<WebServer> server(WebServer::instance());
-
-    monitor.data()->setEnabled(Settings::clipboardMonitorEnabled());
+    
+    clipboard.data()->setEnabled(Settings::clipboardMonitorEnabled());
     server.data()->setPort(Settings::webInterfacePort());
     server.data()->setUsername(Settings::webInterfaceUsername());
     server.data()->setPassword(Settings::webInterfacePassword());
@@ -60,6 +60,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     decaptchaManager.data()->load();
     recaptchaManager.data()->load();
     serviceManager.data()->load();
+    clipboard.data()->restore();
     transfers.data()->restore();
     
     if (Settings::webInterfaceEnabled()) {
@@ -71,7 +72,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     }
 
     QObject::connect(settings.data(), SIGNAL(clipboardMonitorEnabledChanged(bool)),
-                     monitor.data(), SLOT(setEnabled(bool)));
+                     clipboard.data(), SLOT(setEnabled(bool)));
     QObject::connect(settings.data(), SIGNAL(webInterfaceAuthenticationEnabledChanged(bool)),
                      server.data(), SLOT(setAuthenticationEnabled(bool)));
     QObject::connect(settings.data(), SIGNAL(webInterfaceUsernameChanged(QString)),

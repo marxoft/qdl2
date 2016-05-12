@@ -19,7 +19,7 @@
 #include "actionmodel.h"
 #include "addurlsdialog.h"
 #include "categories.h"
-#include "clipboardmonitor.h"
+#include "clipboardurlsdialog.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "packagepropertiesdialog.h"
@@ -64,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_addUrlsAction(new QAction(QIcon::fromTheme("list-add"), tr("&Add URLs"), this)),
     m_importUrlsAction(new QAction(QIcon::fromTheme("document-open"), tr("&Import URLs"), this)),
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("search"), tr("&Retrieve URLs"), this)),
+    m_clipboardUrlsAction(new QAction(QIcon::fromTheme("edit-copy"), tr("Show &clipboard URLs"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
     m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
@@ -112,12 +113,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_addUrlsAction->setShortcut(tr("Ctrl+A"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+R"));
+    m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
     m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_quitAction->setShortcut(tr("Ctrl+Q"));
 
     m_fileMenu->addAction(m_addUrlsAction);
     m_fileMenu->addAction(m_importUrlsAction);
     m_fileMenu->addAction(m_retrieveUrlsAction);
+    m_fileMenu->addAction(m_clipboardUrlsAction);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_queueAction);
     m_fileMenu->addAction(m_pauseAction);
@@ -182,6 +185,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_topToolBar->addAction(m_addUrlsAction);
     m_topToolBar->addAction(m_importUrlsAction);
     m_topToolBar->addAction(m_retrieveUrlsAction);
+    m_topToolBar->addAction(m_clipboardUrlsAction);
     m_topToolBar->addSeparator();
     m_topToolBar->addAction(m_queueAction);
     m_topToolBar->addAction(m_pauseAction);
@@ -250,8 +254,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(Categories::instance(), SIGNAL(changed()), this, SLOT(setCategoryMenuActions()));
 
-    connect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), this, SLOT(showAddUrlsDialog(QStringList)));
-
     connect(Settings::instance(), SIGNAL(nextActionChanged(int)), m_actionSelector, SLOT(setCurrentIndex(int)));
     
     connect(TransferModel::instance(), SIGNAL(activeTransfersChanged(int)), this, SLOT(onActiveTransfersChanged(int)));
@@ -263,6 +265,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_addUrlsAction, SIGNAL(triggered()), this, SLOT(showAddUrlsDialog()));
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
+    connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
     connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
     connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
     connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
@@ -493,8 +496,6 @@ void MainWindow::showOptionsMenu() {
 
 void MainWindow::showAddUrlsDialog() {
     AddUrlsDialog addDialog(this);
-    disconnect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), this, SLOT(showAddUrlsDialog(QStringList)));
-    connect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), &addDialog, SLOT(addUrls(QStringList)));
 
     if (addDialog.exec() == QDialog::Accepted) {
         const QStringList urls = addDialog.urls();
@@ -512,17 +513,11 @@ void MainWindow::showAddUrlsDialog() {
             }
         }
     }
-
-    disconnect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), &addDialog, SLOT(addUrls(QStringList)));
-    connect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), this, SLOT(showAddUrlsDialog(QStringList)));
-    ClipboardMonitor::instance()->clear();
 }
 
 void MainWindow::showAddUrlsDialog(const QStringList &urls) {
     AddUrlsDialog addDialog(this);
     addDialog.setUrls(urls);
-    disconnect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), this, SLOT(showAddUrlsDialog(QStringList)));
-    connect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), &addDialog, SLOT(addUrls(QStringList)));
 
     if (addDialog.exec() == QDialog::Accepted) {
         const QStringList urls = addDialog.urls();
@@ -540,22 +535,11 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
             }
         }
     }
-
-    disconnect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), &addDialog, SLOT(addUrls(QStringList)));
-    connect(ClipboardMonitor::instance(), SIGNAL(urlsAdded(QStringList)), this, SLOT(showAddUrlsDialog(QStringList)));
-    ClipboardMonitor::instance()->clear();
 }
 
 void MainWindow::showImportUrlsDialog() {
-#if QT_VERSION >= 0x050000
-    const QString filePath =
-    QFileDialog::getOpenFileName(this, tr("Import URLs"),
-                                 QStandardPaths::writableLocation(QStandardPaths::HomeLocation), "*.txt");
-#else
-    const QString filePath =
-    QFileDialog::getOpenFileName(this, tr("Import URLs"),
-                                 QDesktopServices::storageLocation(QDesktopServices::HomeLocation), "*.txt");
-#endif
+    const QString filePath = QFileDialog::getOpenFileName(this, tr("Import URLs"), HOME_PATH, "*.txt");
+    
     if (!filePath.isEmpty()) {
         AddUrlsDialog addDialog(this);
         addDialog.importUrls(filePath);
@@ -563,18 +547,16 @@ void MainWindow::showImportUrlsDialog() {
         if (addDialog.exec() == QDialog::Accepted) {
             const QStringList urls = addDialog.urls();
 
-            if (urls.isEmpty()) {
-                return;
-            }
-            
-            if (Settings::checkUrls()) {
-                UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls, Settings::defaultServicePlugin());
-                checkDialog.exec();
-            }
-            else {
-                foreach (const QString &url, urls) {
-                    TransferModel::instance()->append(url);
+            if (!urls.isEmpty()) {
+                if (Settings::checkUrls()) {
+                    UrlCheckDialog checkDialog(this);
+                    checkDialog.addUrls(urls, Settings::defaultServicePlugin());
+                    checkDialog.exec();
+                }
+                else {
+                    foreach (const QString &url, urls) {
+                        TransferModel::instance()->append(url);
+                    }
                 }
             }
         }
@@ -582,35 +564,38 @@ void MainWindow::showImportUrlsDialog() {
 }
 
 void MainWindow::showRetrieveUrlsDialog() {
-    RetrieveUrlsDialog retrieveDialog(this);
+    RetrieveUrlsDialog dialog(this);
 
-    if (retrieveDialog.exec() == QDialog::Accepted) {
-        const QStringList results = retrieveDialog.results();
+    if (dialog.exec() == QDialog::Accepted) {
+        const QStringList results = dialog.results();
 
-        if (results.isEmpty()) {
-            return;
+        if (!results.isEmpty()) {
+            showAddUrlsDialog(results);
         }
-        
-        AddUrlsDialog addDialog(this);
-        addDialog.setUrls(results);
+    }
+}
 
-        if (addDialog.exec() == QDialog::Accepted) {
-            const QStringList urls = addDialog.urls();
+void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
+    RetrieveUrlsDialog dialog(this);
+    dialog.setUrls(urls);
 
-            if (urls.isEmpty()) {
-                return;
-            }
-            
-            if (Settings::checkUrls()) {
-                UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls, Settings::defaultServicePlugin());
-                checkDialog.exec();
-            }
-            else {
-                foreach (const QString &url, urls) {
-                    TransferModel::instance()->append(url, url.mid(url.lastIndexOf("/") + 1));
-                }
-            }
+    if (dialog.exec() == QDialog::Accepted) {
+        const QStringList results = dialog.results();
+
+        if (!results.isEmpty()) {
+            showAddUrlsDialog(results);
+        }
+    }
+}
+
+void MainWindow::showClipboardUrlsDialog() {
+    ClipboardUrlsDialog dialog(this);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        const QStringList urls = dialog.urls();
+
+        if (!urls.isEmpty()) {
+            showAddUrlsDialog(urls);
         }
     }
 }

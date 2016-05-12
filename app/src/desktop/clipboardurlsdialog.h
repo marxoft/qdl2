@@ -14,47 +14,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIPBOARDMONITOR_H
-#define CLIPBOARDMONITOR_H
+#ifndef CLIPBOARDURLSDIALOG_H
+#define CLIPBOARDURLSDIALOG_H
 
-#include <QObject>
+#include <QDialog>
 
-class ClipboardMonitor : public QObject
+class QDialogButtonBox;
+class QListView;
+class QVBoxLayout;
+
+class ClipboardUrlsDialog : public QDialog
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
-    Q_PROPERTY(QStringList urls READ urls NOTIFY urlsAdded)
+    Q_PROPERTY(QStringList urls READ urls)
 
 public:
-    ~ClipboardMonitor();
-
-    static ClipboardMonitor* instance();
-
-    bool isEnabled() const;
+    explicit ClipboardUrlsDialog(QWidget *parent = 0);
 
     QStringList urls() const;
 
-public Q_SLOTS:
-    void setEnabled(bool enabled);
-    
-    void clear();
-
 private Q_SLOTS:
-    void onClipboardDataChanged();
+    void showContextMenu(const QPoint &pos);
 
-Q_SIGNALS:
-    void enabledChanged(bool enabled);
-    void urlsAdded(const QStringList &urls);
-
-private:
-    ClipboardMonitor();
-
-    static ClipboardMonitor *self;
-
-    bool m_enabled;
+    void onSelectionChanged();
     
-    QStringList m_urls;
+private:
+    QListView *m_view;
+
+    QDialogButtonBox *m_buttonBox;
+
+    QVBoxLayout *m_layout;
 };
 
-#endif // CLIPBOARDMONITOR_H
+#endif // CLIPBOARDURLSDIALOG_H
