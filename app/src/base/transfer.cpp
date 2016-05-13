@@ -72,6 +72,8 @@ QVariant Transfer::data(int role) const {
         return captchaImage();
     case CaptchaTimeoutRole:
         return captchaTimeout();
+    case CustomCommandRole:
+        return customCommand();
     case DownloadPathRole:
         return downloadPath();
     case ErrorStringRole:
@@ -128,12 +130,18 @@ bool Transfer::setData(int role, const QVariant &value) {
     switch (role) {
     case CaptchaImageRole:
         return submitCaptchaResponse(value.toString());
+    case CustomCommandRole:
+        setCustomCommand(value.toString());
+        return true;
     case DownloadPathRole:
         setDownloadPath(value.toString());
         return true;
     case FileNameRole:
     case NameRole:
         setFileName(value.toString());
+        return true;
+    case FilePathRole:
+        setFilePath(value.toString());
         return true;
     case IdRole:
         setId(value.toString());
@@ -171,6 +179,7 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[BytesTransferredRole] = bytesTransferred();
     map[CaptchaImageRole] = captchaImage();
     map[CaptchaTimeoutRole] = captchaTimeout();
+    map[CustomCommandRole] = customCommand();
     map[DownloadPathRole] = downloadPath();
     map[ErrorStringRole] = errorString();
     map[FileNameRole] = fileName();
@@ -202,6 +211,7 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(BytesTransferredRole)] = bytesTransferred();
     map[roleNames().value(CaptchaImageRole)] = captchaImage();
     map[roleNames().value(CaptchaTimeoutRole)] = captchaTimeout();
+    map[roleNames().value(CustomCommandRole)] = customCommand();
     map[roleNames().value(DownloadPathRole)] = downloadPath();
     map[roleNames().value(ErrorStringRole)] = errorString();
     map[roleNames().value(FileNameRole)] = fileName();
@@ -268,6 +278,17 @@ bool Transfer::canCancel() const {
     }
 }
 
+QString Transfer::customCommand() const {
+    return m_customCommand;
+}
+
+void Transfer::setCustomCommand(const QString &c) {
+    if (c != customCommand()) {
+        m_customCommand = c;
+        emit dataChanged(this, CustomCommandRole);
+    }
+}
+
 QString Transfer::downloadPath() const {
     return m_downloadPath;
 }
@@ -315,6 +336,15 @@ void Transfer::setFileName(const QString &f) {
                 emit dataChanged(this, BytesTransferredRole);
             }
         }
+    }
+}
+
+void Transfer::setFilePath(const QString &fp) {
+    const int slash = fp.lastIndexOf("/");
+
+    if (slash != -1) {
+        setDownloadPath(fp.left(slash + 1));
+        setFileName(fp.mid(slash + 1));
     }
 }
 
@@ -746,6 +776,7 @@ bool Transfer::cancel(bool deleteFiles) {
 }
 
 void Transfer::restore(const QSettings &settings) {
+    setCustomCommand(settings.value("customCommand").toString());
     setDownloadPath(settings.value("downloadPath").toString());
     setErrorString(settings.value("errorString").toString());
     setFileName(settings.value("fileName").toString());
@@ -769,6 +800,7 @@ void Transfer::restore(const QSettings &settings) {
 }
 
 void Transfer::save(QSettings &settings) {
+    settings.setValue("customCommand", customCommand());
     settings.setValue("downloadPath", downloadPath());
     settings.setValue("errorString", errorString());
     settings.setValue("fileName", fileName());
@@ -1163,6 +1195,7 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
                        .arg(request.url().toString())
                        .arg(QString::fromUtf8(method)).arg(QString::fromUtf8(data)));
     m_redirects = 0;
+    m_metadataSet = false;
     initNetworkAccessManager();
 
     if (bytesTransferred() > 0) {
@@ -1317,7 +1350,7 @@ void Transfer::onReplyMetaDataChanged() {
     if (!openFile()) {
 	m_reply->deleteLater();
 	m_reply = 0;
-	setErrorString(tr("Cannot open file: %1").arg(m_file->errorString()));
+	setErrorString(tr("Cannot open file - %1").arg(m_file->errorString()));
 	setStatus(Failed);
 	return;
     }
@@ -1339,7 +1372,7 @@ void Transfer::onReplyReadyRead() {
     if (m_file->write(m_reply->read(bytes)) == -1) {
         m_reply->deleteLater();
 	m_reply = 0;
-        setErrorString(tr("Cannot write to file: %1").arg(m_file->errorString()));
+        setErrorString(tr("Cannot write to file - %1").arg(m_file->errorString()));
         setStatus(Failed);
         return;
     }

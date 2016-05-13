@@ -37,9 +37,10 @@ class Transfer : public TransferItem
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath)
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
-    Q_PROPERTY(QString filePath READ filePath)
+    Q_PROPERTY(QString filePath READ filePath WRITE setFilePath)
     Q_PROPERTY(QString fileSuffix READ fileSuffix)
     Q_PROPERTY(QByteArray captchaImage READ captchaImage)
     Q_PROPERTY(int captchaTimeout READ captchaTimeout)
@@ -78,6 +79,9 @@ public:
     virtual bool canStart() const;
     virtual bool canPause() const;
     virtual bool canCancel() const;
+
+    QString customCommand() const;
+    void setCustomCommand(const QString &c);
     
     QString downloadPath() const;
     void setDownloadPath(const QString &p);
@@ -85,6 +89,7 @@ public:
     QString fileName() const;
     void setFileName(const QString &f);
     QString filePath() const;
+    void setFilePath(const QString &fp);
     QString fileSuffix() const;
 
     QByteArray captchaImage() const;
@@ -207,6 +212,7 @@ private:
     QPointer<CaptchaDialog> m_captchaDialog;
     QPointer<PluginSettingsDialog> m_settingsDialog;
 
+    QString m_customCommand;
     QString m_downloadPath;
     QString m_fileName;
     QString m_id;
