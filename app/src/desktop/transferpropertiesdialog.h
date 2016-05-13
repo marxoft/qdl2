@@ -26,6 +26,7 @@ class QComboBox;
 class QDialogButtonBox;
 class QFormLayout;
 class QLabel;
+class QLineEdit;
 class QProgressBar;
 
 class TransferPropertiesDialog : public QDialog
@@ -36,11 +37,13 @@ public:
     explicit TransferPropertiesDialog(TransferItem *transfer, QWidget *parent = 0);
 
 private Q_SLOTS:
+    void setCustomCommand();
     void setPriority(int index);
     
     void onDataChanged(TransferItem *transfer, int role);
 
 private:
+    void updateCustomCommand(TransferItem *transfer);
     void updateIcon(TransferItem *transfer);
     void updateName(TransferItem *transfer);
     void updatePluginName(TransferItem *transfer);
@@ -62,6 +65,8 @@ private:
     QLabel *m_statusLabel;
 
     QComboBox *m_prioritySelector;
+
+    QLineEdit *m_commandEdit;
 
     QProgressBar *m_progressBar;
 

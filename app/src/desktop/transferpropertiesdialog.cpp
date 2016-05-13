@@ -20,6 +20,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QProgressBar>
 
 TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidget *parent) :
@@ -33,6 +34,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_speedLabel(new QLabel(this)),
     m_statusLabel(new QLabel(this)),
     m_prioritySelector(new QComboBox(this)),
+    m_commandEdit(new QLineEdit(this)),
     m_progressBar(new QProgressBar(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, this)),
     m_layout(new QFormLayout(this))
@@ -58,6 +60,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
 
     m_progressBar->setRange(0, 100);
 
+    updateCustomCommand(transfer);
     updateIcon(transfer);
     updateName(transfer);
     updatePluginName(transfer);
@@ -77,20 +80,32 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_layout->addRow(m_nameLabel);
     m_layout->addRow(m_urlLabel);
     m_layout->addRow(tr("&Priority:"), m_prioritySelector);
+    m_layout->addRow(tr("&Custom command:"), m_commandEdit);
     m_layout->addWidget(m_speedLabel);
     m_layout->addRow(m_progressBar);
     m_layout->addRow(m_statusLabel);
     m_layout->addRow(m_buttonBox);
 
     connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onDataChanged(TransferItem*, int)));
+    connect(m_commandEdit, SIGNAL(editingFinished()), this, SLOT(setCustomCommand()));
     connect(m_prioritySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(setPriority(int)));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
+void TransferPropertiesDialog::setCustomCommand() {
+    if (!m_transfer.isNull()) {
+        m_transfer->setData(TransferItem::CustomCommandRole, m_commandEdit->text());
+    }
 }
 
 void TransferPropertiesDialog::setPriority(int index) {
     if (!m_transfer.isNull()) {
         m_transfer->setData(TransferItem::PriorityRole, m_prioritySelector->itemData(index));
     }
+}
+
+void TransferPropertiesDialog::updateCustomCommand(TransferItem *transfer) {
+    m_commandEdit->setText(transfer->data(TransferItem::CustomCommandRole).toString());
 }
 
 void TransferPropertiesDialog::updateIcon(TransferItem *transfer) {
@@ -131,6 +146,9 @@ void TransferPropertiesDialog::onDataChanged(TransferItem *transfer, int role) {
     case TransferItem::BytesTransferredRole:
     case TransferItem::ProgressRole:
         updateProgress(transfer);
+        break;
+    case TransferItem::CustomCommandRole:
+        updateCustomCommand(transfer);
         break;
     case TransferItem::NameRole:
         updateName(transfer);
