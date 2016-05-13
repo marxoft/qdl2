@@ -284,6 +284,7 @@ void TransferItem::appendRow(TransferItem *item) {
     item->setRow(m_childItems.size());
     m_childItems.append(item);
     connectItemSignals(item);
+    emit dataChanged(this, RowCountRole);
 }
 
 bool TransferItem::insertRow(int i, TransferItem *item) {
@@ -300,6 +301,7 @@ bool TransferItem::insertRow(int i, TransferItem *item) {
         m_childItems.at(j)->setRow(j);
     }
 
+    emit dataChanged(this, RowCountRole);
     return true;
 }
 
@@ -337,6 +339,7 @@ TransferItem* TransferItem::takeRow(int i) {
         m_childItems.at(j)->setRow(j);
     }
 
+    emit dataChanged(this, RowCountRole);
     return item;
 }
 
