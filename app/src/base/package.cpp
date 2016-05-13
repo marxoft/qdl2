@@ -41,8 +41,6 @@ QVariant Package::data(int role) const {
         return category();
     case CreateSubfolderRole:
         return createSubfolder();
-    case CustomCommandRole:
-        return customCommand();
     case ErrorStringRole:
         return errorString();
     case IdRole:
@@ -75,9 +73,6 @@ bool Package::setData(int role, const QVariant &value) {
         return true;
     case CreateSubfolderRole:
         setCreateSubfolder(value.toBool());
-        return true;
-    case CustomCommandRole:
-        setCustomCommand(value.toString());
         return true;
     case IdRole:
         setId(value.toString());
@@ -120,7 +115,6 @@ QMap<int, QVariant> Package::itemData() const {
     QMap<int, QVariant> map = TransferItem::itemData();
     map[CategoryRole] = category();
     map[CreateSubfolderRole] = createSubfolder();
-    map[CustomCommandRole] = customCommand();
     map[ErrorStringRole] = errorString();
     map[IdRole] = id();
     map[NameRole] = name();
@@ -138,7 +132,6 @@ QVariantMap Package::itemDataWithRoleNames() const {
     QVariantMap map = TransferItem::itemDataWithRoleNames();
     map[roleNames().value(CategoryRole)] = category();
     map[roleNames().value(CreateSubfolderRole)] = createSubfolder();
-    map[roleNames().value(CustomCommandRole)] = customCommand();
     map[roleNames().value(ErrorStringRole)] = errorString();
     map[roleNames().value(IdRole)] = id();
     map[roleNames().value(NameRole)] = name();
@@ -187,17 +180,6 @@ void Package::setCreateSubfolder(bool enabled) {
     if (enabled != createSubfolder()) {
         m_createSubfolder = enabled;
         emit dataChanged(this, CreateSubfolderRole);
-    }
-}
-
-QString Package::customCommand() const {
-    return m_command;
-}
-
-void Package::setCustomCommand(const QString &c) {
-    if (c != customCommand()) {
-        m_command = c;
-        emit dataChanged(this, CustomCommandRole);
     }
 }
 
@@ -341,7 +323,6 @@ bool Package::cancel(bool deleteFiles) {
 
 void Package::restore(const QSettings &settings) {
     setCategory(settings.value("category").toString());
-    setCustomCommand(settings.value("customCommand").toString());
     setErrorString(settings.value("errorString").toString());
     setId(settings.value("id").toString());
     setName(settings.value("name").toString());
@@ -363,7 +344,6 @@ void Package::restore(const QSettings &settings) {
 
 void Package::save(QSettings &settings) {
     settings.setValue("category", category());
-    settings.setValue("customCommand", customCommand());
     settings.setValue("errorString", errorString());
     settings.setValue("id", id());
     settings.setValue("name", name());
@@ -395,22 +375,7 @@ void Package::childItemFinished(TransferItem *item) {
             }
         }
 
-        if (Settings::extractArchives()) {
-            getArchives();
-            
-            if (!m_archives.isEmpty()) {
-                extractArchive(m_archives.takeFirst());
-                return;
-            }
-        }
-
-        if (moveFiles()) {
-            cleanup();
-            setStatus(Completed);
-        }
-        else {
-            setStatus(Failed);
-        }
+        processCompletedItems();        
     }
     else if ((status == Canceled) || (status == CanceledAndDeleted)) {
         Logger::log("Package::childItemFinished(): Child item canceled.");
@@ -431,25 +396,29 @@ void Package::childItemFinished(TransferItem *item) {
     }
 }
 
-void Package::executeCustomCommand(const QString &fileName) {
-    if (!m_process) {
-        m_process = new QProcess(this);
-        connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCustomCommandFinished(int)));
-        connect(m_process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onCustomCommandError()));
+void Package::processCompletedItems() {    
+    if (Settings::extractArchives()) {
+        getArchives();
+        
+        if (!m_archives.isEmpty()) {
+            extractArchive(m_archives.takeFirst());
+            return;
+        }
     }
+    
+    if (moveFiles()) {
+        getCustomCommands();
 
-    m_process->start(customCommand().replace("%FILENAME%", fileName));
-}
-
-void Package::extractArchive(const Archive &archive) {
-    if (!m_extractor) {
-        m_extractor = new ArchiveExtractor(this);
-        connect(m_extractor, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onArchiveExtractionFinished(int)));
-        connect(m_extractor, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onArchiveExtractionError()));
+        if (!m_commands.isEmpty()) {
+            executeCustomCommand(m_commands.takeFirst());
+        }
+        else {
+            setStatus(Completed);
+        }
     }
-
-    setStatus(ExtractingArchive);
-    m_extractor->start(archive);
+    else {
+        setStatus(Failed);
+    }
 }
 
 void Package::getArchives() {
@@ -495,6 +464,14 @@ void Package::getArchives() {
                                 Logger::log(QString("Package::getArchives(): Moving archive part %1 to path %2")
                                                    .arg(otherFileName).arg(path));
                                 archive.fileNames << path + otherFileName;
+                                other->setData(FilePathRole, path + otherFileName);
+
+                                if (QDir().rmdir(otherPath)) {
+                                    Logger::log("Package::getArchives(): Removed directory " + otherPath);
+                                }
+                                else {
+                                    Logger::log("Package::getArchives(): Cannot remove directory " + otherPath);
+                                }
                             }
 
                             children.removeAt(i);
@@ -509,6 +486,17 @@ void Package::getArchives() {
             m_archives << archive;
         }
     }
+}
+
+void Package::extractArchive(const Archive &archive) {
+    if (!m_extractor) {
+        m_extractor = new ArchiveExtractor(this);
+        connect(m_extractor, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onArchiveExtractionFinished(int)));
+        connect(m_extractor, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onArchiveExtractionError()));
+    }
+
+    setStatus(ExtractingArchive);
+    m_extractor->start(archive);
 }
 
 bool Package::moveFiles() {
@@ -547,11 +535,21 @@ bool Package::moveFiles() {
             if ((newFilePath.isEmpty()) || (!file.rename(oldFilePath, newFilePath))) {
                 Logger::log(QString("Package::moveFiles(): Cannot rename %1 to %2").arg(oldFilePath)
                                                                                    .arg(newFilePath));
-                setErrorString(file.errorString());
+                setErrorString(tr("Cannot move files: %1").arg(file.errorString()));
                 return false;
             }
             
             Logger::log(QString("Package::moveFiles(): Renamed %1 to %2").arg(oldFilePath).arg(newFilePath));
+            dir.setPath(child->data(DownloadPathRole).toString());
+            
+            if (dir.rmdir(dir.path())) {
+                Logger::log("Package::moveFiles(): Removed directory " + dir.path());
+            }
+            else {
+                Logger::log("Package::moveFiles(): Cannot remove directory " + dir.path());
+            }
+            
+            child->setData(FilePathRole, newFilePath);
         }
     }
 
@@ -564,58 +562,115 @@ void Package::cleanup() {
     foreach (TransferItem *child, m_childItems) {
         dir.setPath(child->data(DownloadPathRole).toString());
 
-        if (dir.rmdir(dir.path())) {
-            Logger::log("Package::cleanup(): Removed directory " + dir.path());
-        }
-        else {
-            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
+        if (dir.exists()) {
+            if (dir.rmdir(dir.path())) {
+                Logger::log("Package::cleanup(): Removed directory " + dir.path());
+            }
+            else {
+                Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
+            }
         }
     }
 }
 
+void Package::getCustomCommands() {
+    m_commands.clear();
+
+    foreach (TransferItem *child, m_childItems) {
+        QString command = child->data(CustomCommandRole).toString();
+
+        if (!command.isEmpty()) {
+            const QString workingDirectory = child->data(DownloadPathRole).toString();
+            command.replace("%f", child->data(FileNameRole).toString());
+            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2").arg(workingDirectory).arg(command));
+            m_commands << Command(workingDirectory, command);
+        }
+    }
+}
+
+void Package::executeCustomCommand(const Command &command) {
+    if (!m_process) {
+        m_process = new QProcess(this);
+        connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCustomCommandFinished(int)));
+        connect(m_process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onCustomCommandError()));
+    }
+
+    Logger::log(QString("Package::executeCustomCommand(): Working directory: %1, Command: %2")
+                       .arg(command.workingDirectory).arg(command.command));
+    m_process->setWorkingDirectory(command.workingDirectory);
+    m_process->start(command.command);
+}
+
 void Package::onCustomCommandFinished(int exitCode) {
-    if (exitCode == 0) {
-        Logger::log("Package::onCustomCommandFinished(): OK");
-        cleanup();
-        setStatus(Completed);
+    if (exitCode != 0) {
+        Logger::log("Package::onCustomCommandFinished(): Error: " + m_process->readAllStandardError());
+    }
+    
+    if (!m_commands.isEmpty()) {
+        executeCustomCommand(m_commands.takeFirst());
     }
     else {
-        Logger::log("Package::onCustomCommandFinished(): Error: " + m_process->errorString());
-        setErrorString(m_process->errorString());
-        setStatus(Failed);
+        setStatus(Completed);
     }
 }
 
 void Package::onCustomCommandError() {
     Logger::log("Package::onCustomCommandError(): " + m_process->errorString());
-    setErrorString(m_process->errorString());
-    setStatus(Failed);
+
+    if (!m_commands.isEmpty()) {
+        executeCustomCommand(m_commands.takeFirst());
+    }
+    else {
+        setStatus(Completed);
+    }
 }
 
 void Package::onArchiveExtractionFinished(int exitCode) {
+    if (exitCode != 0) {
+        Logger::log("Package::onArchiveExtractionFinished(): Error: " + m_extractor->errorString());
+    }
+    
     if (!m_archives.isEmpty()) {
         extractArchive(m_archives.takeFirst());
         return;
     }
-    
-    if ((exitCode == 0) && (moveFiles())) {
+
+    if (moveFiles()) {
         cleanup();
-        setStatus(Completed);
+        getCustomCommands();
+
+        if (!m_commands.isEmpty()) {
+            executeCustomCommand(m_commands.takeFirst());
+        }
+        else {
+            setStatus(Completed);
+        }
     }
     else {
-        Logger::log("Package::onArchiveExtractionFinished(): Error: " + m_extractor->errorString());
-        setErrorString(m_extractor->errorString());
         setStatus(Failed);
     }
 }
 
 void Package::onArchiveExtractionError() {
+    Logger::log("Package::onArchiveExtractionError(): Error: " + m_extractor->errorString());
+    
     if (!m_archives.isEmpty()) {
         extractArchive(m_archives.takeFirst());
         return;
     }
     
-    Logger::log("Package::onArchiveExtractionError(): " + m_extractor->errorString());
-    setErrorString(m_extractor->errorString());
-    setStatus(Failed);
+    if (moveFiles()) {
+        cleanup();
+        getCustomCommands();
+
+        if (!m_commands.isEmpty()) {
+            executeCustomCommand(m_commands.takeFirst());
+        }
+        else {
+            setStatus(Completed);
+        }
+    }
+    else {
+        setStatus(Failed);
+    }
 }

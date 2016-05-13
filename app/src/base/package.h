@@ -20,13 +20,26 @@
 #include "transferitem.h"
 #include "archiveextractor.h"
 
+struct Command
+{
+    Command(const QString &dir, const QString &com) :
+        workingDirectory(dir),
+        command(com)
+    {
+    }
+
+    QString workingDirectory;
+    QString command;
+};
+
+typedef QList<Command> CommandList;
+
 class Package : public TransferItem
 {
     Q_OBJECT
 
     Q_PROPERTY(QString category READ category WRITE setCategory)
     Q_PROPERTY(bool createSubfolder READ createSubfolder WRITE setCreateSubfolder)
-    Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand)
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString suffix READ suffix WRITE setSuffix)
@@ -58,9 +71,6 @@ public:
 
     bool createSubfolder() const;
     void setCreateSubfolder(bool enabled);
-
-    QString customCommand() const;
-    void setCustomCommand(const QString &c);
 
     QString id() const;
     void setId(const QString &i);    
@@ -99,20 +109,23 @@ private Q_SLOTS:
 private:
     void setStatus(Status s);
     void setErrorString(const QString &e);
-
-    void executeCustomCommand(const QString &fileName);
+    
+    void processCompletedItems();
+    
+    void getArchives();
     void extractArchive(const Archive &archive);
 
-    void getArchives();
-
     bool moveFiles();
+
+    void getCustomCommands();
+    void executeCustomCommand(const Command &command);
+    
     void cleanup();
 
     ArchiveExtractor *m_extractor;
     QProcess *m_process;
     
     QString m_category;
-    QString m_command;
     QString m_id;
     QString m_name;
     QString m_suffix;
@@ -126,6 +139,7 @@ private:
     Status m_status;
 
     ArchiveList m_archives;
+    CommandList m_commands;
 };
 
 #endif // PACKAGE_H
