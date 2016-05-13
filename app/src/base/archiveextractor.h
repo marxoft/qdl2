@@ -55,6 +55,7 @@ private:
 
 private Q_SLOTS:
     void onProcessFinished(int exitCode, QProcess::ExitStatus status);
+    void onProcessError(QProcess::ProcessError e);
 
 Q_SIGNALS:
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
