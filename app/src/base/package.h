@@ -93,6 +93,7 @@ public:
     QString errorString() const;
     
 public Q_SLOTS:
+    virtual bool start();
     virtual bool cancel(bool deleteFiles = false);
 
     virtual void restore(const QSettings &settings);

@@ -158,7 +158,7 @@ bool Package::canPause() const {
 }
 
 bool Package::canCancel() const {
-    return (rowCount() == 0) || (status() == Null);
+    return (rowCount() == 0) || (status() == Null) || (status() == Failed);
 }
 
 QString Package::category() const {
@@ -312,12 +312,32 @@ void Package::setErrorString(const QString &e) {
     m_errorString = e;
 }
 
+bool Package::start() {
+    if (!canStart()) {
+        return false;
+    }
+
+    foreach (const TransferItem *child, m_childItems) {
+        if (child->data(StatusRole) != Completed) {
+            return TransferItem::start();
+        }
+    }
+
+    processCompletedItems();
+    return true;
+}
+
 bool Package::cancel(bool deleteFiles) {
+    if (!canCancel()) {
+        return false;
+    }
+
     if (rowCount() == 0) {
         setStatus(deleteFiles ? CanceledAndDeleted : Canceled);
         return true;
     }
 
+    setStatus(Canceling);
     return TransferItem::cancel(deleteFiles);
 }
 
@@ -563,14 +583,12 @@ void Package::cleanup() {
     
     foreach (TransferItem *child, m_childItems) {
         dir.setPath(child->data(DownloadPathRole).toString());
-
-        if (dir.exists()) {
-            if (dir.rmdir(dir.path())) {
-                Logger::log("Package::cleanup(): Removed directory " + dir.path());
-            }
-            else {
-                Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
-            }
+        
+        if (dir.rmdir(dir.path())) {
+            Logger::log("Package::cleanup(): Removed directory " + dir.path());
+        }
+        else {
+            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
         }
     }
 }

@@ -786,6 +786,14 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
         removeActiveTransfer(transfer);
         
         if (TransferItem *package = transfer->parentItem()) {
+            switch (package->data(TransferItem::StatusRole).toInt()) {
+            case TransferItem::Canceling:
+            case TransferItem::Canceled:
+                return;
+            default:
+                break;
+            }
+            
             Logger::log("TransferModel::onTransferStatusChanged(): Removing transfer "
                         + transfer->data(TransferItem::IdRole).toString());
             const int row = transfer->row();

@@ -58,7 +58,6 @@ Transfer::Transfer(QObject *parent) :
     m_servicePluginName(tr("Unknown")),
     m_reportCaptchaError(false),
     m_metadataSet(false),
-    m_canceled(false),
     m_redirects(0),
     m_waitTime(0)
 {
@@ -259,6 +258,7 @@ bool Transfer::canPause() const {
     switch (status()) {
     case Null:
     case Paused:
+    case Canceling:
     case Canceled:
     case Failed:
     case Completed:
@@ -270,6 +270,7 @@ bool Transfer::canPause() const {
 
 bool Transfer::canCancel() const {
     switch (status()) {
+    case Canceling:
     case Canceled:
     case CanceledAndDeleted:
         return false;
@@ -657,6 +658,7 @@ bool Transfer::pause() {
     switch (status()) {
     case Null:
     case Paused:
+    case Canceling:
     case Canceled:
     case Failed:
     case Completed:
@@ -696,7 +698,6 @@ bool Transfer::pause() {
     case Downloading:
         if (m_reply) {
             if (m_reply->isRunning()) {
-                m_canceled = false;
                 m_reply->abort();
                 return true;
             }
@@ -715,6 +716,7 @@ bool Transfer::cancel(bool deleteFiles) {
     m_deleteFiles = deleteFiles;
     
     switch (status()) {
+    case Canceling:
     case Canceled:
     case CanceledAndDeleted:
         return false;
@@ -753,7 +755,7 @@ bool Transfer::cancel(bool deleteFiles) {
     case Downloading:
         if (m_reply) {
             if (m_reply->isRunning()) {
-                m_canceled = true;
+                setStatus(Canceling);
                 m_reply->abort();
                 return true;
             }
@@ -1421,7 +1423,7 @@ void Transfer::onReplyFinished() {
     case QNetworkReply::NoError:
         break;
     case QNetworkReply::OperationCanceledError:
-        if (m_canceled) {
+        if (status() == Canceling) {
             if (m_deleteFiles) {
                 deleteFile();
                 setStatus(CanceledAndDeleted);

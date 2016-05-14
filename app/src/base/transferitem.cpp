@@ -133,6 +133,8 @@ QString TransferItem::statusString(TransferItem::Status status) {
         return tr("Submitting settings response");
     case Downloading:
         return tr("Downloading");
+    case Canceling:
+        return tr("Canceling");
     case ExtractingArchive:
         return tr("Extracting archive");
     case MovingFiles:
@@ -368,10 +370,6 @@ bool TransferItem::queue() {
 }
 
 bool TransferItem::start() {
-    if (!canStart()) {
-        return false;
-    }
-    
     foreach (TransferItem *child, m_childItems) {
         child->start();
     }
@@ -380,10 +378,6 @@ bool TransferItem::start() {
 }
 
 bool TransferItem::pause() {
-    if (!canPause()) {
-        return false;
-    }
-    
     foreach (TransferItem *child, m_childItems) {
         child->pause();
     }
@@ -392,10 +386,6 @@ bool TransferItem::pause() {
 }
 
 bool TransferItem::cancel(bool deleteFiles) {
-    if (!canCancel()) {
-        return false;
-    }
-    
     foreach (TransferItem *child, m_childItems) {
         child->cancel(deleteFiles);
     }

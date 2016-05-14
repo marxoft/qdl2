@@ -117,6 +117,7 @@ public:
         SubmittingRecaptchaSettingsResponse,
         SubmittingServiceSettingsResponse,
         Downloading,
+        Canceling,
         ExtractingArchive,
         MovingFiles,
         ExecutingCustomCommand

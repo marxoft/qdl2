@@ -248,7 +248,6 @@ private:
 
     bool m_reportCaptchaError;
     bool m_metadataSet;
-    bool m_canceled;
     bool m_deleteFiles;
 
     int m_redirects;
