@@ -64,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bottomToolBar(new QToolBar(this)),
     m_addUrlsAction(new QAction(QIcon::fromTheme("list-add"), tr("&Add URLs"), this)),
     m_importUrlsAction(new QAction(QIcon::fromTheme("document-open"), tr("&Import URLs"), this)),
-    m_retrieveUrlsAction(new QAction(QIcon::fromTheme("search"), tr("&Retrieve URLs"), this)),
+    m_retrieveUrlsAction(new QAction(QIcon::fromTheme("edit-find"), tr("&Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("edit-copy"), tr("Show &clipboard URLs"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
