@@ -42,6 +42,7 @@ private Q_SLOTS:
     void pauseCurrentTransfer();
     void cancelCurrentTransfer();
     void cancelAndDeleteCurrentTransfer();
+    void setCurrentTransferCustomCommand();
     void setCurrentTransferPriority();
     void showCurrentTransferProperties();
 
@@ -108,6 +109,7 @@ private:
     QAction *m_quitAction;
 
     QAction *m_transferPropertiesAction;
+    QAction *m_transferCustomCommandAction;
     QAction *m_transferQueueAction;
     QAction *m_transferPauseAction;
     QAction *m_transferCancelAction;

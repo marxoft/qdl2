@@ -39,6 +39,7 @@
 #include <QComboBox>
 #include <QFileDialog>
 #include <QHeaderView>
+#include <QInputDialog>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -70,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
     m_quitAction(new QAction(QIcon::fromTheme("application-exit"), tr("&Quit"), this)),
     m_transferPropertiesAction(new QAction(QIcon::fromTheme("document-properties"), tr("&Properties"), this)),
+    m_transferCustomCommandAction(new QAction(QIcon::fromTheme("system-run"), tr("Set &custom command"), this)),
     m_transferQueueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start"), this)),
     m_transferPauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause"), this)),
     m_transferCancelAction(new QAction(QIcon::fromTheme("edit-delete"), tr("&Remove"), this)),
@@ -130,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu->addAction(m_quitAction);
 
     m_transferMenu->addAction(m_transferPropertiesAction);
+    m_transferMenu->addAction(m_transferCustomCommandAction);
     m_transferMenu->addAction(m_transferQueueAction);
     m_transferMenu->addAction(m_transferPauseAction);
     m_transferMenu->addMenu(m_transferPriorityMenu);
@@ -272,13 +275,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 
     connect(m_transferPropertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentTransferProperties()));
-    connect(m_packageSubfolderAction, SIGNAL(triggered(bool)), this, SLOT(setCurrentPackageSubfolder(bool)));
+    connect(m_transferCustomCommandAction, SIGNAL(triggered()), this, SLOT(setCurrentTransferCustomCommand()));
     connect(m_transferQueueAction, SIGNAL(triggered()), this, SLOT(queueCurrentTransfer()));
     connect(m_transferPauseAction, SIGNAL(triggered()), this, SLOT(pauseCurrentTransfer()));
     connect(m_transferCancelAction, SIGNAL(triggered()), this, SLOT(cancelCurrentTransfer()));
     connect(m_transferCancelDeleteAction, SIGNAL(triggered()), this, SLOT(cancelAndDeleteCurrentTransfer()));
 
     connect(m_packagePropertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentPackageProperties()));
+    connect(m_packageSubfolderAction, SIGNAL(triggered(bool)), this, SLOT(setCurrentPackageSubfolder(bool)));
     connect(m_packageQueueAction, SIGNAL(triggered()), this, SLOT(queueCurrentPackage()));
     connect(m_packagePauseAction, SIGNAL(triggered()), this, SLOT(pauseCurrentPackage()));
     connect(m_packageCancelAction, SIGNAL(triggered()), this, SLOT(cancelCurrentPackage()));
@@ -339,6 +343,20 @@ void MainWindow::cancelAndDeleteCurrentTransfer() {
         if (QMessageBox::question(this, tr("Delete files?"), tr("Do you want to delete the files for download '%1'?")
                                  .arg(m_view->currentIndex().data(TransferItem::NameRole).toString())) == QMessageBox::Yes) {
             TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::CanceledAndDeleted, TransferItem::StatusRole);
+        }
+    }
+}
+
+void MainWindow::setCurrentTransferCustomCommand() {
+    if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::TransferType) {
+        bool ok;
+        const QString command =
+        QInputDialog::getText(this, tr("Set custom command"), tr("&Custom command (%f for filename):"),
+                              QLineEdit::Normal, m_view->currentIndex().data(TransferItem::CustomCommandRole)
+                              .toString(), &ok);
+
+        if (ok) {
+            TransferModel::instance()->setData(m_view->currentIndex(), command, TransferItem::CustomCommandRole);
         }
     }
 }
