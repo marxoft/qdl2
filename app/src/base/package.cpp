@@ -323,6 +323,7 @@ bool Package::cancel(bool deleteFiles) {
 
 void Package::restore(const QSettings &settings) {
     setCategory(settings.value("category").toString());
+    setCreateSubfolder(settings.value("createSubfolder").toBool());
     setErrorString(settings.value("errorString").toString());
     setId(settings.value("id").toString());
     setName(settings.value("name").toString());
@@ -344,6 +345,7 @@ void Package::restore(const QSettings &settings) {
 
 void Package::save(QSettings &settings) {
     settings.setValue("category", category());
+    settings.setValue("createSubfolder", createSubfolder());
     settings.setValue("errorString", errorString());
     settings.setValue("id", id());
     settings.setValue("name", name());
