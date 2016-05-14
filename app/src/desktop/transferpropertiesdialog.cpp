@@ -80,15 +80,15 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_layout->addRow(m_nameLabel);
     m_layout->addRow(m_urlLabel);
     m_layout->addRow(tr("&Priority:"), m_prioritySelector);
-    m_layout->addRow(tr("&Custom command:"), m_commandEdit);
+    m_layout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
     m_layout->addWidget(m_speedLabel);
     m_layout->addRow(m_progressBar);
     m_layout->addRow(m_statusLabel);
     m_layout->addRow(m_buttonBox);
 
     connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onDataChanged(TransferItem*, int)));
-    connect(m_commandEdit, SIGNAL(editingFinished()), this, SLOT(setCustomCommand()));
     connect(m_prioritySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(setPriority(int)));
+    connect(m_commandEdit, SIGNAL(editingFinished()), this, SLOT(setCustomCommand()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
@@ -150,6 +150,7 @@ void TransferPropertiesDialog::onDataChanged(TransferItem *transfer, int role) {
     case TransferItem::CustomCommandRole:
         updateCustomCommand(transfer);
         break;
+    case TransferItem::FileNameRole:
     case TransferItem::NameRole:
         updateName(transfer);
         break;
@@ -166,6 +167,7 @@ void TransferPropertiesDialog::onDataChanged(TransferItem *transfer, int role) {
         updateSpeed(transfer);
         break;
     case TransferItem::StatusRole:
+    case TransferItem::WaitTimeRole:
         updateStatus(transfer);
         break;
     case TransferItem::UrlRole:
