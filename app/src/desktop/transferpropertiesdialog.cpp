@@ -126,6 +126,7 @@ void TransferPropertiesDialog::updatePriority(TransferItem *transfer) {
 }
 
 void TransferPropertiesDialog::updateProgress(TransferItem *transfer) {
+    m_progressBar->setFormat(transfer->data(TransferItem::ProgressStringRole).toString());
     m_progressBar->setValue(transfer->data(TransferItem::ProgressRole).toInt());
 }
 
@@ -145,6 +146,7 @@ void TransferPropertiesDialog::onDataChanged(TransferItem *transfer, int role) {
     switch (role) {
     case TransferItem::BytesTransferredRole:
     case TransferItem::ProgressRole:
+    case TransferItem::SizeRole:
         updateProgress(transfer);
         break;
     case TransferItem::CustomCommandRole:

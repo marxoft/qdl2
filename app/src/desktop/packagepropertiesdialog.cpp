@@ -109,6 +109,7 @@ void PackagePropertiesDialog::updatePriority(TransferItem *package) {
 }
 
 void PackagePropertiesDialog::updateProgress(TransferItem *package) {
+    m_progressBar->setFormat(package->data(TransferItem::ProgressStringRole).toString());
     m_progressBar->setValue(package->data(TransferItem::ProgressRole).toInt());
 }
 
@@ -131,6 +132,7 @@ void PackagePropertiesDialog::onDataChanged(TransferItem *package, int role) {
         updatePriority(package);
         break;
     case TransferItem::ProgressRole:
+    case TransferItem::RowCountRole:
         updateProgress(package);
         break;
     case TransferItem::StatusRole:
