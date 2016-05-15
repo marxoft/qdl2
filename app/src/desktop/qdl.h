@@ -70,6 +70,9 @@ public Q_SLOTS:
     Q_SCRIPTABLE static QVariantMap getCategory(const QString &name);
     Q_SCRIPTABLE static bool removeCategory(const QString &name);
 
+    Q_SCRIPTABLE static QStringList getClipboardUrls();
+    Q_SCRIPTABLE static bool removeClipboardUrl(const QString &url);
+
     Q_SCRIPTABLE static QVariantList getDecaptchaPlugins();
     Q_SCRIPTABLE static QVariantMap getDecaptchaPlugin(const QString &id);
     Q_SCRIPTABLE static QVariantList getDecaptchaPluginSettings(const QString &id);

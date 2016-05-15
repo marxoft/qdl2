@@ -378,6 +378,14 @@ bool Qdl::removeCategory(const QString &name) {
     return Categories::remove(name);
 }
 
+QStringList Qdl::getClipboardUrls() {
+    return ClipboardUrlModel::instance()->strings();
+}
+
+bool Qdl::removeClipboardUrl(const QString &url) {
+    return ClipboardUrlModel::instance()->remove(url);
+}
+
 QVariantList Qdl::getDecaptchaPlugins() {
     QVariantList list;
 
