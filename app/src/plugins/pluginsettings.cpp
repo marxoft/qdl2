@@ -59,7 +59,18 @@ QVariant PluginSettings::value(const QString &key, const QVariant &defaultValue)
         return QVariant();
     }
     
-    return QSettings(PLUGIN_CONFIG_PATH + pluginId(), QSettings::IniFormat).value(key, defaultValue);
+    const QVariant v = QSettings(PLUGIN_CONFIG_PATH + pluginId(), QSettings::IniFormat).value(key, defaultValue);
+    
+    if (v.type() == QVariant::String) {
+        if ((v == "true") || (v == "false")) {
+            /* It seems that the type of a boolean value is QVariant::String when read from the file, which causes 
+               problems in the scripting environment, so we convert it to a boolean.
+             */
+            return v.toBool();
+        }
+    }
+    
+    return v;
 }
 
 void PluginSettings::setValue(const QString &key, const QVariant &value) {
