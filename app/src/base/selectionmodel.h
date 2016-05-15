@@ -61,13 +61,13 @@ public:
     virtual QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits = 1,
                                   Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;
     Q_INVOKABLE virtual int match(int start, const QByteArray &role, const QVariant &value,
-                                  int flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;
-    
-    Q_INVOKABLE virtual void append(const QString &name, const QVariant &value);
-    Q_INVOKABLE virtual void insert(int row, const QString &name, const QVariant &value);
-    Q_INVOKABLE virtual bool remove(int row);
+                                  int flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;    
 
 public Q_SLOTS:
+    virtual void append(const QString &name, const QVariant &value);
+    virtual void insert(int row, const QString &name, const QVariant &value);
+    virtual bool remove(int row);
+    
     void clear();
     
 Q_SIGNALS:
