@@ -36,6 +36,10 @@ int StringModel::rowCount(const QModelIndex &) const {
     return m_items.size();
 }
 
+QStringList StringModel::strings() const {
+    return m_items;
+}
+
 Qt::Alignment StringModel::textAlignment() const {
     return m_alignment;
 }
@@ -194,6 +198,10 @@ bool StringModel::remove(int row) {
     }
     
     return false;
+}
+
+bool StringModel::remove(const QString &name) {
+    return remove(m_items.indexOf(name));
 }
 
 void StringModel::clear() {

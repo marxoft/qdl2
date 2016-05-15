@@ -24,6 +24,7 @@ class StringModel : public QAbstractListModel
     Q_OBJECT
     
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+    Q_PROPERTY(QStringList strings READ strings NOTIFY countChanged)
     Q_PROPERTY(Qt::Alignment textAlignment READ textAlignment WRITE setTextAlignment
                NOTIFY textAlignmentChanged)
     
@@ -39,6 +40,8 @@ public:
 #endif
     
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+    QStringList strings() const;
     
     Qt::Alignment textAlignment() const;
     void setTextAlignment(Qt::Alignment align);
@@ -61,11 +64,14 @@ public:
     Q_INVOKABLE virtual int match(int start, const QByteArray &role, const QVariant &value,
                                   int flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;
     
-    Q_INVOKABLE virtual void append(const QString &name);
-    Q_INVOKABLE virtual void insert(int row, const QString &name);
-    Q_INVOKABLE virtual bool remove(int row);
+    
 
 public Q_SLOTS:
+    virtual void append(const QString &name);
+    virtual void insert(int row, const QString &name);
+    virtual bool remove(int row);
+    virtual bool remove(const QString &name);
+    
     void clear();
     
 Q_SIGNALS:
