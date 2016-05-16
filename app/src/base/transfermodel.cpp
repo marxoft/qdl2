@@ -125,7 +125,7 @@ bool TransferModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         int pr;
         stream >> r >> pr;
 
-        if (!moveRow(pr == -1 ? QModelIndex() : index(pr, 0), r, parent, row)) {
+        if (!moveRows(pr == -1 ? QModelIndex() : index(pr, 0), r, 1, parent, row)) {
             return false;
         }
     }

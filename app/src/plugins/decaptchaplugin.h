@@ -19,6 +19,7 @@
 #define DECAPTCHAPLUGIN_H
 
 #include <QObject>
+#include <QVariantList>
 
 class QNetworkAccessManager;
 class QImage;

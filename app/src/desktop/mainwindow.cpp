@@ -218,7 +218,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_optionsButton->setIcon(QIcon::fromTheme("document-properties"));
     m_optionsButton->setText(tr("&Options"));
 
-    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width(" 90000KB/s"));
+    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("999.99MB/s"));
     m_speedLabel->setAlignment(Qt::AlignCenter);
 
     m_bottomToolBar->setObjectName("bottomToolBar");

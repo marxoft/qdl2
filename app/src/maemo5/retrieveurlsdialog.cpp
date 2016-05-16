@@ -17,49 +17,61 @@
 #include "retrieveurlsdialog.h"
 #include "serviceselectionmodel.h"
 #include "settings.h"
-#include <QComboBox>
+#include "valueselector.h"
 #include <QDialogButtonBox>
-#include <QDropEvent>
 #include <QFile>
-#include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
-#include <QMimeData>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTextEdit>
+#include <QVBoxLayout>
 
 RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :
     QDialog(parent),
     m_serviceModel(new ServiceSelectionModel(this)),
-    m_edit(new QTextEdit(this)),
-    m_serviceSelector(new QComboBox(this)),
-    m_button(new QPushButton(QIcon::fromTheme("list-add"), tr("&Add"), this)),
-    m_progressBar(new QProgressBar(this)),
-    m_statusLabel(new QLabel(this)),
-    m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
-    m_layout(new QFormLayout(this))
+    m_scrollArea(new QScrollArea(this)),
+    m_container(new QWidget(m_scrollArea)),
+    m_edit(new QTextEdit(m_container)),
+    m_serviceSelector(new ValueSelector(tr("Service"), m_container)),
+    m_button(new QPushButton(QIcon::fromTheme("general_add"), tr("Add"), m_container)),
+    m_progressBar(new QProgressBar(m_container)),
+    m_statusLabel(new QLabel(m_container)),
+    m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Vertical, this)),
+    m_vbox(new QVBoxLayout(m_container)),
+    m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Retrieve URLs"));
-    setAcceptDrops(true);
 
     if (UrlRetrievalModel::instance()->status() != UrlRetrievalModel::Active) {
         UrlRetrievalModel::instance()->clear();
     }
+
+    m_scrollArea->setWidget(m_container);
+    m_scrollArea->setWidgetResizable(true);
+    
+    m_edit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+    m_edit->setFocus(Qt::OtherFocusReason);
     
     m_serviceSelector->setModel(m_serviceModel);
-    m_serviceSelector->setCurrentIndex(m_serviceSelector->findData(Settings::defaultServicePlugin()));
+    m_serviceSelector->setValue(Settings::defaultServicePlugin());
     
     m_button->setEnabled(false);
 
     m_progressBar->setRange(0, 100);
     m_progressBar->setValue(UrlRetrievalModel::instance()->progress());
     
-    m_layout->addRow(m_edit);
-    m_layout->addRow(tr("&Service:"), m_serviceSelector);
-    m_layout->addWidget(m_button);
-    m_layout->addRow(m_progressBar);
-    m_layout->addRow(m_statusLabel);
-    m_layout->addRow(m_buttonBox);
+    m_vbox->addWidget(m_edit);
+    m_vbox->addWidget(m_serviceSelector);
+    m_vbox->addWidget(m_button);
+    m_vbox->addWidget(m_progressBar);
+    m_vbox->addWidget(m_statusLabel);
+    m_vbox->addWidget(m_buttonBox);
+    m_vbox->setContentsMargins(0, 0, 0, 0);
+
+    m_layout->addWidget(m_scrollArea);
+    m_layout->addWidget(m_buttonBox);
 
     connect(UrlRetrievalModel::instance(), SIGNAL(progressChanged(int)), m_progressBar, SLOT(setValue(int)));
     connect(UrlRetrievalModel::instance(), SIGNAL(statusChanged(UrlRetrievalModel::Status)),
@@ -73,7 +85,7 @@ RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :
 }
 
 void RetrieveUrlsDialog::accept() {
-    Settings::setDefaultServicePlugin(m_serviceSelector->itemData(m_serviceSelector->currentIndex()).toString());
+    Settings::setDefaultServicePlugin(m_serviceSelector->currentValue().toString());
     QDialog::accept();
 }
 
@@ -128,25 +140,9 @@ void RetrieveUrlsDialog::importUrls(const QString &fileName) {
     }
 }
 
-void RetrieveUrlsDialog::dragEnterEvent(QDragEnterEvent *event) {
-    if ((event->mimeData()->hasUrls()) && (event->mimeData()->urls().first().path().toLower().endsWith(".txt"))) {
-        event->acceptProposedAction();
-    }
-}
-
-void RetrieveUrlsDialog::dropEvent(QDropEvent *event) {
-    if (event->mimeData()->hasUrls()) {
-        const QString fileName = event->mimeData()->urls().first().path();
-
-        if ((QFile::exists(fileName)) && (fileName.toLower().endsWith(".txt"))) {
-            importUrls(fileName);
-        }
-    }
-}
-
 void RetrieveUrlsDialog::addUrls() {
     UrlRetrievalModel::instance()->append(m_edit->toPlainText().split(QRegExp("\\s+"), QString::SkipEmptyParts),
-                                          m_serviceSelector->itemData(m_serviceSelector->currentIndex()).toString());
+                                          m_serviceSelector->currentValue().toString());
     m_edit->clear();
 }
 

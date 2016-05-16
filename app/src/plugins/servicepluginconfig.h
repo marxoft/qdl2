@@ -19,6 +19,7 @@
 #define SERVICEPLUGINCONFIG_H
 
 #include <QObject>
+#include <QRegExp>
 #include <QVariantList>
 
 class ServicePluginConfig : public QObject

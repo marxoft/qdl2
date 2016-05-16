@@ -19,6 +19,7 @@
 #define URLRESULT_H
 
 #include <QList>
+#include <QString>
 
 struct UrlResult
 {

@@ -19,6 +19,7 @@
 #define RECAPTCHAPLUGIN_H
 
 #include <QObject>
+#include <QVariantList>
 
 class QImage;
 class QNetworkAccessManager;

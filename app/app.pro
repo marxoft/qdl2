@@ -29,7 +29,6 @@ HEADERS += \
     src/base/transferitemprioritymodel.h \
     src/base/transfermodel.h \
     src/base/urlactionmodel.h \
-    src/base/urlcheckmodel.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \
     src/base/urlretriever.h \
@@ -66,7 +65,6 @@ SOURCES += \
     src/base/transfer.cpp \
     src/base/transferitem.cpp \
     src/base/transfermodel.cpp \
-    src/base/urlcheckmodel.cpp \
     src/base/urlretrievalmodel.cpp \
     src/base/urlretriever.cpp \
     src/base/utils.cpp \
@@ -86,10 +84,95 @@ SOURCES += \
     src/plugins/servicepluginmanager.cpp \
     src/plugins/xmlhttprequest.cpp
 
-unix {
+maemo5 {
+    QT += \
+        dbus \
+        maemo5
+
+    INCLUDEPATH += src/maemo5
+
+    HEADERS += \
+        src/maemo5/aboutdialog.h \
+        src/maemo5/aboutpluginsdialog.h \
+        src/maemo5/addurlsdialog.h \
+        src/maemo5/archivepasswordsdialog.h \
+        src/maemo5/captchadialog.h \
+        src/maemo5/categoriesdialog.h \
+        src/maemo5/clipboardurlmodel.h \
+        src/maemo5/clipboardurlsdialog.h \
+        src/maemo5/decaptchadialog.h \
+        src/maemo5/definitions.h \
+        src/maemo5/mainwindow.h \
+        src/maemo5/networkproxydialog.h \
+        src/maemo5/packagepropertiesdialog.h \
+        src/maemo5/plugindialog.h \
+        src/maemo5/pluginsettingsdialog.h \
+        src/maemo5/qdl.h \
+        src/maemo5/recaptchadialog.h \
+        src/maemo5/retrieveurlsdialog.h \
+        src/maemo5/servicesdialog.h \
+        src/maemo5/settings.h \
+        src/maemo5/settingsdialog.h \
+        src/maemo5/transferpropertiesdialog.h \
+        src/maemo5/urlcheckdialog.h \
+        src/maemo5/urlcheckmodel.h \
+        src/maemo5/valueselector.h \
+        src/maemo5/valueselectoraction.h
+
+    SOURCES += \
+        src/maemo5/aboutdialog.cpp \
+        src/maemo5/aboutpluginsdialog.cpp \
+        src/maemo5/addurlsdialog.cpp \
+        src/maemo5/archivepasswordsdialog.cpp \
+        src/maemo5/captchadialog.cpp \
+        src/maemo5/categoriesdialog.cpp \
+        src/maemo5/clipboardurlmodel.cpp \
+        src/maemo5/clipboardurlsdialog.cpp \
+        src/maemo5/decaptchadialog.cpp \
+        src/maemo5/main.cpp \
+        src/maemo5/mainwindow.cpp \
+        src/maemo5/networkproxydialog.cpp \
+        src/maemo5/packagepropertiesdialog.cpp \
+        src/maemo5/plugindialog.cpp \
+        src/maemo5/pluginsettingsdialog.cpp \
+        src/maemo5/qdl.cpp \
+        src/maemo5/recaptchadialog.cpp \
+        src/maemo5/retrieveurlsdialog.cpp \
+        src/maemo5/servicesdialog.cpp \
+        src/maemo5/settings.cpp \
+        src/maemo5/settingsdialog.cpp \
+        src/maemo5/transferpropertiesdialog.cpp \
+        src/maemo5/urlcheckdialog.cpp \
+        src/maemo5/urlcheckmodel.cpp \
+        src/maemo5/valueselector.cpp \
+        src/maemo5/valueselectoraction.cpp
+        
+    dbus.path = /usr/share/dbus-1/services
+    dbus.files = dbus/org.marxoft.qdl2.service
+
+    desktop.path = /usr/share/applications/hildon
+    desktop.files = desktop/maemo5/qdl2.desktop
+
+    icon.files = desktop/maemo5/64x64/qdl2.png
+    icon.path = /opt/qdl2/icons
+
+    icon64.files = desktop/desktop/64x64/qdl2.png
+    icon64.path = /usr/share/icons/hicolor/64x64/apps
+    
+    target.path = /opt/qdl2/bin
+    
+    INSTALLS += \
+        dbus \
+        desktop \
+        headers \
+        icon \
+        icon64 \
+        target
+
+} else:unix {
     DEFINES += WEB_INTERFACE
     QT += dbus
-    #CONFIG += debug
+    CONFIG += debug
     
     greaterThan(QT_MAJOR_VERSION, 4) {
         QT += widgets
@@ -121,7 +204,8 @@ unix {
         src/desktop/settingstab.h \
         src/desktop/transferdelegate.h \
         src/desktop/transferpropertiesdialog.h \
-        src/desktop/urlcheckdialog.h
+        src/desktop/urlcheckdialog.h \
+        src/desktop/urlcheckmodel.h
 
     SOURCES += \
         src/desktop/aboutdialog.cpp \
@@ -148,18 +232,14 @@ unix {
         src/desktop/settingstab.cpp \
         src/desktop/transferdelegate.cpp \
         src/desktop/transferpropertiesdialog.cpp \
-        src/desktop/urlcheckdialog.cpp
+        src/desktop/urlcheckdialog.cpp \
+        src/desktop/urlcheckmodel.cpp
+        
+    dbus.path = /usr/share/dbus-1/services
+    dbus.files = dbus/org.marxoft.qdl2.service
 
     desktop.path = /usr/share/applications
     desktop.files = desktop/desktop/qdl2.desktop
-
-    headers.files = \
-        src/base/urlresult.h \
-        src/plugins/decaptchaplugin.h \
-        src/plugins/recaptchaplugin.h \
-        src/plugins/serviceplugin.h
-
-    headers.path = /usr/include/qdl2
 
     icon.files = desktop/desktop/64x64/qdl2.png
     icon.path = /opt/qdl2/icons
@@ -179,6 +259,7 @@ unix {
     target.path = /opt/qdl2/bin
     
     INSTALLS += \
+        dbus \
         desktop \
         headers \
         icon \

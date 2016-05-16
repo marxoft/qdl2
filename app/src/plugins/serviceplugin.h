@@ -20,6 +20,7 @@
 
 #include "urlresult.h"
 #include <QObject>
+#include <QVariantList>
 
 class QNetworkAccessManager;
 class QNetworkRequest;

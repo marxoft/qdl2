@@ -15,39 +15,39 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef URLRETRIEVALMODEL_H
-#define URLRETRIEVALMODEL_H
+#ifndef URLCHECKMODEL_H
+#define URLCHECKMODEL_H
 
+#include "urlresult.h"
 #include <QAbstractListModel>
-#include <QStringList>
-#include <QVariantList>
-#include <QUrl>
 
-class UrlRetriever;
+class ServicePlugin;
 
-struct UrlRetrieval
+struct UrlCheck
 {
-    UrlRetrieval() :
-        done(false)
+    UrlCheck() :
+        checked(false),
+        ok(false)
     {
     }
     
-    UrlRetrieval(const QString &u, const QString &p) :
+    UrlCheck(const QString &u, const QString &p) :
         url(u),
         pluginId(p),
-        done(false)
+        checked(false),
+        ok(false)
     {
     }
     
     QString url;
+    QString fileName;
     QString pluginId;
     
-    QStringList results;
-    
-    bool done;
+    bool checked;
+    bool ok;
 };
 
-class UrlRetrievalModel : public QAbstractListModel
+class UrlCheckModel : public QAbstractListModel
 {
     Q_OBJECT
     
@@ -55,17 +55,16 @@ class UrlRetrievalModel : public QAbstractListModel
     Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
-    Q_PROPERTY(QStringList results READ results NOTIFY statusChanged)
 
     Q_ENUMS(Status)
     
 public:
     enum Roles {
         UrlRole = Qt::UserRole + 1,
+        FileNameRole,
         PluginIdRole,
-        IsDoneRole,
-        CountRole,
-        ResultsRole
+        IsCheckedRole,
+        IsOkRole
     };
 
     enum Status {
@@ -75,16 +74,14 @@ public:
         Canceled
     };
 
-    ~UrlRetrievalModel();
+    ~UrlCheckModel();
 
-    static UrlRetrievalModel* instance();
+    static UrlCheckModel* instance();
 
     int progress() const;
 
     Status status() const;
     QString statusString() const;
-
-    QStringList results() const;
     
 #if QT_VERSION >= 0x050000
     virtual QHash<int, QByteArray> roleNames() const;
@@ -115,25 +112,27 @@ public Q_SLOTS:
     void clear();
 
 private Q_SLOTS:
-    void onRetrieverFinished(UrlRetriever *retriever);
+    void onUrlChecked(const UrlResult &result);
+    void onUrlChecked(const UrlResultList &results, const QString &packageName);
+    void onUrlCheckError(const QString &errorString);
     
 Q_SIGNALS:
     void countChanged(int count);
     void progressChanged(int progress);
-    void statusChanged(UrlRetrievalModel::Status status);
+    void statusChanged(UrlCheckModel::Status status);
     
 private:
-    UrlRetrievalModel();
+    UrlCheckModel();
 
     void setStatus(Status s);
+
+    ServicePlugin* getCurrentPlugin() const;
     
     void next();
 
-    static UrlRetrievalModel *self;
-
-    UrlRetriever *m_retriever;
+    static UrlCheckModel *self;
     
-    QList<UrlRetrieval> m_items;
+    QList<UrlCheck> m_items;
     
     QHash<int, QByteArray> m_roles;
 
@@ -142,4 +141,4 @@ private:
     int m_index;
 };
 
-#endif // URLRETRIEVALMODEL_H
+#endif // URLCHECKMODEL_H

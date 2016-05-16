@@ -18,6 +18,7 @@
 #define STRINGMODEL_H
 
 #include <QAbstractListModel>
+#include <QStringList>
 
 class StringModel : public QAbstractListModel
 {

@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QUrl>
 
 class UrlProcessor;
 class QNetworkAccessManager;
