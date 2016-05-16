@@ -164,7 +164,6 @@ maemo5 {
     INSTALLS += \
         dbus \
         desktop \
-        headers \
         icon \
         icon64 \
         target
@@ -261,7 +260,6 @@ maemo5 {
     INSTALLS += \
         dbus \
         desktop \
-        headers \
         icon \
         icon16 \
         icon22 \
