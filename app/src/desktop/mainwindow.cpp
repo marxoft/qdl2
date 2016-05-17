@@ -505,10 +505,10 @@ void MainWindow::showContextMenu(const QPoint &pos) {
     }
 
     if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
-        m_packageMenu->popup(m_view->mapToGlobal(pos), m_packageQueueAction);
+        m_packageMenu->popup(m_view->mapToGlobal(pos), m_packagePropertiesAction);
     }
     else {
-        m_transferMenu->popup(m_view->mapToGlobal(pos), m_transferQueueAction);
+        m_transferMenu->popup(m_view->mapToGlobal(pos), m_transferPropertiesAction);
     }
 }
 
