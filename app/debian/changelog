@@ -7,7 +7,7 @@ qdl (2.0.0) unstable; urgency=low
   * Enable loading of plugins added after startup.
   * Enable plugins to be placed in /home in addition to /opt.
 
- -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 16 May 2016 21:21:04 +0000
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 17 May 2016 13:57:04 +0000
 
 qdl (1.2.4) unstable; urgency=low
 
