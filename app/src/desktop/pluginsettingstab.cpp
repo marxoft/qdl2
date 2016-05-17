@@ -49,7 +49,7 @@ void PluginSettingsTab::save() {
 }
 
 void PluginSettingsTab::addCheckBox(QFormLayout *layout, const QString &label, const QString &key, bool value) {
-    QCheckBox *checkbox = new QCheckBox(label, this);
+    QCheckBox *checkbox = new QCheckBox("&" + label, this);
     checkbox->setProperty("key", key);
     checkbox->setChecked(value);
     layout->addRow(checkbox);
@@ -69,13 +69,13 @@ void PluginSettingsTab::addComboBox(QFormLayout *layout, const QString &label, c
     }
 
     combobox->setCurrentIndex(qMax(0, combobox->findData(value)));
-    layout->addRow(label + ":", combobox);
+    layout->addRow("&" + label + ":", combobox);
     connect(combobox, SIGNAL(currentIndexChanged(int)), this, SLOT(setListValue(int)));
 }
 
 void PluginSettingsTab::addGroupBox(QFormLayout *layout, const QString &label, const QString &key,
                                     const QVariantList &settings) {
-    QGroupBox *groupbox = new QGroupBox(label, this);
+    QGroupBox *groupbox = new QGroupBox("&" + label, this);
     QFormLayout *form = new QFormLayout(groupbox);
 
     foreach (const QVariant &setting, settings) {
@@ -94,7 +94,7 @@ void PluginSettingsTab::addLineEdit(QFormLayout *layout, const QString &label, c
         edit->setEchoMode(QLineEdit::Password);
     }
 
-    layout->addRow(label + ":", edit);
+    layout->addRow("&" + label + ":", edit);
     connect(edit, SIGNAL(textChanged(QString)), this, SLOT(setTextValue(QString)));
 }
 
@@ -106,7 +106,7 @@ void PluginSettingsTab::addSpinBox(QFormLayout *layout, const QString &label, co
     spinbox->setMaximum(maximum);
     spinbox->setSingleStep(step);
     spinbox->setValue(value);
-    layout->addRow(label + ":", spinbox);
+    layout->addRow("&" + label + ":", spinbox);
     connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(setIntegerValue(int)));
 }
 
