@@ -87,9 +87,9 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addAction(m_pluginsAction);
     menuBar()->addAction(m_aboutAction);
 
-    m_addUrlsAction->setShortcut(tr("Ctrl+A"));
+    m_addUrlsAction->setShortcut(tr("Ctrl+N"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
-    m_retrieveUrlsAction->setShortcut(tr("Ctrl+R"));
+    m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
     m_propertiesAction->setShortcut(tr("Ctrl+I"));
     m_propertiesAction->setEnabled(false);
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));

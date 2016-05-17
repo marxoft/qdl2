@@ -112,9 +112,9 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addMenu(m_editMenu);
     menuBar()->addMenu(m_helpMenu);
 
-    m_addUrlsAction->setShortcut(tr("Ctrl+A"));
+    m_addUrlsAction->setShortcut(tr("Ctrl+N"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
-    m_retrieveUrlsAction->setShortcut(tr("Ctrl+R"));
+    m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
     m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_quitAction->setShortcut(tr("Ctrl+Q"));
