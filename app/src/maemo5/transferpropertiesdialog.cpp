@@ -43,6 +43,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Download properties"));
+    setMinimumHeight(360);
 
     m_scrollArea->setWidget(m_container);
     m_scrollArea->setWidgetResizable(true);

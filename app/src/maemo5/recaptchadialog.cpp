@@ -28,10 +28,11 @@ RecaptchaDialog::RecaptchaDialog(QWidget *parent) :
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Recaptcha"));
+    setMinimumHeight(360);
 
     m_view->setModel(m_model);
     m_view->setUniformItemSizes(true);
-
+    
     m_layout->addWidget(m_view);
 
     connect(m_view, SIGNAL(clicked(QModelIndex)), this, SLOT(showPluginDialog(QModelIndex)));

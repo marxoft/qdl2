@@ -35,6 +35,7 @@
 #include "utils.h"
 #include "valueselectoraction.h"
 #include <QAction>
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QLabel>
@@ -201,6 +202,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         if (QMessageBox::question(this, tr("Quit?"),
             tr("Some downloads are still active. Do you want to quit?"),
             QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) {
+            event->ignore();
             return;
         }
     }

@@ -55,6 +55,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Settings"));
+    setMinimumHeight(360);
 
     m_scrollArea->setWidget(m_container);
     m_scrollArea->setWidgetResizable(true);

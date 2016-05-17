@@ -36,6 +36,7 @@ CaptchaDialog::CaptchaDialog(QWidget *parent) :
     m_remaining(CAPTCHA_TIMEOUT)
 {
     setWindowTitle(tr("Please complete captcha"));
+    setMinimumHeight(360);
 
     m_timer->setInterval(1000);
 
@@ -45,6 +46,7 @@ CaptchaDialog::CaptchaDialog(QWidget *parent) :
     m_layout->addWidget(m_timeLabel, 1, 0);
     m_layout->addWidget(m_responseEdit, 2, 0);
     m_layout->addWidget(m_buttonBox, 2, 1);
+    m_layout->setRowStretch(0, 1);
 
     m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 

@@ -35,6 +35,7 @@ CategoriesDialog::CategoriesDialog(QWidget *parent) :
     m_layout(new QGridLayout(this))
 {
     setWindowTitle(tr("Categories"));
+    setMinimumHeight(360);
 
     m_view->setModel(m_model);
     m_view->setSelectionBehavior(QTreeView::SelectRows);

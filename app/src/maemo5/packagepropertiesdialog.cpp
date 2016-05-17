@@ -42,6 +42,7 @@ PackagePropertiesDialog::PackagePropertiesDialog(TransferItem *package, QWidget 
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Package properties"));
+    setMinimumHeight(360);
 
     m_scrollArea->setWidget(m_container);
     m_scrollArea->setWidgetResizable(true);

@@ -33,6 +33,7 @@ ArchivePasswordsDialog::ArchivePasswordsDialog(QWidget *parent) :
     m_layout(new QGridLayout(this))
 {
     setWindowTitle(tr("Archive passwords"));
+    setMinimumHeight(360);
 
     m_view->setModel(m_model);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);

@@ -37,11 +37,12 @@ ClipboardUrlsDialog::ClipboardUrlsDialog(QWidget *parent) :
     m_layout(new QGridLayout(this))
 {
     setWindowTitle(tr("Clipboard URLs"));
+    setMinimumHeight(360);
 
     m_view->setModel(ClipboardUrlModel::instance());
     m_view->setSelectionMode(QListView::MultiSelection);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    
     m_actionSelector->setModel(m_actionModel);
 
     m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);

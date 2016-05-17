@@ -36,6 +36,7 @@ AboutPluginsDialog::AboutPluginsDialog(QWidget *parent) :
     m_layout(new QGridLayout(this))
 {
     setWindowTitle(tr("Installed plugins"));
+    setMinimumHeight(360);
     
     m_view->setUniformItemSizes(true);
     m_view->setSelectionMode(QListView::NoSelection);

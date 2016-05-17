@@ -44,6 +44,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Add URLs"));
+    setMinimumHeight(360);
 
     m_scrollArea->setWidget(m_container);
     m_scrollArea->setWidgetResizable(true);

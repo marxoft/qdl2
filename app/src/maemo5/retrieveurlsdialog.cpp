@@ -43,6 +43,7 @@ RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Retrieve URLs"));
+    setMinimumHeight(360);
 
     if (UrlRetrievalModel::instance()->status() != UrlRetrievalModel::Active) {
         UrlRetrievalModel::instance()->clear();
