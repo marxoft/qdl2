@@ -1,8 +1,11 @@
 QT += core network
-QT -= gui
 CONFIG += plugin
 TARGET = youtube
 TEMPLATE = lib
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT -= gui
+}
 
 HEADERS += youtubeplugin.h
 SOURCES += youtubeplugin.cpp

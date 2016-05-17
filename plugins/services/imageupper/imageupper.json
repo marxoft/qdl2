@@ -1,0 +1,15 @@
+{
+    "type": "js",
+    "id": "imageupper",
+    "file": "imageupper.js",
+    "name": "Image Upper",
+    "icon": "imageupper.jpg",
+    "regExp": "http://imageupper\\.com/((i|g)/\\?|gi/\\?galID=)\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Retrieve gallery for images",
+            "key": "retrieveGallery"
+        }
+    ]
+}

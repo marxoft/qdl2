@@ -8,24 +8,24 @@
     "settings": [
         {
             "type": "group",
-            "label": "&Account",
+            "label": "Account",
             "key": "Account",
             "settings": [
                 {
                     "type": "boolean",
-                    "label": "Use &login",
+                    "label": "Use login",
                     "key": "useLogin"
                 },
                 
                 {
                     "type": "text",
-                    "label": "&Email",
+                    "label": "Email",
                     "key": "username"
                 },
 
                 {
                     "type": "password",
-                    "label": "&Password",
+                    "label": "Password",
                     "key": "password"
                 }
             ]

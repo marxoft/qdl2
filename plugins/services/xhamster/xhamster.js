@@ -86,7 +86,7 @@ function getDownloadRequest(url) {
                     }
 
                     if (options.length > 0) {
-                        settingsRequest("Video format", [{"type": "list", "label": "Video &format",
+                        settingsRequest(qsTr("Video format"), [{"type": "list", "label": qsTr("Video format"),
                                                           "key": "url",
                                                           "value": options[Math.max(0, options.indexOf(format))].value,
                                                           "options": options}],

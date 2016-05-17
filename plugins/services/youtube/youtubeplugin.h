@@ -19,6 +19,7 @@
 #define YOUTUBEPLUGIN_H
 
 #include "serviceplugin.h"
+#include <QStringList>
 #include <QVariantList>
 
 namespace QYouTube {

@@ -19,11 +19,13 @@
 #include <qyoutube/resourcesrequest.h>
 #include <qyoutube/streamsrequest.h>
 #include <QNetworkRequest>
+#include <QRegExp>
 #include <QSettings>
 #if QT_VERSION >= 0x050000
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
 #if QT_VERSION >= 0x050000
@@ -182,7 +184,7 @@ void YouTubePlugin::onStreamsRequestFinished() {
             QVariantList options;
             QVariantMap list;
             list["type"] = "list";
-            list["label"] = tr("Video &format");
+            list["label"] = tr("Video format");
             list["key"] = "videoFormat";
             
             for (int i = 0; i < m_streams.size(); i++) {

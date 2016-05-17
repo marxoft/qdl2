@@ -1,0 +1,11 @@
+qdl-plugins-fileboom (0.1.0) unstable; urgency=low
+
+  * Changes to plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 16 May 2016 20:07:12 +0000
+
+qdl-plugins-fileboom (0.0.1) unstable; urgency=low
+
+  * Inital release.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 07 Jul 2014 21:25:04 +0000

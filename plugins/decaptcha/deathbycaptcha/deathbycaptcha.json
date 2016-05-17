@@ -7,18 +7,18 @@
     "settings": [
         {
             "type": "group",
-            "label": "&Account",
+            "label": "Account",
             "key": "Account",
             "settings": [
                 {
                     "type": "text",
-                    "label": "&Username",
+                    "label": "Username",
                     "key": "username"
                 },
 
                 {
                     "type": "password",
-                    "label": "&Password",
+                    "label": "Password",
                     "key": "password"
                 }
             ]

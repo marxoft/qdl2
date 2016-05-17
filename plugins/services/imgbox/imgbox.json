@@ -8,7 +8,7 @@
     "settings": [
         {
             "type": "boolean",
-            "label": "Retrieve &gallery for images",
+            "label": "Retrieve gallery for images",
             "key": "retrieveGallery"
         }
     ]

@@ -26,6 +26,7 @@
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
 QRegExp UploadedPlugin::FILE_REGEXP("http(s|)://([-\\w]+|)stor\\d+\\.uploaded\\.net/dl/[-\\w]+");
@@ -204,17 +205,17 @@ void UploadedPlugin::getDownloadRequest(const QString &url) {
             QVariantList list;
             QVariantMap usernameMap;
             usernameMap["type"] = "text";
-            usernameMap["label"] = tr("&Username");
+            usernameMap["label"] = tr("Username");
             usernameMap["key"] = "username";
             list << usernameMap;
             QVariantMap passwordMap;
             passwordMap["type"] = "password";
-            passwordMap["label"] = tr("&Password");
+            passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
             QVariantMap storeMap;
             storeMap["type"] = "boolean";
-            storeMap["label"] = tr("&Store credentials");
+            storeMap["label"] = tr("Store credentials");
             storeMap["key"] = "store";
             list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");

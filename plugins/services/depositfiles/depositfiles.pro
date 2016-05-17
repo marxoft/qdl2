@@ -1,8 +1,11 @@
 QT += core network script
-QT -= gui
 CONFIG += plugin
 TARGET = depositfiles
 TEMPLATE = lib
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT -= gui
+}
 
 HEADERS += depositfilesplugin.h
 SOURCES += depositfilesplugin.cpp

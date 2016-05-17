@@ -1,8 +1,11 @@
 QT += core network
-QT -= gui
 CONFIG += plugin
 TARGET = onefichier
 TEMPLATE = lib
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT -= gui
+}
 
 HEADERS += onefichierplugin.h
 SOURCES += onefichierplugin.cpp

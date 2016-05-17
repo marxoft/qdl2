@@ -8,14 +8,14 @@
     "settings": [
         {
             "type": "boolean",
-            "label": "Use &YouTube video formats",
+            "label": "Use YouTube video formats",
             "key": "useYouTubeFormats"
             "value": false
         },
 
         {
             "type": "list",
-            "label": "Default video &format",
+            "label": "Default video format",
             "key": "videoFormat",
             "value": "37",
             "options": [

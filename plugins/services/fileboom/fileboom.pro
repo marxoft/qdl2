@@ -1,8 +1,11 @@
 QT += core network
-QT -= gui
 CONFIG += plugin
 TARGET = fileboom
 TEMPLATE = lib
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT -= gui
+}
 
 HEADERS += fileboomplugin.h
 SOURCES += fileboomplugin.cpp

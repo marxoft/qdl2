@@ -17,6 +17,7 @@
 #include "deathbycaptchaplugin.h"
 #include "json.h"
 #include <QBuffer>
+#include <QDateTime>
 #include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -27,6 +28,7 @@
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
 QString DeathByCaptchaPlugin::CAPTCHA_URL("http://api.dbcapi.me/api/captcha");
@@ -98,17 +100,17 @@ void DeathByCaptchaPlugin::getCaptchaResponse(const QImage &image) {
         QVariantList list;
         QVariantMap usernameMap;
         usernameMap["type"] = "text";
-        usernameMap["label"] = tr("&Username");
+        usernameMap["label"] = tr("Username");
         usernameMap["key"] = "username";
         list << usernameMap;
         QVariantMap passwordMap;
         passwordMap["type"] = "password";
-        passwordMap["label"] = tr("&Password");
+        passwordMap["label"] = tr("Password");
         passwordMap["key"] = "password";
         list << passwordMap;
         QVariantMap storeMap;
         storeMap["type"] = "boolean";
-        storeMap["label"] = tr("&Store credentials");
+        storeMap["label"] = tr("Store credentials");
         storeMap["key"] = "store";
         list << storeMap;
         emit settingsRequest(tr("Login"), list, "setLogin");

@@ -1,0 +1,60 @@
+qdl-plugins-keeptoshare (0.2.0) unstable; urgency=low
+
+  * Changes to plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 16 May 2016 20:24:25 +0000
+
+qdl-plugins-keeptoshare (0.1.7) unstable; urgency=low
+
+  * Fix download wait time detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 18 Sep 2015 02:00:24 +0000
+
+qdl-plugins-keeptoshare (0.1.6) unstable; urgency=low
+
+  * Handle error message for multiple download attempts using a free account.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 18 Dec 2014 15:46:17 +0000
+
+qdl-plugins-keeptoshare (0.1.5) unstable; urgency=low
+
+  * Use captcha URL as the captcha key.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 21 Nov 2014 12:26:12 +0000
+
+qdl-plugins-keeptoshare (0.1.4) unstable; urgency=low
+
+  * Fix filename detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sat, 11 Oct 2014 22:00:15 +0000
+
+qdl-plugins-keeptoshare (0.1.3) unstable; urgency=low
+
+  * Now using Keep2Share recaptcha plugin.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 18 Sep 2014 17:12:15 +0000
+
+qdl-plugins-keeptoshare (0.1.2) unstable; urgency=low
+
+  * Disconnect from timer signal when current operation is canceled.
+  * Handle keep2s.com host.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sun, 01 Jun 2014 16:46:43 +0000
+
+qdl-plugins-keeptoshare (0.1.1) unstable; urgency=low
+
+  * Remove forcing of host to keep2share.cc.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 09 May 2014 14:31:12 +0000
+
+qdl-plugins-keeptoshare (0.1.0) unstable; urgency=low
+
+  * Fixes and changes to base plugin class.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sun, 03 Nov 2013 15:34:04 +0000
+
+qdl-plugins-keeptoshare (0.0.1) unstable; urgency=low
+
+  * Inital release.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 19 Mar 2013 17:02:04 +0000

@@ -19,6 +19,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#if QT_VERSION < 0x050000
+#include <QtPlugin>
+#endif
 
 int GenericRecaptchaPlugin::MAX_REDIRECTS = 8;
 

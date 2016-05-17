@@ -69,7 +69,7 @@ function getDownloadRequest(url) {
                     }
                     else {
                         var settingsList = [];
-                        var formatList = {"type": "list", "label": qsTr("Video &format"), "key": "url"};
+                        var formatList = {"type": "list", "label": qsTr("Video format"), "key": "url"};
                         
                         try {
                             formatList["value"] = (format == "mp4" ? list[5] : list[4]);

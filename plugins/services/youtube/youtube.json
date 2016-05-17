@@ -8,14 +8,14 @@
     "settings": [
         {
             "type": "boolean",
-            "label": "Use &default video format",
+            "label": "Use default video format",
             "key": "useDefaultVideoFormat",
             "value": true
         },
         
         {
             "type": "list",
-            "label": "Default video &format",
+            "label": "Default video format",
             "key": "videoFormat",
             "value": "37",
             "options": [
