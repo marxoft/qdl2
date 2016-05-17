@@ -63,8 +63,9 @@ class Settings : public QObject
                NOTIFY webInterfaceUsernameChanged)
     Q_PROPERTY(QString webInterfacePassword READ webInterfacePassword WRITE setWebInterfacePassword
                NOTIFY webInterfacePasswordChanged)
-    Q_PROPERTY(QByteArray windowGeometry READ windowGeometry WRITE setWindowGeometry NOTIFY windowGeometryChanged)
-    Q_PROPERTY(QByteArray windowState READ windowState WRITE setWindowState NOTIFY windowStateChanged)
+    Q_PROPERTY(QByteArray transferViewHeaderState READ transferViewHeaderState WRITE setTransferViewHeaderState)
+    Q_PROPERTY(QByteArray windowGeometry READ windowGeometry WRITE setWindowGeometry)
+    Q_PROPERTY(QByteArray windowState READ windowState WRITE setWindowState)
 
 public:
     ~Settings();
@@ -108,7 +109,8 @@ public:
     static bool webInterfaceAuthenticationEnabled();
     static QString webInterfaceUsername();
     static QString webInterfacePassword();
-
+    
+    static QByteArray transferViewHeaderState();
     static QByteArray windowGeometry();
     static QByteArray windowState();
 
@@ -151,7 +153,8 @@ public Q_SLOTS:
     static void setWebInterfaceAuthenticationEnabled(bool enabled);
     static void setWebInterfaceUsername(const QString &username);
     static void setWebInterfacePassword(const QString &password);
-
+    
+    static void setTransferViewHeaderState(const QByteArray &state);
     static void setWindowGeometry(const QByteArray &geometry);
     static void setWindowState(const QByteArray &state);
 
@@ -182,8 +185,6 @@ Q_SIGNALS:
     void webInterfaceAuthenticationEnabledChanged(bool enabled);
     void webInterfaceUsernameChanged(const QString &username);
     void webInterfacePasswordChanged(const QString &password);
-    void windowGeometryChanged(const QByteArray &geometry);
-    void windowStateChanged(const QByteArray &state);
 
 private:
     Settings();

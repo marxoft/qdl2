@@ -339,3 +339,11 @@ void Settings::setNetworkProxyPassword(const QString &password) {
         }
     }
 }
+
+QByteArray Settings::transferViewHeaderState() {
+    return value("MainWindow/transferViewHeaderState").toByteArray();
+}
+
+void Settings::setTransferViewHeaderState(const QByteArray &state) {
+    setValue("MainWindow/transferViewHeaderState", state);
+}

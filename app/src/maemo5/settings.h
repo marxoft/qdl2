@@ -55,6 +55,7 @@ class Settings : public QObject
                NOTIFY networkProxyUsernameChanged)
     Q_PROPERTY(QString networkProxyPassword READ networkProxyPassword WRITE setNetworkProxyPassword
                NOTIFY networkProxyPasswordChanged)
+    Q_PROPERTY(QByteArray transferViewHeaderState READ transferViewHeaderState WRITE setTransferViewHeaderState)
 
 public:
     ~Settings();
@@ -92,6 +93,8 @@ public:
     static bool networkProxyAuthenticationEnabled();
     static QString networkProxyUsername();
     static QString networkProxyPassword();
+    
+    static QByteArray transferViewHeaderState();
 
 public Q_SLOTS:
     static void setCheckUrls(bool enabled);
@@ -126,6 +129,8 @@ public Q_SLOTS:
     static void setNetworkProxyAuthenticationEnabled(bool enabled);
     static void setNetworkProxyUsername(const QString &username);
     static void setNetworkProxyPassword(const QString &password);
+    
+    static void setTransferViewHeaderState(const QByteArray &state);
 
 Q_SIGNALS:
     void checkUrlsChanged(bool enabled);

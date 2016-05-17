@@ -120,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent) :
     
     m_activeLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("999.99MB/s"));
+    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("9999.99MB/s"));
     m_speedLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     m_toolBar->setAllowedAreas(Qt::BottomToolBarArea);
@@ -147,11 +147,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_view->setAllColumnsShowFocus(true);
 
     QHeaderView *header = m_view->header();
-    const QFontMetrics fm = header->fontMetrics();
-    header->resizeSection(0, 200);
-    header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)"));
-    header->resizeSection(3, fm.width("999.99KB/s"));
-    header->hideSection(1); // Hide priority column
+    
+    if (!header->restoreState(Settings::transferViewHeaderState())) {
+        const QFontMetrics fm = header->fontMetrics();
+        header->resizeSection(0, 200);
+        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)"));
+        header->resizeSection(3, fm.width("999.99KB/s"));
+        header->hideSection(1); // Hide priority column
+    }
     
     connect(Settings::instance(), SIGNAL(maximumConcurrentTransfersChanged(int)),
             this, SLOT(onMaximumConcurrentTransfersChanged(int)));
@@ -196,11 +199,13 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (TransferModel::instance()->activeTransfers() > 0) {
         if (QMessageBox::question(this, tr("Quit?"),
-            tr("Some downloads are still active. Do you want to quit?")) != QMessageBox::Yes) {
+            tr("Some downloads are still active. Do you want to quit?"),
+            QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) {
             return;
         }
     }
     
+    Settings::setTransferViewHeaderState(m_view->header()->saveState());
     QMainWindow::closeEvent(event);
     Qdl::quit();
 }
@@ -220,8 +225,10 @@ void MainWindow::pauseCurrentTransfer() {
 void MainWindow::cancelCurrentTransfer() {
     if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::TransferType) {
         if (QMessageBox::question(this, tr("Remove?"), tr("Do you want to remove download '%1'?")
-                                 .arg(m_view->currentIndex().data(TransferItem::NameRole).toString())) == QMessageBox::Yes) {
-            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::Canceled, TransferItem::StatusRole);
+                                  .arg(m_view->currentIndex().data(TransferItem::NameRole).toString()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::Canceled,
+                                               TransferItem::StatusRole);
         }
     }
 }
@@ -229,8 +236,10 @@ void MainWindow::cancelCurrentTransfer() {
 void MainWindow::cancelAndDeleteCurrentTransfer() {
     if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::TransferType) {
         if (QMessageBox::question(this, tr("Delete files?"), tr("Do you want to delete the files for download '%1'?")
-                                 .arg(m_view->currentIndex().data(TransferItem::NameRole).toString())) == QMessageBox::Yes) {
-            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::CanceledAndDeleted, TransferItem::StatusRole);
+                                  .arg(m_view->currentIndex().data(TransferItem::NameRole).toString()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::CanceledAndDeleted,
+                                               TransferItem::StatusRole);
         }
     }
 }
@@ -250,8 +259,10 @@ void MainWindow::pauseCurrentPackage() {
 void MainWindow::cancelCurrentPackage() {
     if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
         if (QMessageBox::question(this, tr("Remove?"), tr("Do you want to remove package '%1'?")
-                                 .arg(m_view->currentIndex().data(TransferItem::NameRole).toString())) == QMessageBox::Yes) {
-            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::Canceled, TransferItem::StatusRole);
+                                  .arg(m_view->currentIndex().data(TransferItem::NameRole).toString()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::Canceled,
+                                               TransferItem::StatusRole);
         }
     }
 }
@@ -259,8 +270,10 @@ void MainWindow::cancelCurrentPackage() {
 void MainWindow::cancelAndDeleteCurrentPackage() {
     if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
         if (QMessageBox::question(this, tr("Delete files?"), tr("Do you want to delete the files for package '%1'?")
-                                 .arg(m_view->currentIndex().data(TransferItem::NameRole).toString())) == QMessageBox::Yes) {
-            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::CanceledAndDeleted, TransferItem::StatusRole);
+                                  .arg(m_view->currentIndex().data(TransferItem::NameRole).toString()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            TransferModel::instance()->setData(m_view->currentIndex(), TransferItem::CanceledAndDeleted,
+                                               TransferItem::StatusRole);
         }
     }
 }

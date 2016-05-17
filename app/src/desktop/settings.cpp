@@ -410,18 +410,20 @@ void Settings::setWebInterfacePassword(const QString &password) {
     }
 }
 
+QByteArray Settings::transferViewHeaderState() {
+    return value("MainWindow/transferViewHeaderState").toByteArray();
+}
+
+void Settings::setTransferViewHeaderState(const QByteArray &state) {
+    setValue("MainWindow/transferViewHeaderState", state);
+}
+
 QByteArray Settings::windowGeometry() {
     return value("MainWindow/windowGeometry").toByteArray();
 }
 
 void Settings::setWindowGeometry(const QByteArray &geometry) {
-    if (geometry != windowGeometry()) {
-        setValue("MainWindow/windowGeometry", geometry);
-
-        if (self) {
-            emit self->windowGeometryChanged(geometry);
-        }
-    }
+    setValue("MainWindow/windowGeometry", geometry);
 }
 
 QByteArray Settings::windowState() {
@@ -429,11 +431,5 @@ QByteArray Settings::windowState() {
 }
 
 void Settings::setWindowState(const QByteArray &state) {
-    if (state != windowState()) {
-        setValue("MainWindow/windowState", state);
-
-        if (self) {
-            emit self->windowStateChanged(state);
-        }
-    }
+    setValue("MainWindow/windowState", state);
 }

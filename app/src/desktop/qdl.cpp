@@ -199,6 +199,7 @@ Qdl* Qdl::instance() {
 }
 
 void Qdl::quit() {
+    closeWindow();
     ClipboardUrlModel::instance()->save();
     TransferModel::instance()->save();
     QCoreApplication::instance()->quit();

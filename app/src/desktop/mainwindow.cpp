@@ -218,7 +218,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_optionsButton->setIcon(QIcon::fromTheme("document-properties"));
     m_optionsButton->setText(tr("&Options"));
 
-    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("999.99MB/s"));
+    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("9999.99MB/s"));
     m_speedLabel->setAlignment(Qt::AlignCenter);
 
     m_bottomToolBar->setObjectName("bottomToolBar");
@@ -249,11 +249,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_view->setAllColumnsShowFocus(true);
 
     QHeaderView *header = m_view->header();
-    const QFontMetrics fm = header->fontMetrics();
-    header->resizeSection(0, 300);
-    header->resizeSection(1, fm.width(TransferModel::instance()->headerData(1).toString()) + 20);
-    header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)") + 20);
-    header->resizeSection(3, fm.width("999.99KB/s") + 20);
+    
+    if (!header->restoreState(Settings::transferViewHeaderState())) {
+        const QFontMetrics fm = header->fontMetrics();
+        header->resizeSection(0, 300);
+        header->resizeSection(1, fm.width(TransferModel::instance()->headerData(1).toString()) + 20);
+        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)") + 20);
+        header->resizeSection(3, fm.width("999.99KB/s") + 20);
+    }
 
     connect(Categories::instance(), SIGNAL(changed()), this, SLOT(setCategoryMenuActions()));
 
@@ -301,6 +304,7 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    Settings::setTransferViewHeaderState(m_view->header()->saveState());
     Settings::setWindowGeometry(saveGeometry());
     Settings::setWindowState(saveState());
     QMainWindow::closeEvent(event);
@@ -313,7 +317,7 @@ void MainWindow::quit() {
             return;
         }
     }
-
+    
     Qdl::quit();
 }
 
