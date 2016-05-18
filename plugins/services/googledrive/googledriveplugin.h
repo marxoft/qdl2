@@ -20,6 +20,7 @@
 
 #include "serviceplugin.h"
 #include <QRegExp>
+#include <QStringList>
 #include <QUrl>
 
 class GoogleDrivePlugin : public ServicePlugin
