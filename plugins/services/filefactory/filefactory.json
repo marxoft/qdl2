@@ -4,6 +4,7 @@
     "name": "Filefactory",
     "icon": "filefactory.jpg",
     "file": "libfilefactory.so",
+    "version": 1,
     "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|stream)/\\w+",
     "settings": [
         {

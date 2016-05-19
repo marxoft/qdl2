@@ -4,6 +4,7 @@
     "name": "Uploadly",
     "icon": "uploadly.png",
     "file": "uploadly.js",
+    "version": 1,
     "regExp": "http(s|)://((i|v)\\.|)uploadly\\.com/\\w+",
     "settings": [
         {

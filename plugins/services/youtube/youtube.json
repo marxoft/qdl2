@@ -4,6 +4,7 @@
     "name": "YouTube",
     "icon": "youtube.jpg",
     "file": "libyoutube.so",
+    "version": 1,
     "regExp": "(http(s|)://(www.|m.|)youtube.com/(v/|.+)(v=|list=|)|http(s|)://youtu.be/)",
     "settings": [
         {

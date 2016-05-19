@@ -4,6 +4,7 @@
     "name": "XVideos",
     "icon": "xvideos.jpg",
     "file": "xvideos.js",
+    "version": 1,
     "regExp": "http://www\\.xvideos\\.com/video\\d+",
     "settings": [
         {

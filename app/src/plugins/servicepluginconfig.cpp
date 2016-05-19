@@ -22,7 +22,8 @@
 #include <QFile>
 
 ServicePluginConfig::ServicePluginConfig(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_version(1)
 {
 }
 
@@ -56,6 +57,10 @@ QRegExp ServicePluginConfig::regExp() const {
 
 QVariantList ServicePluginConfig::settings() const {
     return m_settings;
+}
+
+int ServicePluginConfig::version() const {
+    return m_version;
 }
 
 bool ServicePluginConfig::load(const QString &filePath) {
@@ -94,6 +99,7 @@ bool ServicePluginConfig::load(const QString &filePath) {
     m_pluginType = config.value("type").toString();
     m_regExp = QRegExp(config.value("regExp").toString());
     m_settings = config.value("settings").toList();
+    m_version = qMax(1, config.value("version").toInt());
     emit changed();
     return true;
 }

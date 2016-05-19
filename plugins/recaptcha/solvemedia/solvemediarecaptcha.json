@@ -3,5 +3,6 @@
     "id": "solvemediarecaptcha",
     "name": "Solve Media",
     "icon": "solvemediarecaptcha.jpg",
-    "file": "libsolvemediarecaptcha.so"
+    "file": "libsolvemediarecaptcha.so",
+    "version": 1
 }

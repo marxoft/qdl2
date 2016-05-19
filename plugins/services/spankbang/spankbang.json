@@ -1,11 +1,11 @@
 {
     "type": "js",
-    "id": "pornhub",
-    "name": "Pornhub",
-    "icon": "pornhub.jpg",
-    "file": "pornhub.js",
+    "id": "spankbang",
+    "name": "SpankBang",
+    "icon": "spankbang.jpg",
+    "file": "spankbang.js",
     "version": 1,
-    "regExp": "http(s|)://www\\.pornhub\\.com/view_video\\.php\\?viewkey=\\w+"
+    "regExp": "http://spankbang\\.com/\\w+/(video|embed)",
     "settings": [
         {
             "type": "boolean",
@@ -18,26 +18,21 @@
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "1080",
+            "value": "720p",
             "options": [
                 {
-                    "label": "1080P",
-                    "value": "1080"
-                },
-
-                {
                     "label": "720P",
-                    "value": "720"
+                    "value": "720p"
                 },
 
                 {
                     "label": "480P",
-                    "value": "480"
+                    "value": "480p"
                 },
 
                 {
                     "label": "240P",
-                    "value": "240"
+                    "value": "240p"
                 }
             ]
         }

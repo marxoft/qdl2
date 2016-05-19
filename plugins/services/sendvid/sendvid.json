@@ -4,5 +4,6 @@
     "name": "Sendvid",
     "icon": "sendvid.jpg",
     "file": "sendvid.js",
+    "version": 1,
     "regExp": "http(s|)://(www\\.|\\d+\\.|)sendvid\\.com/\\w+"
 }

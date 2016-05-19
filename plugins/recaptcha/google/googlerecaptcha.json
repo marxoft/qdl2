@@ -3,5 +3,6 @@
     "id": "googlerecaptcha",
     "name": "Google",
     "icon": "googlerecaptcha.jpg",
-    "file": "libgooglerecaptcha.so"
+    "file": "libgooglerecaptcha.so",
+    "version": 1
 }

@@ -18,6 +18,7 @@
 #include "categories.h"
 #include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
+#include "logger.h"
 #include "mainwindow.h"
 #include "pluginsettings.h"
 #include "recaptchapluginmanager.h"
@@ -77,6 +78,7 @@ static QVariantMap configToVariantMap(const DecaptchaPluginConfig *config) {
     map["id"] = config->id();
     map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
+    map["version"] = config->version();
     return map;
 }
 
@@ -88,6 +90,7 @@ static QVariantMap configToVariantMap(const RecaptchaPluginConfig *config) {
     map["id"] = config->id();
     map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
+    map["version"] = config->version();
     return map;
 }
 
@@ -100,6 +103,7 @@ static QVariantMap configToVariantMap(const ServicePluginConfig *config) {
     map["pluginFilePath"] = config->pluginFilePath();
     map["pluginType"] = config->pluginType();
     map["regExp"] = config->regExp().pattern();
+    map["version"] = config->version();
     return map;
 }
 
@@ -202,6 +206,7 @@ void Qdl::quit() {
     closeWindow();
     ClipboardUrlModel::instance()->save();
     TransferModel::instance()->save();
+    Logger::log("Qdl::quit(): Quitting the application");
     QCoreApplication::instance()->quit();
 }
 

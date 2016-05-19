@@ -28,6 +28,7 @@ ServicePluginConfigModel::ServicePluginConfigModel(QObject *parent) :
     m_roles[PluginTypeRole] = "pluginType";
     m_roles[RegExpRole] = "regExp";
     m_roles[SettingsRole] = "settings";
+    m_roles[VersionRole] = "version";
 #if QT_VERSION < 0x050000
     setRoleNames(m_roles);
 #endif
@@ -78,6 +79,8 @@ QVariant ServicePluginConfigModel::data(const QModelIndex &index, int role) cons
         return config->regExp();
     case SettingsRole:
         return config->settings();
+    case VersionRole:
+        return config->version();
     default:
         return QVariant();
     }

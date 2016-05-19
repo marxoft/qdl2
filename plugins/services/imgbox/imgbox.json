@@ -4,6 +4,7 @@
     "file": "imgbox.js",
     "name": "imgbox",
     "icon": "imgbox.jpg",
+    "version": 1,
     "regExp": "http(s|)://imgbox\\.com/(g/|)\\w+",
     "settings": [
         {

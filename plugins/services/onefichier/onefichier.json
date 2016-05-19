@@ -4,6 +4,7 @@
     "name": "1Fichier",
     "icon": "onefichier.jpg",
     "file": "libonefichier.so",
+    "version": 1,
     "regExp": "http(s|)://(\\w+\\.1fichier\\.com|1fichier\\.com/\\?\\w+)",
     "settings": [
         {

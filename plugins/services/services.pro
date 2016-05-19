@@ -15,6 +15,7 @@ SUBDIRS = \
     publishtome \
     rapidgator \
     sendvid \
+    spankbang \
     uploaded \
     uploadly \
     xhamster \

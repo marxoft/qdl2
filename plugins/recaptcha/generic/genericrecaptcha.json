@@ -3,5 +3,6 @@
     "id": "genericrecaptcha",
     "name": "Generic",
     "icon": "genericrecaptcha.jpg",
-    "file": "libgenericrecaptcha.so"
+    "file": "libgenericrecaptcha.so",
+    "version": 1
 }

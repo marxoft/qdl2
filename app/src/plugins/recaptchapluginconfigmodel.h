@@ -34,7 +34,8 @@ public:
         IdRole,
         PluginFilePathRole,
         PluginTypeRole,
-        SettingsRole
+        SettingsRole,
+        VersionRole
     };
     
     explicit RecaptchaPluginConfigModel(QObject *parent = 0);

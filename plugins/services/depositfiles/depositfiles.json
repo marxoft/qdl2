@@ -4,6 +4,7 @@
     "name": "DepositFiles",
     "icon": "depositfiles.jpg",
     "file": "libdepositfiles.so",
+    "version": 1,
     "regExp": "http(s|)://(www\\.|)(depositfiles\\.(com|org)|dfiles\\.[a-z]+)/(\\w+/|)files/\\w+",
     "settings": [
         {

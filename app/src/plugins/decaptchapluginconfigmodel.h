@@ -34,7 +34,8 @@ public:
         IdRole,
         PluginFilePathRole,
         PluginTypeRole,
-        SettingsRole
+        SettingsRole,
+        VersionRole
     };
     
     explicit DecaptchaPluginConfigModel(QObject *parent = 0);

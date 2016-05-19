@@ -4,6 +4,7 @@
     "name": "FileBoom",
     "icon": "fileboom.jpg",
     "file": "libfileboom.so",
+    "version": 1,
     "regExp": "http(s|)://(www\\.|)f(ile|)boom\\.me/file/\\w+",
     "settings": [
         {

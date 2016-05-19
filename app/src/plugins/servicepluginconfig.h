@@ -34,6 +34,7 @@ class ServicePluginConfig : public QObject
     Q_PROPERTY(QString pluginType READ pluginType NOTIFY changed)
     Q_PROPERTY(QRegExp regExp READ regExp NOTIFY changed)
     Q_PROPERTY(QVariantList settings READ settings NOTIFY changed)
+    Q_PROPERTY(int version READ version NOTIFY changed)
 
 public:
     explicit ServicePluginConfig(QObject *parent = 0);
@@ -53,6 +54,8 @@ public:
     QRegExp regExp() const;
     
     QVariantList settings() const;
+    
+    int version() const;
 
 public Q_SLOTS:
     bool load(const QString &filePath);
@@ -73,6 +76,8 @@ private:
     QRegExp m_regExp;
     
     QVariantList m_settings;
+    
+    int m_version;
 };
 
 #endif // SERVICEPLUGINCONFIG_H

@@ -35,7 +35,8 @@ public:
         PluginFilePathRole,
         PluginTypeRole,
         RegExpRole,
-        SettingsRole
+        SettingsRole,
+        VersionRole
     };
     
     explicit ServicePluginConfigModel(QObject *parent = 0);

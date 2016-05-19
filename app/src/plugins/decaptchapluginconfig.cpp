@@ -22,7 +22,8 @@
 #include <QFile>
 
 DecaptchaPluginConfig::DecaptchaPluginConfig(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_version(1)
 {
 }
 
@@ -52,6 +53,10 @@ QString DecaptchaPluginConfig::pluginType() const {
 
 QVariantList DecaptchaPluginConfig::settings() const {
     return m_settings;
+}
+
+int DecaptchaPluginConfig::version() const {
+    return m_version;
 }
 
 bool DecaptchaPluginConfig::load(const QString &filePath) {
@@ -88,6 +93,7 @@ bool DecaptchaPluginConfig::load(const QString &filePath) {
     m_pluginFilePath = filePath.left(filePath.lastIndexOf("/") + 1) + config.value("file").toString();
     m_pluginType = config.value("type").toString();
     m_settings = config.value("settings").toList();
+    m_version = qMax(1, config.value("version").toInt());
     emit changed();
     return true;
 }

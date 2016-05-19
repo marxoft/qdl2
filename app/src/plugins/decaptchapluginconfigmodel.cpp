@@ -27,6 +27,7 @@ DecaptchaPluginConfigModel::DecaptchaPluginConfigModel(QObject *parent) :
     m_roles[PluginFilePathRole] = "pluginFilePath";
     m_roles[PluginTypeRole] = "pluginType";
     m_roles[SettingsRole] = "settings";
+    m_roles[VersionRole] = "version";
 #if QT_VERSION < 0x050000
     setRoleNames(m_roles);
 #endif
@@ -75,6 +76,8 @@ QVariant DecaptchaPluginConfigModel::data(const QModelIndex &index, int role) co
         return config->pluginType();
     case SettingsRole:
         return config->settings();
+    case VersionRole:
+        return config->version();
     default:
         return QVariant();
     }

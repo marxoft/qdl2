@@ -4,6 +4,7 @@
     "name": "Filespace",
     "icon": "filespace.jpg",
     "file": "libfilespace.so",
+    "version": 1,
     "regExp": "http(s|)://(www\\.|)filespace\\.com/\\w+",
     "settings": [
         {

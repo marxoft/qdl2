@@ -32,6 +32,7 @@ class RecaptchaPluginConfig : public QObject
     Q_PROPERTY(QString pluginFilePath READ pluginFilePath NOTIFY changed)
     Q_PROPERTY(QString pluginType READ pluginType NOTIFY changed)
     Q_PROPERTY(QVariantList settings READ settings NOTIFY changed)
+    Q_PROPERTY(int version READ version NOTIFY changed)
 
 public:
     explicit RecaptchaPluginConfig(QObject *parent = 0);
@@ -47,8 +48,10 @@ public:
     QString pluginFilePath() const;
     
     QString pluginType() const;
-        
+    
     QVariantList settings() const;
+    
+    int version() const;
 
 public Q_SLOTS:
     bool load(const QString &filePath);
@@ -65,6 +68,8 @@ private:
     QString m_pluginType;
         
     QVariantList m_settings;
+    
+    int m_version;
 };
 
 #endif // RECAPTCHAPLUGINCONFIG_H

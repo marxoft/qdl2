@@ -4,6 +4,7 @@
     "file": "imageupper.js",
     "name": "Image Upper",
     "icon": "imageupper.jpg",
+    "version": 1,
     "regExp": "http://imageupper\\.com/((i|g)/\\?|gi/\\?galID=)\\w+",
     "settings": [
         {
