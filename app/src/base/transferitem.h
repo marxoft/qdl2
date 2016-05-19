@@ -131,14 +131,14 @@ public:
     static QString statusString(Status status);
     
     virtual QVariant data(int role) const;
-    virtual QVariant data(const QByteArray &roleName) const;
+    Q_INVOKABLE virtual QVariant data(const QByteArray &roleName) const;
     virtual bool setData(int role, const QVariant &value);
-    virtual bool setData(const QByteArray &roleName, const QVariant &value);
+    Q_INVOKABLE virtual bool setData(const QByteArray &roleName, const QVariant &value);
 
     virtual QMap<int, QVariant> itemData() const;
-    virtual QVariantMap itemDataWithRoleNames() const;
+    Q_INVOKABLE virtual QVariantMap itemDataWithRoleNames() const;
     virtual bool setItemData(const QMap<int, QVariant> &data);
-    virtual bool setItemData(const QVariantMap &data);
+    Q_INVOKABLE virtual bool setItemData(const QVariantMap &data);
 
     virtual ItemType itemType() const;
     QString itemTypeString() const;

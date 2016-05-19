@@ -72,7 +72,7 @@ public:
     virtual bool setData(int role, const QVariant &value);
 
     virtual QMap<int, QVariant> itemData() const;
-    virtual QVariantMap itemDataWithRoleNames() const;
+    Q_INVOKABLE virtual QVariantMap itemDataWithRoleNames() const;
 
     virtual ItemType itemType() const;
 
