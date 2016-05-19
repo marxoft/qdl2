@@ -21,7 +21,6 @@
 #include "utils.h"
 #include <QDir>
 #include <QFile>
-#include <QProcess>
 #include <QSettings>
 
 Package::Package(QObject *parent) :
@@ -29,7 +28,6 @@ Package::Package(QObject *parent) :
     m_extractor(0),
     m_process(0),
     m_createSubfolder(false),
-    m_deleteArchives(false),
     m_priority(NormalPriority),
     m_status(Null)
 {
