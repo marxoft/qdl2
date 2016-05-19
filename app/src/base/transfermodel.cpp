@@ -159,6 +159,10 @@ QModelIndex TransferModel::index(int row, int column, const QModelIndex &parent)
     return QModelIndex();
 }
 
+QVariant TransferModel::modelIndex(int row, int column, const QVariant &parent) const {
+    return QVariant::fromValue(index(row, column, parent.value<QModelIndex>()));
+}
+
 QModelIndex TransferModel::parent(const QModelIndex &child) const {
     if (!child.isValid()) {
         return QModelIndex();
@@ -173,6 +177,10 @@ QModelIndex TransferModel::parent(const QModelIndex &child) const {
     }
 
     return QModelIndex();
+}
+
+QVariant TransferModel::parentModelIndex(const QVariant &child) const {
+    return QVariant::fromValue(parent(child.value<QModelIndex>()));
 }
 
 QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -241,6 +249,14 @@ QVariant TransferModel::data(const QModelIndex &index, const QByteArray &roleNam
     return QVariant();
 }
 
+QVariant TransferModel::data(const QVariant &index, const QByteArray &roleName) const {
+    if (TransferItem *item = get(index)) {
+        return item->data(roleName);
+    }
+
+    return QVariant();
+}
+
 bool TransferModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (TransferItem *item = get(index)) {
         return item->setData(role, value);
@@ -250,6 +266,14 @@ bool TransferModel::setData(const QModelIndex &index, const QVariant &value, int
 }
 
 bool TransferModel::setData(const QModelIndex &index, const QVariant &value, const QByteArray &roleName) {
+    if (TransferItem *item = get(index)) {
+        return item->setData(roleName, value);
+    }
+
+    return false;
+}
+
+bool TransferModel::setData(const QVariant &index, const QVariant &value, const QByteArray &roleName) {
     if (TransferItem *item = get(index)) {
         return item->setData(roleName, value);
     }
@@ -273,6 +297,14 @@ QVariantMap TransferModel::itemDataWithRoleNames(const QModelIndex &index) const
     return QVariantMap();
 }
 
+QVariantMap TransferModel::itemDataWithRoleNames(const QVariant &index) const {
+    if (TransferItem *item = get(index)) {
+        return item->itemDataWithRoleNames();
+    }
+
+    return QVariantMap();
+}
+
 bool TransferModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &data) {
     if (TransferItem *item = get(index)) {
         return item->setItemData(data);
@@ -282,6 +314,14 @@ bool TransferModel::setItemData(const QModelIndex &index, const QMap<int, QVaria
 }
 
 bool TransferModel::setItemData(const QModelIndex &index, const QVariantMap &data) {
+    if (TransferItem *item = get(index)) {
+        return item->setItemData(data);
+    }
+
+    return false;
+}
+
+bool TransferModel::setItemData(const QVariant &index, const QVariantMap &data) {
     if (TransferItem *item = get(index)) {
         return item->setItemData(data);
     }
@@ -333,6 +373,12 @@ bool TransferModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int
     return false;
 }
 
+bool TransferModel::moveRows(const QVariant &sourceParent, int sourceRow, int count,
+                             const QVariant &destinationParent, int destinationChild) {
+    return moveRows(sourceParent.value<QModelIndex>(), sourceRow, count, destinationParent.value<QModelIndex>(),
+                    destinationChild);
+}
+
 int TransferModel::activeTransfers() const {
     return m_activeTransfers.size();
 }
@@ -353,6 +399,10 @@ QString TransferModel::totalSpeedString() const {
 
 TransferItem* TransferModel::get(const QModelIndex &index) const {
     return index.isValid() ? static_cast<TransferItem*>(index.internalPointer()) : m_packages;
+}
+
+TransferItem* TransferModel::get(const QVariant &index) const {
+    return get(index.value<QModelIndex>());
 }
 
 void TransferModel::append(const QString &url) {

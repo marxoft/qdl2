@@ -54,23 +54,34 @@ public:
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE QVariant modelIndex(int row, int column, const QVariant &parent = QVariant()) const;
+    
     virtual QModelIndex parent(const QModelIndex &child) const;
+    Q_INVOKABLE QVariant parentModelIndex(const QVariant &child) const;
 
-    virtual QVariant headerData(int section, Qt::Orientation orientation = Qt::Horizontal,
-                                int role = Qt::DisplayRole) const;
+    Q_INVOKABLE virtual QVariant headerData(int section, Qt::Orientation orientation = Qt::Horizontal,
+                                            int role = Qt::DisplayRole) const;
 
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     virtual QVariant data(const QModelIndex &index, const QByteArray &roleName) const;
+    Q_INVOKABLE virtual QVariant data(const QVariant &index, const QByteArray &roleName) const;
+
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
     virtual bool setData(const QModelIndex &index, const QVariant &value, const QByteArray &roleName);
+    Q_INVOKABLE virtual bool setData(const QVariant &index, const QVariant &value, const QByteArray &roleName);
 
     virtual QMap<int, QVariant> itemData(const QModelIndex &index) const;
     virtual QVariantMap itemDataWithRoleNames(const QModelIndex &index) const;
+    Q_INVOKABLE virtual QVariantMap itemDataWithRoleNames(const QVariant &index) const;
+
     virtual bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &data);
     virtual bool setItemData(const QModelIndex &index, const QVariantMap &data);
+    Q_INVOKABLE virtual bool setItemData(const QVariant &index, const QVariantMap &data);
 
     virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                           const QModelIndex &destinationParent, int destinationRow);
+    Q_INVOKABLE virtual bool moveRows(const QVariant &sourceParent, int sourceRow, int count,
+                                      const QVariant &destinationParent, int destinationRow);
 
     int activeTransfers() const;
 
@@ -78,6 +89,7 @@ public:
     QString totalSpeedString() const;
 
     TransferItem* get(const QModelIndex &index) const;
+    Q_INVOKABLE TransferItem *get(const QVariant &index) const;
 
 public Q_SLOTS:
     void append(const QString &url);
