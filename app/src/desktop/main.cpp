@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "transfermodel.h"
 #include "urlcheckmodel.h"
+#include "urlretrievalmodel.h"
 #include "webserver.h"
 #include <QApplication>
 #include <QIcon>
@@ -49,6 +50,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<Settings> settings(Settings::instance());
     QScopedPointer<TransferModel> transfers(TransferModel::instance());
     QScopedPointer<UrlCheckModel> checker(UrlCheckModel::instance());
+    QScopedPointer<UrlRetrievalModel> retriever(UrlRetrievalModel::instance());
     QScopedPointer<WebServer> server(WebServer::instance());
     
     clipboard.data()->setEnabled(Settings::clipboardMonitorEnabled());
