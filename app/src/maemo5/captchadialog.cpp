@@ -61,6 +61,7 @@ QImage CaptchaDialog::image() const {
 }
 
 void CaptchaDialog::setImage(const QImage &i) {
+    m_image = i;
     m_imageLabel->setPixmap(QPixmap::fromImage(i));
 }
 
