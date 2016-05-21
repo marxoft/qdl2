@@ -16,10 +16,8 @@
 
 #include "addurlsdialog.h"
 #include "categoryselectionmodel.h"
-#include "serviceselectionmodel.h"
 #include "settings.h"
 #include "valueselector.h"
-#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QFile>
 #include <QHBoxLayout>
@@ -31,13 +29,10 @@
 
 AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     QDialog(parent),
-    m_serviceModel(new ServiceSelectionModel(this)),
     m_categoryModel(new CategorySelectionModel(this)),
     m_scrollArea(new QScrollArea(this)),
     m_container(new QWidget(m_scrollArea)),
     m_edit(new QTextEdit(m_container)),
-    m_checkBox(new QCheckBox(tr("Check urls"), m_container)),
-    m_serviceSelector(new ValueSelector(tr("Service"), m_container)),
     m_categorySelector(new ValueSelector(tr("Category"), m_container)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Vertical, this)),
     m_vbox(new QVBoxLayout(m_container)),
@@ -51,11 +46,6 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     
     m_edit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
     m_edit->setFocus(Qt::OtherFocusReason);
-
-    m_checkBox->setChecked(Settings::checkUrls());
-    
-    m_serviceSelector->setModel(m_serviceModel);
-    m_serviceSelector->setValue(Settings::defaultServicePlugin());
     
     m_categorySelector->setModel(m_categoryModel);
     m_categorySelector->setValue(Settings::defaultCategory());
@@ -75,9 +65,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
 }
 
 void AddUrlsDialog::accept() {
-    Settings::setCheckUrls(m_checkBox->isChecked());
     Settings::setDefaultCategory(m_categorySelector->currentValue().toString());
-    Settings::setDefaultServicePlugin(m_serviceSelector->currentValue().toString()); 
     QDialog::accept();
 }
 

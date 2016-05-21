@@ -554,10 +554,9 @@ bool Qdl::setSettings(const QVariantMap &settings) {
     return true;
 }
 
-void Qdl::addUrlChecks(const QStringList &urls, const QString &pluginId, const QString &category) {
-    Settings::setDefaultServicePlugin(pluginId);
+void Qdl::addUrlChecks(const QStringList &urls, const QString &category) {
     Settings::setDefaultCategory(category);
-    UrlCheckModel::instance()->append(urls, pluginId);
+    UrlCheckModel::instance()->append(urls);
 }
 
 void Qdl::clearUrlChecks() {

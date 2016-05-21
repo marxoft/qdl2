@@ -34,8 +34,8 @@ public:
     explicit UrlCheckDialog(QWidget *parent = 0);
 
 public Q_SLOTS:
-    void addUrl(const QString &url, const QString &pluginId);
-    void addUrls(const QStringList &urls, const QString &pluginId);
+    void addUrl(const QString &url);
+    void addUrls(const QStringList &urls);
     
     virtual void reject();
 

@@ -16,9 +16,7 @@
 
 #include "addurlsdialog.h"
 #include "categoryselectionmodel.h"
-#include "serviceselectionmodel.h"
 #include "settings.h"
-#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDropEvent>
@@ -31,29 +29,19 @@
 
 AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     QDialog(parent),
-    m_serviceModel(new ServiceSelectionModel(this)),
     m_categoryModel(new CategorySelectionModel(this)),
     m_edit(new QTextEdit(this)),
-    m_checkBox(new QCheckBox(tr("Check &urls"), this)),
-    m_serviceSelector(new QComboBox(this)),
     m_categorySelector(new QComboBox(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
     m_layout(new QFormLayout(this))
 {
     setWindowTitle(tr("Add URLs"));
-    setAcceptDrops(true);
-
-    m_checkBox->setChecked(Settings::checkUrls());
-    
-    m_serviceSelector->setModel(m_serviceModel);
-    m_serviceSelector->setCurrentIndex(m_serviceSelector->findData(Settings::defaultServicePlugin()));
+    setAcceptDrops(true);    
     
     m_categorySelector->setModel(m_categoryModel);
     m_categorySelector->setCurrentIndex(m_categorySelector->findData(Settings::defaultCategory()));
 
     m_layout->addRow(m_edit);
-    m_layout->addRow(m_checkBox);
-    m_layout->addRow(tr("&Service:"), m_serviceSelector);
     m_layout->addRow(tr("&Category:"), m_categorySelector);
     m_layout->addRow(m_buttonBox);
 
@@ -63,9 +51,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
 }
 
 void AddUrlsDialog::accept() {
-    Settings::setCheckUrls(m_checkBox->isChecked());
     Settings::setDefaultCategory(m_categorySelector->itemData(m_categorySelector->currentIndex()).toString());
-    Settings::setDefaultServicePlugin(m_serviceSelector->itemData(m_serviceSelector->currentIndex()).toString()); 
     QDialog::accept();
 }
 

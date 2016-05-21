@@ -41,20 +41,6 @@ Settings* Settings::instance() {
     return self ? self : self = new Settings;
 }
 
-bool Settings::checkUrls() {
-    return value("checkUrls", true).toBool();
-}
-
-void Settings::setCheckUrls(bool enabled) {
-    if (enabled != checkUrls()) {
-        setValue("checkUrls", enabled);
-
-        if (self) {
-            emit self->checkUrlsChanged(enabled);
-        }
-    }
-}
-
 bool Settings::clipboardMonitorEnabled() {
     return value("clipboardMonitorEnabled", false).toBool();
 }

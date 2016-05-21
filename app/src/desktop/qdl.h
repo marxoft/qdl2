@@ -91,8 +91,7 @@ public Q_SLOTS:
     Q_SCRIPTABLE static QVariantMap getSettings(const QStringList &settings);
     Q_SCRIPTABLE static bool setSettings(const QVariantMap &settings);
 
-    Q_SCRIPTABLE static void addUrlChecks(const QStringList &urls, const QString &pluginId = QString(),
-                                          const QString &category = QString());
+    Q_SCRIPTABLE static void addUrlChecks(const QStringList &urls, const QString &category = QString());
     Q_SCRIPTABLE static void clearUrlChecks();
     Q_SCRIPTABLE static QVariantMap getUrlChecks();
     Q_SCRIPTABLE static QVariantMap getUrlCheck(const QString &url);

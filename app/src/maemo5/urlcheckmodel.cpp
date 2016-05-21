@@ -29,7 +29,6 @@ UrlCheckModel::UrlCheckModel() :
 {
     m_roles[UrlRole] = "url";
     m_roles[FileNameRole] = "fileName";
-    m_roles[PluginIdRole] = "pluginId";
     m_roles[IsCheckedRole] = "checked";
     m_roles[IsOkRole] = "ok";
 #if QT_VERSION < 0x050000
@@ -138,8 +137,6 @@ QVariant UrlCheckModel::data(const QModelIndex &index, int role) const {
         return m_items.at(index.row()).url;
     case FileNameRole:
         return m_items.at(index.row()).fileName;
-    case PluginIdRole:
-        return m_items.at(index.row()).pluginId;
     case IsCheckedRole:
         return m_items.at(index.row()).checked;
     case IsOkRole:
@@ -183,10 +180,10 @@ int UrlCheckModel::match(int start, const QByteArray &role, const QVariant &valu
     return idxs.isEmpty() ? -1 : idxs.first().row();
 }
 
-void UrlCheckModel::append(const QString &url, const QString &pluginId) {
-    Logger::log(QString("UrlCheckModel::append(): URL: %1, pluginId: %2").arg(url).arg(pluginId));
+void UrlCheckModel::append(const QString &url) {
+    Logger::log("UrlCheckModel::append(): " + url);
     beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
-    m_items << UrlCheck(url, pluginId);
+    m_items << UrlCheck(url);
     endInsertRows();
     emit countChanged(rowCount());
     emit progressChanged(progress());
@@ -196,9 +193,9 @@ void UrlCheckModel::append(const QString &url, const QString &pluginId) {
     }
 }
 
-void UrlCheckModel::append(const QStringList &urls, const QString &pluginId) {
+void UrlCheckModel::append(const QStringList &urls) {
     foreach (const QString &url, urls) {
-        append(url, pluginId);
+        append(url);
     }
 }
 
@@ -237,23 +234,7 @@ void UrlCheckModel::clear() {
 }
 
 ServicePlugin* UrlCheckModel::getCurrentPlugin() const {
-    ServicePlugin *plugin = 0;
-    const QModelIndex idx = index(m_index, 0);
-    const QString url = data(idx, UrlRole).toString();
-
-    if (!url.isEmpty()) {
-        const QString pluginId = data(idx, PluginIdRole).toString();
-        
-        if (!pluginId.isEmpty()) {
-            plugin = ServicePluginManager::instance()->getPluginById(pluginId);
-        }
-
-        if (!plugin) {
-            plugin = ServicePluginManager::instance()->getPluginByUrl(url);
-        }
-    }
-
-    return plugin;
+    return ServicePluginManager::instance()->getPluginByUrl(data(index(m_index, 0), UrlRole).toString());
 }
 
 void UrlCheckModel::next() {

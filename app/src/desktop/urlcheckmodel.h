@@ -31,9 +31,8 @@ struct UrlCheck
     {
     }
     
-    UrlCheck(const QString &u, const QString &p) :
+    UrlCheck(const QString &u) :
         url(u),
-        pluginId(p),
         checked(false),
         ok(false)
     {
@@ -41,7 +40,6 @@ struct UrlCheck
     
     QString url;
     QString fileName;
-    QString pluginId;
     
     bool checked;
     bool ok;
@@ -62,7 +60,6 @@ public:
     enum Roles {
         UrlRole = Qt::UserRole + 1,
         FileNameRole,
-        PluginIdRole,
         IsCheckedRole,
         IsOkRole
     };
@@ -105,8 +102,8 @@ public:
                                   int flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;    
 
 public Q_SLOTS:
-    void append(const QString &url, const QString &pluginId);
-    void append(const QStringList &urls, const QString &pluginId);
+    void append(const QString &url);
+    void append(const QStringList &urls);
     bool remove(int row);
     void cancel();
     void clear();

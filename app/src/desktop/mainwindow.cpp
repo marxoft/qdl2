@@ -523,16 +523,9 @@ void MainWindow::showAddUrlsDialog() {
         const QStringList urls = addDialog.urls();
 
         if (!urls.isEmpty()) {
-            if (Settings::checkUrls()) {
-                UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls, Settings::defaultServicePlugin());
-                checkDialog.exec();
-            }
-            else {
-                foreach (const QString &url, urls) {
-                    TransferModel::instance()->append(url);
-                }
-            }
+            UrlCheckDialog checkDialog(this);
+            checkDialog.addUrls(urls);
+            checkDialog.exec();
         }
     }
 }
@@ -545,16 +538,9 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
         const QStringList urls = addDialog.urls();
 
         if (!urls.isEmpty()) {
-            if (Settings::checkUrls()) {
-                UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls, Settings::defaultServicePlugin());
-                checkDialog.exec();
-            }
-            else {
-                foreach (const QString &url, urls) {
-                    TransferModel::instance()->append(url);
-                }
-            }
+            UrlCheckDialog checkDialog(this);
+            checkDialog.addUrls(urls);
+            checkDialog.exec();
         }
     }
 }
@@ -570,16 +556,9 @@ void MainWindow::showImportUrlsDialog() {
             const QStringList urls = addDialog.urls();
 
             if (!urls.isEmpty()) {
-                if (Settings::checkUrls()) {
-                    UrlCheckDialog checkDialog(this);
-                    checkDialog.addUrls(urls, Settings::defaultServicePlugin());
-                    checkDialog.exec();
-                }
-                else {
-                    foreach (const QString &url, urls) {
-                        TransferModel::instance()->append(url);
-                    }
-                }
+                UrlCheckDialog checkDialog(this);
+                checkDialog.addUrls(urls);
+                checkDialog.exec();
             }
         }
     }

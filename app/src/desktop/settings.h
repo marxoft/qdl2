@@ -23,7 +23,6 @@ class Settings : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool checkUrls READ checkUrls WRITE setCheckUrls NOTIFY checkUrlsChanged)
     Q_PROPERTY(bool clipboardMonitorEnabled READ clipboardMonitorEnabled WRITE setClipboardMonitorEnabled
                NOTIFY clipboardMonitorEnabledChanged)
     Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand NOTIFY customCommandChanged)
@@ -72,8 +71,6 @@ public:
 
     static Settings* instance();
 
-    static bool checkUrls();
-
     static bool clipboardMonitorEnabled();
 
     static QString customCommand();
@@ -114,9 +111,7 @@ public:
     static QByteArray windowGeometry();
     static QByteArray windowState();
 
-public Q_SLOTS:
-    static void setCheckUrls(bool enabled);
-    
+public Q_SLOTS:    
     static void setClipboardMonitorEnabled(bool enabled);
 
     static void setCustomCommand(const QString &command);
@@ -159,7 +154,6 @@ public Q_SLOTS:
     static void setWindowState(const QByteArray &state);
 
 Q_SIGNALS:
-    void checkUrlsChanged(bool enabled);
     void clipboardMonitorEnabledChanged(bool enabled);
     void customCommandChanged(const QString &command);
     void decaptchaPluginChanged(const QString &pluginId);

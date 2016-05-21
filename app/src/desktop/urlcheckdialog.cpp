@@ -73,12 +73,12 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     onStatusChanged(UrlCheckModel::instance()->status());
 }
 
-void UrlCheckDialog::addUrl(const QString &url, const QString &pluginId) {
-    UrlCheckModel::instance()->append(url, pluginId);
+void UrlCheckDialog::addUrl(const QString &url) {
+    UrlCheckModel::instance()->append(url);
 }
 
-void UrlCheckDialog::addUrls(const QStringList &urls, const QString &pluginId) {
-    UrlCheckModel::instance()->append(urls, pluginId);
+void UrlCheckDialog::addUrls(const QStringList &urls) {
+    UrlCheckModel::instance()->append(urls);
 }
 
 void UrlCheckDialog::reject() {

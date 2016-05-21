@@ -20,9 +20,7 @@
 #include <QDialog>
 
 class CategorySelectionModel;
-class ServiceSelectionModel;
 class ValueSelector;
-class QCheckBox;
 class QDialogButtonBox;
 class QHBoxLayout;
 class QScrollArea;
@@ -59,7 +57,6 @@ private Q_SLOTS:
     void onTextChanged();
 
 private:
-    ServiceSelectionModel *m_serviceModel;
     CategorySelectionModel *m_categoryModel;
 
     QScrollArea *m_scrollArea;
@@ -67,10 +64,7 @@ private:
     QWidget *m_container;
     
     QTextEdit *m_edit;
-
-    QCheckBox *m_checkBox;
     
-    ValueSelector *m_serviceSelector;
     ValueSelector *m_categorySelector;
 
     QDialogButtonBox *m_buttonBox;
