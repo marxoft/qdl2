@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "publishtome",
     "name": "Publish2.me",
     "icon": "publishtome.jpg",
-    "file": "libpublishtome.so",
     "version": 1,
     "regExp": "http(s|)://(www\\.|)publish2\\.me/file/\\w+",
     "settings": [

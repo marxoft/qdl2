@@ -1,8 +1,6 @@
 {
     "type": "qt",
-    "id": "solvemediarecaptcha",
     "name": "Solve Media",
     "icon": "solvemediarecaptcha.jpg",
-    "file": "libsolvemediarecaptcha.so",
     "version": 1
 }

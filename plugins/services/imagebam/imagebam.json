@@ -1,7 +1,5 @@
 {
     "type": "js",
-    "id": "imagebam",
-    "file": "imagebam.js",
     "name": "ImageBam",
     "icon": "imagebam.jpg",
     "version": 1,

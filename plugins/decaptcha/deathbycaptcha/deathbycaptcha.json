@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "deathbycaptcha",
     "name": "Death By Captcha",
     "icon": "deathbycaptcha.jpg",
-    "file": "libdeathbycaptcha.so",
     "version": 1,
     "settings": [
         {

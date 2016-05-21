@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "keeptoshare",
     "name": "Keep2Share",
     "icon": "keeptoshare.jpg",
-    "file": "libkeeptoshare.so",
     "version": 1,
     "regExp": "http(s|)://(www\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
     "settings": [

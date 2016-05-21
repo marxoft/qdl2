@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "rapidgator",
     "name": "RapidGator",
     "icon": "rapidgator.jpg",
-    "file": "librapidgator.so",
     "version": 1,
     "regExp": "http(s|)://(www\\.|)(rg\\.to|rapidgator\\.net)/file/\\S+",
     "settings": [

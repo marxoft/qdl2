@@ -1,8 +1,6 @@
 {
     "type": "qt",
-    "id": "googlerecaptcha",
     "name": "Google",
     "icon": "googlerecaptcha.jpg",
-    "file": "libgooglerecaptcha.so",
     "version": 1
 }

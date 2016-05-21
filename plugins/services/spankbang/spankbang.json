@@ -1,9 +1,7 @@
 {
     "type": "js",
-    "id": "spankbang",
     "name": "SpankBang",
     "icon": "spankbang.jpg",
-    "file": "spankbang.js",
     "version": 1,
     "regExp": "http://spankbang\\.com/\\w+/(video|embed)",
     "settings": [

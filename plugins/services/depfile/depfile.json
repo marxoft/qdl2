@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "depfile",
     "name": "DepFile",
     "icon": "depfile.jpg",
-    "file": "libdepfile.so",
     "version": 1,
     "regExp": "http(s|)://(depfile\\.com|yep\\.pm)/\\w+",
     "settings": [

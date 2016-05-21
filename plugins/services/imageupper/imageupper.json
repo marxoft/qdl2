@@ -1,7 +1,5 @@
 {
     "type": "js",
-    "id": "imageupper",
-    "file": "imageupper.js",
     "name": "Image Upper",
     "icon": "imageupper.jpg",
     "version": 1,

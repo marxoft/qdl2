@@ -83,23 +83,37 @@ bool ServicePluginConfig::load(const QString &filePath) {
 
     const QVariantMap config = v.toMap();
 
-    if ((!config.contains("name")) || (!config.contains("file")) || (!config.contains("id"))
-        || (!config.contains("regExp"))) {
-        Logger::log("ServicePluginConfig::load(): Some parameters are missing");
+    if (!config.contains("name")) {
+        Logger::log("ServicePluginConfig::load(): 'name' parameter is missing");
+        return false;
+    }
+    
+    if (!config.contains("regExp")) {
+        Logger::log("ServicePluginConfig::load(): 'regExp' parameter is missing");
         return false;
     }
 
-    Logger::log("ServicePluginConfig::load(): Config file loaded: " + filePath);
+    Logger::log("ServicePluginConfig::load(): Config file loaded: " + filePath);    
+    const int slash = filePath.lastIndexOf("/");
+    const QString fileName = filePath.mid(slash + 1);
+    const int dot = fileName.lastIndexOf(".");
     m_displayName = config.value("name").toString();
     m_iconFilePath = config.contains("icon") ? QString("%1/icons/%2").arg(filePath.section("/", 0, -3))
                                                                      .arg(config.value("icon").toString())
                                              : DEFAULT_ICON;
-    m_id = config.value("id").toString();
-    m_pluginFilePath = filePath.left(filePath.lastIndexOf("/") + 1) + config.value("file").toString();
+    m_id = fileName.left(dot);
     m_pluginType = config.value("type").toString();
     m_regExp = QRegExp(config.value("regExp").toString());
     m_settings = config.value("settings").toList();
     m_version = qMax(1, config.value("version").toInt());
+    
+    if (m_pluginType == "js") {
+        m_pluginFilePath = filePath.left(slash + 1) + m_id + ".js";
+    }
+    else {
+        m_pluginFilePath = filePath.left(slash + 1) + "lib" + m_id;
+    }
+    
     emit changed();
     return true;
 }

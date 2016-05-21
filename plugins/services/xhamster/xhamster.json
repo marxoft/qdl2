@@ -1,9 +1,7 @@
 {
     "type": "js",
-    "id": "xhamster",
     "name": "XHamster",
     "icon": "xhamster.jpg",
-    "file": "xhamster.js",
     "version": 1,
     "regExp": "http(s|)://(www\\.|)xhamster\\.com/movies/\\d+",
     "settings": [

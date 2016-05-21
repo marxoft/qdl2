@@ -1,9 +1,7 @@
 {
     "type": "qt",
-    "id": "googledrive",
     "name": "Google Drive",
     "icon": "googledrive.jpg",
-    "file": "libgoogledrive.so",
     "version": 1,
     "regExp": "http(s|)://(drive|docs)\\.google\\.com/file/d/[\\w_-]+",
     "settings": [
