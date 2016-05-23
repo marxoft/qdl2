@@ -139,4 +139,8 @@ private:
     QList<TransferItem*> m_activeTransfers;
 };
 
+#if QT_VERSION < 0x050000
+Q_DECLARE_METATYPE(QModelIndex)
+#endif
+
 #endif // TRANSFERMODEL_H
