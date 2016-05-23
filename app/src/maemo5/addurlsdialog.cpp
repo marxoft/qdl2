@@ -51,8 +51,6 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_categorySelector->setValue(Settings::defaultCategory());
 
     m_vbox->addWidget(m_edit);
-    m_vbox->addWidget(m_checkBox);
-    m_vbox->addWidget(m_serviceSelector);
     m_vbox->addWidget(m_categorySelector);
     m_vbox->setContentsMargins(0, 0, 0, 0);
 

@@ -76,7 +76,7 @@ void UrlCheckDialog::addUrl(const QString &url) {
     UrlCheckModel::instance()->append(url);
 }
 
-void UrlCheckDialog::addUrls(const QStringList &url) {
+void UrlCheckDialog::addUrls(const QStringList &urls) {
     UrlCheckModel::instance()->append(urls);
 }
 
