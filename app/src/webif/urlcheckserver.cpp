@@ -42,8 +42,7 @@ bool UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
                 writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
             }
             else {
-                Qdl::addUrlChecks(urls, properties.value("pluginId").toString(),
-                                  properties.value("category").toString());
+                Qdl::addUrlChecks(urls, properties.value("category").toString());
                 writeResponse(response, QHttpResponse::STATUS_CREATED);
             }
 
