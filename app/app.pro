@@ -168,6 +168,75 @@ maemo5 {
         icon64 \
         target
 
+} else:symbian|simulator {
+    TARGET = qdl2
+    TARGET.UID3 = 0xE71CBF5C
+    TARGET.CAPABILITY += NetworkServices ReadUserData
+    TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
+    TARGET.EPOCSTACKSIZE = 0x14000
+    
+    VERSION = 2.0.1
+    ICON = desktop/symbian/qdl2.svg
+    
+    MMP_RULES += "DEBUGGABLE_UDEBONLY"
+
+    CONFIG += qtcomponents
+    
+    QT += declarative
+    
+    INCLUDEPATH += src/symbian
+    
+    HEADERS += \
+        src/symbian/captchadialog.h \
+        src/symbian/definitions.h \
+        src/symbian/graphicsview.h \
+        src/symbian/maskeditem.h \
+        src/symbian/maskeffect.h \
+        src/symbian/mainwindow.h \
+        src/symbian/pixmapitem.h \
+        src/symbian/pluginsettingsdialog.h \
+        src/symbian/qdl.h \
+        src/symbian/screenorientationmodel.h \
+        src/symbian/settings.h \
+        src/symbian/urlcheckmodel.h
+    
+    SOURCES += \
+        src/symbian/captchadialog.cpp \
+        src/symbian/graphicsview.cpp \
+        src/symbian/main.cpp \
+        src/symbian/mainwindow.cpp \
+        src/symbian/maskeditem.cpp \
+        src/symbian/maskeffect.cpp \
+        src/symbian/pixmapitem.cpp \
+        src/symbian/pluginsettingsdialog.cpp \
+        src/symbian/qdl.cpp \
+        src/symbian/settings.cpp \
+        src/symbian/urlcheckmodel.cpp
+    
+    qml.sources = $$files(src/symbian/qml/*.qml)
+    qml.path = !:/Private/e71cbf5c/qml
+
+    images.sources = $$files(src/symbian/qml/images/*.png)
+    images.path = !:/Private/e71cbf5c/qml/images
+
+    icon.sources = desktop/symbian/qdl2.png
+    icon.path = C:/qdl2/icons
+    
+    vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
+    qtcomponentsdep = "; Default dependency to Qt Quick Components for Symbian library" \
+        "(0x200346DE), 1, 1, 0, {\"Qt Quick components for Symbian\"}"
+
+    qdl2_deployment.pkg_prerules += \
+        vendorinfo \
+        qtcomponentsdep
+
+    DEPLOYMENT.display_name = QDL
+    DEPLOYMENT += \
+        qdl2_deployment \
+        qml \
+        images \
+        icon
+
 } else:unix {
     DEFINES += WEB_INTERFACE
     QT += dbus
