@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "categories.h"
 #include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
@@ -42,6 +43,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
         Logger::setVerbosity(10);
     }
 
+    QScopedPointer<Categories> categories(Categories::instance());
     QScopedPointer<ClipboardUrlModel> clipboard(ClipboardUrlModel::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
     QScopedPointer<Qdl> qdl(Qdl::instance());
