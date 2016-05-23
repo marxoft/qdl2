@@ -101,7 +101,7 @@ bool RecaptchaPluginConfig::load(const QString &filePath) {
         m_pluginFilePath = filePath.left(slash + 1) + m_id + ".js";
     }
     else {
-        m_pluginFilePath = filePath.left(slash + 1) + "lib" + m_id;
+        m_pluginFilePath = filePath.left(slash + 1) + LIB_PREFIX + m_id + LIB_SUFFIX;
     }
     
     emit changed();

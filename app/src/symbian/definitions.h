@@ -33,6 +33,9 @@ static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString(ROOT_
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "qdl2/plugins/services/");
 
+static const QString LIB_PREFIX();
+static const QString LIB_SUFFIX(".qtplugin");
+
 // Icons
 static const QString DEFAULT_ICON(ROOT_PATH + "qdl2/icons/qdl2.png");
 

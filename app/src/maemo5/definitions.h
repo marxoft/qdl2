@@ -41,6 +41,9 @@ static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "/qdl2/plugins/services/");
 
+static const QString LIB_PREFIX("lib");
+static const QString LIB_SUFFIX(".so");
+
 // Icons
 static const QString DEFAULT_ICON("/opt/qdl2/icons/qdl2.png");
 
