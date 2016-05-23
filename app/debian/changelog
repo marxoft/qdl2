@@ -1,3 +1,10 @@
+qdl (2.0.1) unstable; urgency=low
+
+  * Remove option not to check URLs.
+  * Remove option to force service when checking URLs.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 23 May 2016 02:16:23 +0000
+
 qdl (2.0.0) unstable; urgency=low
 
   * Add support for JavaScript plugins.
