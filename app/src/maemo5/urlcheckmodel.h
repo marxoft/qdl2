@@ -20,6 +20,7 @@
 
 #include "urlresult.h"
 #include <QAbstractListModel>
+#include <QStringList>
 
 class ServicePlugin;
 
