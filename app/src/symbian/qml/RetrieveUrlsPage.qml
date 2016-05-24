@@ -34,11 +34,11 @@ MyPage {
             toolTip: qsTr("Done")
             enabled: urlRetrievalModel.status == UrlRetrievalModel.Completed
             onClicked: {
-                var urls = urlRetrievalModel.urls;
+                var urls = urlRetrievalModel.results;
                 
                 if (urls.length > 0) {
-                    appWindow.pageStack.replace(Qt.resolvedUrl("AddUrlsDialog.qml"),
-                    {text: urls.join("\n") + "\n"});
+                    appWindow.pageStack.replace(Qt.resolvedUrl("AddUrlsPage.qml"),
+                    {text: urls.join("\n")});
                 }
                 else {
                     appWindow.pageStack.pop();
@@ -70,6 +70,7 @@ MyPage {
                 id: urlsEdit
                 
                 width: parent.width
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
             }
             
             ValueSelector {
@@ -93,7 +94,7 @@ MyPage {
                 enabled: urlsEdit.text != ""
                 visible: !inputContext.visible
                 onClicked: {
-                    urlRetrievalModel.append(urlsEdit.text.split(/\s+/));
+                    urlRetrievalModel.append(urlsEdit.text.split(/\s+/), settings.defaultServicePlugin);
                     urlsEdit.text = "";
                 }
             }
@@ -106,6 +107,14 @@ MyPage {
                 maximumValue: 100
                 value: urlRetrievalModel.progress
                 visible: !inputContext.visible
+            }
+
+            Label {
+                id: statusLabel
+
+                width: parent.width
+                wrapMode: Text.WordWrap
+                text: urlRetrievalModel.statusString
             }
         }
     }

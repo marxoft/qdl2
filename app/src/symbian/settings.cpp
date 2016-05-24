@@ -132,46 +132,6 @@ void Settings::setCreateSubfolders(bool enabled) {
     }
 }
 
-bool Settings::extractArchives() {
-    return value("Archives/extractArchives", false).toBool();
-}
-
-void Settings::setExtractArchives(bool enabled) {
-    if (enabled != extractArchives()) {
-        setValue("Archives/extractArchives", enabled);
-
-        if (self) {
-            emit self->extractArchivesChanged(enabled);
-        }
-    }
-}
-
-bool Settings::deleteExtractedArchives() {
-    return value("Archives/deleteExtractedArchives", false).toBool();
-}
-
-void Settings::setDeleteExtractedArchives(bool enabled) {
-    if (enabled != deleteExtractedArchives()) {
-        setValue("Archives/deleteExtractedArchives", enabled);
-
-        if (self) {
-            emit self->deleteExtractedArchivesChanged(enabled);
-        }
-    }
-}
-
-QStringList Settings::archivePasswords() {
-    return value("Archives/passwords").toStringList();
-}
-
-void Settings::setArchivePasswords(const QStringList &passwords) {
-    setValue("Archives/passwords", passwords);
-
-    if (self) {
-        emit self->archivePasswordsChanged(passwords);
-    }
-}
-
 int Settings::maximumConcurrentTransfers() {
     return qBound(1, value("maximumConcurrentTransfers", 1).toInt(), 5);
 }

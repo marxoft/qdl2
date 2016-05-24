@@ -18,6 +18,11 @@
 #define DEFINITIONS_H
 
 #include <QStringList>
+#if QT_VERSION >= 0x050000
+#include <QStandardPaths>
+#else
+#include <QDesktopServices>
+#endif
 
 // Home
 static const QString ROOT_PATH("C:/");
@@ -33,14 +38,18 @@ static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString(ROOT_
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "qdl2/plugins/services/");
 
-static const QString LIB_PREFIX();
+static const QString LIB_PREFIX;
 static const QString LIB_SUFFIX(".qtplugin");
 
 // Icons
 static const QString DEFAULT_ICON(ROOT_PATH + "qdl2/icons/qdl2.png");
 
 // Config
-static const QString APP_CONFIG_PATH(ROOT_PATH + "qdl2/.config/");
+#if QT_VERSION >= 0x050000
+static const QString APP_CONFIG_PATH(QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.config/qdl2/");
+#else
+static const QString APP_CONFIG_PATH(QDesktopServices::storageLocation(QDesktopServices::HomeLocation) + "/.config/qdl2/");
+#endif
 static const QString PLUGIN_CONFIG_PATH(APP_CONFIG_PATH + "plugins/");
 
 // Downloads

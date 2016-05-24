@@ -36,4 +36,10 @@ AppWindow {
         servicePluginManager.load();
         transferModel.restore();
     }
+
+    Connections {
+        target: transferModel
+        onCaptchaRequest: pageStack.push(Qt.resolvedUrl("CaptchaPage.qml"), {transfer: transfer})
+        onSettingsRequest: pageStack.push(Qt.resolvedUrl("SettingsRequestPage.qml"), {transfer: transfer})
+    }
 }

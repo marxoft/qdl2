@@ -14,33 +14,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRAPHICSVIEW_H
-#define GRAPHICSVIEW_H
+#ifndef ARCHIVEPASSWORDMODEL_H
+#define ARCHIVEPASSWORDMODEL_H
 
-#include <QGraphicsView>
+#include "stringmodel.h"
 
-class QDeclarativeItem;
-class GraphicsViewPrivate;
-
-class GraphicsView : public QGraphicsView
+class ArchivePasswordModel : public StringModel
 {
     Q_OBJECT
 
 public:
-    explicit GraphicsView(QWidget *parent = 0);
-    ~GraphicsView();
+    explicit ArchivePasswordModel(QObject *parent = 0);
     
-    void addItem(QDeclarativeItem *item);
-    
-protected:
-    void resizeEvent(QResizeEvent *e);
-    
-    QScopedPointer<GraphicsViewPrivate> d_ptr;
-    
-    Q_DECLARE_PRIVATE(GraphicsView)
-    
-private:
-    Q_DISABLE_COPY(GraphicsView)
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role);
+
+    Q_INVOKABLE virtual void append(const QString &name);
+    Q_INVOKABLE virtual void insert(int row, const QString &name);
+    Q_INVOKABLE virtual bool remove(int row);
+
+public:
+    void reload();
 };
 
-#endif // GRAPHICSVIEW_H
+#endif // ARCHIVEPASSWORDMODEL_H

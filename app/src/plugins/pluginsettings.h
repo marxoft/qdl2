@@ -24,7 +24,7 @@ class PluginSettings : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString pluginId READ pluginId WRITE setPluginId)
+    Q_PROPERTY(QString pluginId READ pluginId WRITE setPluginId NOTIFY changed)
 
 public:
     explicit PluginSettings(QObject *parent = 0);

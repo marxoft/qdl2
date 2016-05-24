@@ -195,7 +195,6 @@ Qdl* Qdl::instance() {
 }
 
 void Qdl::quit() {
-    TransferModel::instance()->save();
     Logger::log("Qdl::quit(): Quitting the application");
     QCoreApplication::instance()->quit();
 }

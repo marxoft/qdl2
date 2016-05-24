@@ -35,7 +35,7 @@ MyPage {
         }
         delegate: PluginDelegate {
             subItemIndicator: true
-            onClicked: settings.length > 0 ? appWindow.pageStack.push(Qt.resolvedUrl("PluginSettingsPage.qml"),
+            onClicked: settings.length > 0 ? appWindow.pageStack.push(Qt.resolvedUrl("ServiceSettingsPage.qml"),
             {"pluginId": id, "pluginSettings": settings, title: displayName})
             : infoBanner.information(qsTr("No settings for this plugin"))
         }

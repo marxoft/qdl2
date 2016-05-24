@@ -21,12 +21,9 @@
 #include "concurrenttransfersmodel.h"
 #include "decaptchapluginconfigmodel.h"
 #include "definitions.h"
-#include "logger.h"
-#include "mainwindow.h"
 #include "maskeditem.h"
 #include "networkproxytypemodel.h"
 #include "package.h"
-#include "pixmapitem.h"
 #include "pluginsettings.h"
 #include "qdl.h"
 #include "recaptchapluginconfigmodel.h"
@@ -43,6 +40,7 @@
 #include "utils.h"
 #include <QApplication>
 #include <QDeclarativeContext>
+#include <QDeclarativeView>
 #include <qdeclarative.h>
 #include <QSsl>
 #include <QSslConfiguration>
@@ -55,7 +53,6 @@ void registerTypes() {
     qmlRegisterType<DecaptchaPluginConfigModel>("Qdl", 2, 0, "DecaptchaPluginConfigModel");
     qmlRegisterType<MaskedItem>("Qdl", 2, 0, "MaskedItem");
     qmlRegisterType<NetworkProxyTypeModel>("Qdl", 2, 0, "NetworkProxyTypeModel");
-    qmlRegisterType<PixmapItem>("Qdl", 2, 0, "Pixmap");
     qmlRegisterType<PluginSettings>("Qdl", 2, 0, "PluginSettings");
     qmlRegisterType<RecaptchaPluginConfigModel>("Qdl", 2, 0, "RecaptchaPluginConfigModel");
     qmlRegisterType<ScreenOrientationModel>("Qdl", 2, 0, "ScreenOrientationModel");
@@ -77,14 +74,11 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setApplicationName("QDL");
     app.setApplicationVersion(VERSION_NUMBER);
-    app.setQuitOnLastWindowClosed(false);
     
     QSslConfiguration config = QSslConfiguration::defaultConfiguration();
     config.setProtocol(QSsl::TlsV1);
     QSslConfiguration::setDefaultConfiguration(config);
-
-    Logger::setVerbosity(10);
-
+    
     QScopedPointer<Categories> categories(Categories::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
     QScopedPointer<Qdl> qdl(Qdl::instance());
@@ -99,8 +93,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     
     registerTypes();
     
-    MainWindow window;
-    QDeclarativeContext *context = window.rootContext();
+    QDeclarativeView view;
+    QDeclarativeContext *context = view.rootContext();
     context->setContextProperty("categories", categories.data());
     context->setContextProperty("decaptchaPluginManager", decaptchaManager.data());
     context->setContextProperty("qdl", qdl.data());
@@ -112,9 +106,12 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     context->setContextProperty("urlRetrievalModel", retriever.data());
     context->setContextProperty("utils", &utils);
     context->setContextProperty("ACTIVE_COLOR", ACTIVE_COLOR);
+    context->setContextProperty("CAPTCHA_TIMEOUT", CAPTCHA_TIMEOUT);
     context->setContextProperty("VERSION_NUMBER", VERSION_NUMBER);
-    window.setSource(QUrl::fromLocalFile(QApplication::applicationDirPath() + "/qml/main.qml"));
-    window.showFullScreen();
+    view.setSource(QUrl::fromLocalFile(QApplication::applicationDirPath() + "/qml/main.qml"));
+    view.showFullScreen();
+
+    QObject::connect(&app, SIGNAL(aboutToQuit()), transfers.data(), SLOT(save()));
 
     return app.exec();
 }

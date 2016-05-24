@@ -11,8 +11,6 @@ INCLUDEPATH += \
 
 HEADERS += \
     src/base/actionmodel.h \
-    src/base/archiveextractor.h \
-    src/base/archivepasswordmodel.h \
     src/base/categories.h \
     src/base/categorymodel.h \
     src/base/categoryselectionmodel.h \
@@ -20,14 +18,11 @@ HEADERS += \
     src/base/json.h \
     src/base/logger.h \
     src/base/networkproxytypemodel.h \
-    src/base/package.h \
     src/base/selectionmodel.h \
     src/base/serviceselectionmodel.h \
     src/base/stringmodel.h \
-    src/base/transfer.h \
     src/base/transferitem.h \
     src/base/transferitemprioritymodel.h \
-    src/base/transfermodel.h \
     src/base/urlactionmodel.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \
@@ -53,18 +48,13 @@ HEADERS += \
     src/plugins/xmlhttprequest.h
 
 SOURCES += \
-    src/base/archiveextractor.cpp \
-    src/base/archivepasswordmodel.cpp \
     src/base/categories.cpp \
     src/base/categorymodel.cpp \
     src/base/json.cpp \
     src/base/logger.cpp \
-    src/base/package.cpp \
     src/base/selectionmodel.cpp \
     src/base/stringmodel.cpp \
-    src/base/transfer.cpp \
     src/base/transferitem.cpp \
-    src/base/transfermodel.cpp \
     src/base/urlretrievalmodel.cpp \
     src/base/urlretriever.cpp \
     src/base/utils.cpp \
@@ -95,6 +85,8 @@ maemo5 {
         src/maemo5/aboutdialog.h \
         src/maemo5/aboutpluginsdialog.h \
         src/maemo5/addurlsdialog.h \
+        src/maemo5/archiveextractor.h \
+        src/maemo5/archivepasswordmodel.h \
         src/maemo5/archivepasswordsdialog.h \
         src/maemo5/captchadialog.h \
         src/maemo5/categoriesdialog.h \
@@ -104,6 +96,7 @@ maemo5 {
         src/maemo5/definitions.h \
         src/maemo5/mainwindow.h \
         src/maemo5/networkproxydialog.h \
+        src/maemo5/package.h \
         src/maemo5/packagepropertiesdialog.h \
         src/maemo5/plugindialog.h \
         src/maemo5/pluginsettingsdialog.h \
@@ -113,6 +106,8 @@ maemo5 {
         src/maemo5/servicesdialog.h \
         src/maemo5/settings.h \
         src/maemo5/settingsdialog.h \
+        src/maemo5/transfer.h \
+        src/maemo5/transfermodel.h \
         src/maemo5/transferpropertiesdialog.h \
         src/maemo5/urlcheckdialog.h \
         src/maemo5/urlcheckmodel.h \
@@ -123,6 +118,8 @@ maemo5 {
         src/maemo5/aboutdialog.cpp \
         src/maemo5/aboutpluginsdialog.cpp \
         src/maemo5/addurlsdialog.cpp \
+        src/maemo5/archiveextractor.cpp \
+        src/maemo5/archivepasswordmodel.cpp \
         src/maemo5/archivepasswordsdialog.cpp \
         src/maemo5/captchadialog.cpp \
         src/maemo5/categoriesdialog.cpp \
@@ -132,6 +129,7 @@ maemo5 {
         src/maemo5/main.cpp \
         src/maemo5/mainwindow.cpp \
         src/maemo5/networkproxydialog.cpp \
+        src/maemo5/package.cpp \
         src/maemo5/packagepropertiesdialog.cpp \
         src/maemo5/plugindialog.cpp \
         src/maemo5/pluginsettingsdialog.cpp \
@@ -141,6 +139,8 @@ maemo5 {
         src/maemo5/servicesdialog.cpp \
         src/maemo5/settings.cpp \
         src/maemo5/settingsdialog.cpp \
+        src/maemo5/transfer.cpp \
+        src/maemo5/transfermodel.cpp \
         src/maemo5/transferpropertiesdialog.cpp \
         src/maemo5/urlcheckdialog.cpp \
         src/maemo5/urlcheckmodel.cpp \
@@ -187,30 +187,27 @@ maemo5 {
     INCLUDEPATH += src/symbian
     
     HEADERS += \
-        src/symbian/captchadialog.h \
         src/symbian/definitions.h \
         src/symbian/graphicsview.h \
         src/symbian/maskeditem.h \
         src/symbian/maskeffect.h \
-        src/symbian/mainwindow.h \
-        src/symbian/pixmapitem.h \
-        src/symbian/pluginsettingsdialog.h \
+        src/symbian/package.h \
         src/symbian/qdl.h \
         src/symbian/screenorientationmodel.h \
         src/symbian/settings.h \
+        src/symbian/transfer.h \
+        src/symbian/transfermodel.h \
         src/symbian/urlcheckmodel.h
     
     SOURCES += \
-        src/symbian/captchadialog.cpp \
-        src/symbian/graphicsview.cpp \
         src/symbian/main.cpp \
-        src/symbian/mainwindow.cpp \
         src/symbian/maskeditem.cpp \
         src/symbian/maskeffect.cpp \
-        src/symbian/pixmapitem.cpp \
-        src/symbian/pluginsettingsdialog.cpp \
+        src/symbian/package.cpp \
         src/symbian/qdl.cpp \
         src/symbian/settings.cpp \
+        src/symbian/transfer.cpp \
+        src/symbian/transfermodel.cpp \
         src/symbian/urlcheckmodel.cpp
     
     qml.sources = $$files(src/symbian/qml/*.qml)
@@ -251,15 +248,19 @@ maemo5 {
     HEADERS += \
         src/desktop/aboutdialog.h \
         src/desktop/addurlsdialog.h \
+        src/desktop/archiveextractor.h \
+        src/desktop/archivepasswordmodel.h \
         src/desktop/captchadialog.h \
         src/desktop/categorysettingstab.h \
         src/desktop/clipboardurlmodel.h \
         src/desktop/clipboardurlsdialog.h \
+        src/desktop/definitions.h \
         src/desktop/decaptchasettingstab.h \
         src/desktop/generalsettingstab.h \
         src/desktop/interfacesettingstab.h \
         src/desktop/networksettingstab.h \
         src/desktop/mainwindow.h \
+        src/desktop/package.h \
         src/desktop/packagepropertiesdialog.h \
         src/desktop/pluginsettingsdialog.h \
         src/desktop/pluginsettingstab.h \
@@ -270,7 +271,9 @@ maemo5 {
         src/desktop/settings.h \
         src/desktop/settingsdialog.h \
         src/desktop/settingstab.h \
+        src/desktop/transfer.h \
         src/desktop/transferdelegate.h \
+        src/desktop/transfermodel.h \
         src/desktop/transferpropertiesdialog.h \
         src/desktop/urlcheckdialog.h \
         src/desktop/urlcheckmodel.h
@@ -278,6 +281,8 @@ maemo5 {
     SOURCES += \
         src/desktop/aboutdialog.cpp \
         src/desktop/addurlsdialog.cpp \
+        src/desktop/archiveextractor.cpp \
+        src/desktop/archivepasswordmodel.cpp \
         src/desktop/captchadialog.cpp \
         src/desktop/categorysettingstab.cpp \
         src/desktop/clipboardurlmodel.cpp \
@@ -288,6 +293,7 @@ maemo5 {
         src/desktop/networksettingstab.cpp \
         src/desktop/main.cpp \
         src/desktop/mainwindow.cpp \
+        src/desktop/package.cpp \
         src/desktop/packagepropertiesdialog.cpp \
         src/desktop/pluginsettingsdialog.cpp \
         src/desktop/pluginsettingstab.cpp \
@@ -298,7 +304,9 @@ maemo5 {
         src/desktop/settings.cpp \
         src/desktop/settingsdialog.cpp \
         src/desktop/settingstab.cpp \
+        src/desktop/transfer.cpp \
         src/desktop/transferdelegate.cpp \
+        src/desktop/transfermodel.cpp \
         src/desktop/transferpropertiesdialog.cpp \
         src/desktop/urlcheckdialog.cpp \
         src/desktop/urlcheckmodel.cpp

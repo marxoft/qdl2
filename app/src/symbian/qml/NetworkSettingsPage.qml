@@ -79,8 +79,9 @@ MyPage {
                 
                 x: platformStyle.paddingLarge
                 width: parent.width - platformStyle.paddingLarge * 2
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyHost
-                visible: (!inputContext.visible) || (focus)
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyHost = text
             }
             
@@ -97,8 +98,9 @@ MyPage {
                 
                 x: platformStyle.paddingLarge
                 width: parent.width - platformStyle.paddingLarge * 2
+                inputMethodHints: Qt.ImhDigitsOnly
                 text: settings.networkProxyPort
-                visible: (!inputContext.visible) || (focus)
+                visible: (!inputContext.visible) || (activeFocus)
                 validator: IntValidator {
                     bottom: 0
                     top: 100000
@@ -129,8 +131,9 @@ MyPage {
                 
                 x: platformStyle.paddingLarge
                 width: parent.width - platformStyle.paddingLarge * 2
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyUsername
-                visible: (!inputContext.visible) || (focus)
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyUsername = text
             }
             
@@ -148,8 +151,9 @@ MyPage {
                 x: platformStyle.paddingLarge
                 width: parent.width - platformStyle.paddingLarge * 2
                 echoMode: TextInput.Password
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyPassword
-                visible: (!inputContext.visible) || (focus)
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyPassword = text
             }
         }

@@ -59,6 +59,8 @@ MyPage {
                     right: paddingItem.right
                     verticalCenter: paddingItem.verticalCenter
                 }
+                sourceSize.width: platformStyle.graphicSizeSmall
+                sourceSize.height: platformStyle.graphicSizeSmall
                 source: checked ? ok ? "images/yes.png" : "images/no.png" : ""
             }
         }

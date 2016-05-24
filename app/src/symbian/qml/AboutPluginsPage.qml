@@ -16,138 +16,53 @@
 
 import QtQuick 1.1
 import com.nokia.symbian 1.1
-import Qdl 2.0
 
 MyPage {
     id: root
-    
-    title: view.currentTab.title
+
+    title: qsTr("Plugins")
     tools: ToolBarLayout {
         BackToolButton {}
     }
-    
-    TabView {
+
+    MyListView {
         id: view
-        
+
         anchors.fill: parent
-        
-        Tab {
-            id: serviceTab
-            
-            width: view.width
-            height: view.height
-            title: qsTr("Services")
-            
-            MyListView {
-                id: serviceView
-                
-                anchors.fill: parent
-                model: ServicePluginConfigModel {
-                    id: serviceModel
-                }
-                delegate: PluginDelegate {}
-            }
-            
-            ScrollDecorator {
-                flickableItem: serviceView
-            }
+        model: [qsTr("Services"), qsTr("Recaptcha"), qsTr("Decaptcha")]
+        delegate: MyListItem {
+            subItemIndicator: true
 
-            Label {
-                id: label
-
+            MyListItemText {
                 anchors {
-                    fill: parent
-                    margins: platformStyle.paddingLarge
+                    left: paddingItem.left
+                    right: paddingItem.right
+                    verticalCenter: paddingItem.verticalCenter
                 }
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WordWrap
-                color: platformStyle.colorNormalMid
-                font.bold: true
-                font.pixelSize: 32
-                text: qsTr("No service plugins")
-                visible: serviceModel.count == 0
+                role: "Title"
+                elide: Text.ElideRight
+                text: modelData
             }
-        }
-        
-        TabLoader {
-            id: recaptchaTab
-            
-            width: view.width
-            height: view.height
-            title: qsTr("Recaptcha")
-            tab: Tab {
-                MyListView {
-                    id: recaptchaView
-                    
-                    anchors.fill: parent
-                    model: RecaptchaPluginConfigModel {
-                        id: recaptchaModel
-                    }
-                    delegate: PluginDelegate {}
-                }
-                
-                ScrollDecorator {
-                    flickableItem: recaptchaView
-                }
 
-                Label {
-                    id: label
-
-                    anchors {
-                        fill: parent
-                        margins: platformStyle.paddingLarge
-                    }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WordWrap
-                    color: platformStyle.colorNormalMid
-                    font.bold: true
-                    font.pixelSize: 32
-                    text: qsTr("No recaptcha plugins")
-                    visible: recaptchaModel.count == 0
+            onClicked: {
+                switch (index) {
+                case 0:
+                    appWindow.pageStack.push(Qt.resolvedUrl("AboutServicesPage.qml"));
+                    break;
+                case 1:
+                    appWindow.pageStack.push(Qt.resolvedUrl("AboutRecaptchaPage.qml"));
+                    break;
+                case 2:
+                    appWindow.pageStack.push(Qt.resolvedUrl("AboutDecaptchaPage.qml"));
+                    break;
+                default:
+                    break;
                 }
             }
         }
-        
-        TabLoader {
-            id: decaptchaTab
-            
-            width: view.width
-            height: view.height
-            title: qsTr("Decaptcha")
-            tab: Tab {
-                MyListView {
-                    id: decaptchaView
-                    
-                    anchors.fill: parent
-                    model: DecaptchaPluginConfigModel {
-                        id: decaptchaModel
-                    }
-                    delegate: PluginDelegate {}
-                }
-                
-                ScrollDecorator {
-                    flickableItem: decaptchaView
-                }
+    }
 
-                Label {
-                    id: label
-
-                    anchors {
-                        fill: parent
-                        margins: platformStyle.paddingLarge
-                    }
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WordWrap
-                    color: platformStyle.colorNormalMid
-                    font.bold: true
-                    font.pixelSize: 32
-                    text: qsTr("No decaptcha plugins")
-                    visible: decaptchaModel.count == 0
-                }
-            }
-        }
+    ScrollDecorator {
+        flickableItem: view
     }
 }

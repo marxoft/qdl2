@@ -18,26 +18,11 @@ import QtQuick 1.1
 import com.nokia.symbian 1.1
 import Qdl 2.0
 
-Window {
+MyPage {
     id: root
     
+    property QtObject transfer
     property variant response: ({})
-    property alias settings: repeater.model
-    property alias title: statusBar.title
-    property int timeout
-    property int timeRemaining
-    
-    signal accepted
-    signal rejected
-    
-    function startTimer() {
-        timeRemaining = timeout;
-        timer.restart();
-    }
-    
-    function stopTimer() {
-        timer.stop();
-    }
     
     function setValue(key, value) {
         var r = response;
@@ -45,23 +30,26 @@ Window {
         response = r;
     }
     
-    MyStatusBar {
-        id: statusBar
+    title: qsTr("Enter settings")
+    tools: ToolBarLayout {
+        BackToolButton {
+            onClicked: transfer.submitSettingsResponse(null)
+        }
 
-        anchors.top: parent.top
-        title: qsTr("Settings")
-        width: parent.width
+        MyToolButton {
+            iconSource: "images/yes.png"
+            toolTip: qsTr("Done")
+            onClicked: {
+                transfer.submitSettingsResponse(response);
+                appWindow.pageStack.pop();
+            }
+        }
     }
     
     KeyNavFlickable {
         id: flickable
         
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: statusBar.bottom
-            bottom: toolBar.top
-        }
+        anchors.fill: parent
         contentHeight: inputContext.visible ? height : column.height + platformStyle.paddingLarge
         
         Column {
@@ -77,7 +65,7 @@ Window {
 
             Label {
                 width: parent.width
-                text: utils.formatMSecs(timeRemaining)
+                text: utils.formatMSecs(timer.timeRemaining)
             }
             
             Repeater {
@@ -123,30 +111,6 @@ Window {
         flickableItem: flickable
     }
     
-    ToolBar {
-        id: toolBar
-
-        anchors.bottom: parent.bottom
-        states: State {
-            name: "hide"
-            when: (inputContext.softwareInputPanelVisible) || (inputContext.customSoftwareInputPanelVisible)
-            PropertyChanges { target: toolBar; height: 0; opacity: 0.0 }
-        }
-        tools: ToolBarLayout {
-            MyToolButton {
-                iconSource: "toolbar-back"
-                toolTip: qsTr("Exit")
-                onClicked: root.rejected()
-            }
-            
-            MyToolButton {
-                iconSource: "images/yes.png"
-                toolTip: qsTr("Done")
-                onClicked: root.accepted()
-            }
-        }
-    }
-    
     Component {
         id: checkBox
 
@@ -160,6 +124,7 @@ Window {
             }
 
             width: column.width
+            visible: !inputContext.visible
             onCheckedChanged: setValue(key, checked)
         }
     }
@@ -181,6 +146,7 @@ Window {
                 id: label
 
                 width: parent.width
+                visible: !inputContext.visible
             }
 
             Repeater {
@@ -241,6 +207,7 @@ Window {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
 
             MyTextField {
@@ -250,6 +217,8 @@ Window {
 
                 width: parent.width
                 validator: IntValidator {}
+                inputMethodHints: Qt.ImhDigitsOnly
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
             }
         }
@@ -273,6 +242,7 @@ Window {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
 
             MyTextField {
@@ -282,6 +252,7 @@ Window {
 
                 width: parent.width
                 echoMode: TextInput.Password
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
             }
         }
@@ -305,6 +276,7 @@ Window {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
 
             MyTextField {
@@ -313,6 +285,7 @@ Window {
                 property string key
 
                 width: parent.width
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
             }
         }
@@ -339,12 +312,15 @@ Window {
             x: -platformStyle.paddingLarge
             width: column.width + platformStyle.paddingLarge * 2
             model: SelectionModel {}
-            onAccepted: setValue(key, value)
+            visible: !inputContext.visible
+            onValueChanged: setValue(key, value)
         }
     }
     
     Timer {
         id: timer
+
+        property int timeRemaining: CAPTCHA_TIMEOUT
         
         interval: 1000
         repeat: true
@@ -352,8 +328,16 @@ Window {
             timeRemaining -= interval;
             
             if (timeRemaining <= 0) {
-                root.rejected();
+                transfer.submitSettingsResponse(null);
             }
+        }
+    }
+
+    onTransferChanged: {
+        if (transfer) {
+            repeater.model = transfer.requestedSettings;
+            timer.timeRemaining = CAPTCHA_TIMEOUT;
+            timer.restart();
         }
     }
 }

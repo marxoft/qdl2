@@ -63,6 +63,8 @@ MyPage {
                     id: pluginLabel
                     
                     width: parent.width - icon.width - platformStyle.paddingLarge
+                    height: icon.height
+                    verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                 }
             }

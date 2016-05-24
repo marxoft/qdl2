@@ -60,6 +60,7 @@ MyPage {
                 id: urlsEdit
                 
                 width: parent.width
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
             }
             
             ValueSelector {

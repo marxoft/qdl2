@@ -21,7 +21,6 @@ Page {
     id: root
 
     property string title: ""
-    property bool showProgressIndicator: false
 
     anchors.fill: parent
     orientationLock: settings.screenOrientation

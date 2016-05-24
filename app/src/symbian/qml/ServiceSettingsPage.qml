@@ -106,6 +106,7 @@ MyPage {
             }
 
             width: column.width
+            visible: !inputContext.visible
             onCheckedChanged: plugin.setValue(key, checked)
         }
     }
@@ -127,6 +128,7 @@ MyPage {
                 id: label
 
                 width: parent.width
+                visible: !inputContext.visible
             }
             
             Repeater {
@@ -160,7 +162,7 @@ MyPage {
                             item.init(modelData, repeater.key);
                         }
                     }
-                        
+
                     Component.onCompleted: initSourceComponent()
                 }
             }
@@ -176,7 +178,7 @@ MyPage {
                 field.key = (group ? group + "/" : "") + modelData.key;
                 field.validator.bottom = Math.max(0, parseInt(modelData.minimum));
                 field.validator.top = Math.max(1, parseInt(modelData.maximum));
-                field.text = plugin.value(field.key, modelData.value.toString());
+                field.text = plugin.value(field.key, modelData.value);
             }
 
             width: column.width
@@ -187,6 +189,7 @@ MyPage {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
             
             MyTextField {
@@ -196,6 +199,8 @@ MyPage {
 
                 width: parent.width
                 validator: IntValidator {}
+                inputMethodHints: Qt.ImhDigitsOnly
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
             }
         }
@@ -208,7 +213,7 @@ MyPage {
             function init(modelData, group) {
                 label.text = modelData.label;
                 field.key = (group ? group + "/" : "") + modelData.key;
-                field.text = plugin.value(field.key, modelData.value.toString());
+                field.text = plugin.value(field.key, modelData.value);
             }
 
             width: column.width
@@ -219,6 +224,7 @@ MyPage {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
             
             MyTextField {
@@ -228,6 +234,8 @@ MyPage {
 
                 width: parent.width
                 echoMode: TextInput.Password
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
             }
         }
@@ -240,7 +248,7 @@ MyPage {
             function init(modelData, group) {
                 label.text = modelData.label;
                 field.key = (group ? group + "/" : "") + modelData.key;
-                field.text = plugin.value(field.key, modelData.value.toString());
+                field.text = plugin.value(field.key, modelData.value);
             }
 
             width: column.width
@@ -251,6 +259,7 @@ MyPage {
 
                 width: parent.width
                 elide: Text.ElideRight
+                visible: field.visible
             }
             
             MyTextField {
@@ -259,6 +268,8 @@ MyPage {
                 property string key
 
                 width: parent.width
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
             }
         }
@@ -285,6 +296,7 @@ MyPage {
             x: -platformStyle.paddingLarge
             width: column.width + platformStyle.paddingLarge * 2
             model: SelectionModel {}
+            visible: !inputContext.visible
             onAccepted: plugin.setValue(key, value)
         }
     }

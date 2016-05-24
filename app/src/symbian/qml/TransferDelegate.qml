@@ -315,7 +315,7 @@ Item {
             right: parent.right
             top: packageItem.bottom
         }
-        sourceComponent: expanded ? transfers : undefined
+        sourceComponent: (expanded) && (count > 0) ? transfers : undefined
     }
     
     Component {
