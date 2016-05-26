@@ -59,6 +59,28 @@ bool TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
         return true;
     }
     
+    if (parts.at(1) == "search") {
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString property = Utils::urlQueryItemValue(request->url(), "property");
+            const QString value = Utils::urlQueryItemValue(request->url(), "value");
+            
+            if ((property.isEmpty()) || (value.isEmpty())) {
+                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            }
+            else {
+                writeResponse(response, QHttpResponse::STATUS_OK,
+                QtJson::Json::serialize(Qdl::searchTransfers(property, value,
+                                        Utils::urlQueryItemValue(request->url(), "hits", "1").toInt(),
+                                        Utils::urlQueryItemValue(request->url(), "includeChildren") == "true")));
+            }
+            
+            return true;
+        }
+        
+        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+        return true;
+    }
+    
     if (parts.at(1) == "start") {
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString id = Utils::urlQueryItemValue(request->url(), "id");
