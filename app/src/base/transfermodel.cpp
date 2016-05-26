@@ -748,6 +748,8 @@ void TransferModel::onTransferDataChanged(TransferItem *transfer, int role) {
         column = 3;
         emit totalSpeedChanged(totalSpeed());
         break;
+    case TransferItem::CaptchaTimeoutRole:
+    case TransferItem::RequestedSettingsTimeoutRole:
     case TransferItem::WaitTimeRole:
         column = 4;
         break;

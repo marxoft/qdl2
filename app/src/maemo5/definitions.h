@@ -63,6 +63,6 @@ static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
 
 // Version
-static const QString VERSION_NUMBER("2.0.1");
+static const QString VERSION_NUMBER("2.0.2");
 
 #endif // DEFINITIONS_H

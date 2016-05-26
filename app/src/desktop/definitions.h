@@ -69,6 +69,6 @@ static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTE
                                                                      << QString("/opt/qdl2/plugins/icons/")
                                                                      << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
-static const QString VERSION_NUMBER("2.0.1");
+static const QString VERSION_NUMBER("2.0.2");
 
 #endif // DEFINITIONS_H

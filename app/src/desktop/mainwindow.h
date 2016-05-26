@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 
+class TransferItem;
 class QActionGroup;
 class QComboBox;
 class QLabel;
@@ -72,6 +73,9 @@ private Q_SLOTS:
     void showClipboardUrlsDialog();
     void showSettingsDialog();
     void showAboutDialog();
+    
+    void showCaptchaDialog(TransferItem *transfer);
+    void showPluginSettingsDialog(TransferItem *transfer);
 
     void loadPlugins();
 

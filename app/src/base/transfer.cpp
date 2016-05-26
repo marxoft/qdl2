@@ -15,12 +15,10 @@
  */
 
 #include "transfer.h"
-#include "captchadialog.h"
 #include "decaptchaplugin.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "logger.h"
-#include "pluginsettingsdialog.h"
 #include "recaptchaplugin.h"
 #include "recaptchapluginmanager.h"
 #include "serviceplugin.h"
@@ -31,6 +29,7 @@
 #include <QBuffer>
 #include <QDir>
 #include <QFile>
+#include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
@@ -47,8 +46,6 @@ Transfer::Transfer(QObject *parent) :
     m_reply(0),
     m_file(0),
     m_timer(0),
-    m_captchaDialog(0),
-    m_settingsDialog(0),
     m_priority(NormalPriority),
     m_lastBytesTransferred(0),
     m_size(0),
@@ -59,7 +56,7 @@ Transfer::Transfer(QObject *parent) :
     m_reportCaptchaError(false),
     m_metadataSet(false),
     m_redirects(0),
-    m_waitTime(0)
+    m_timeRemaining(0)
 {
 }
 
@@ -71,6 +68,8 @@ QVariant Transfer::data(int role) const {
         return captchaImage();
     case CaptchaTimeoutRole:
         return captchaTimeout();
+    case CaptchaTimeoutStringRole:
+        return captchaTimeoutString();
     case CustomCommandRole:
         return customCommand();
     case DownloadPathRole:
@@ -102,6 +101,10 @@ QVariant Transfer::data(int role) const {
         return requestedSettings();
     case RequestedSettingsTimeoutRole:
         return requestedSettingsTimeout();
+    case RequestedSettingsTimeoutStringRole:
+        return requestedSettingsTimeoutString();
+    case RequestedSettingsTitleRole:
+        return requestedSettingsTitle();
     case SizeRole:
         return size();
     case SpeedRole:
@@ -178,6 +181,7 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[BytesTransferredRole] = bytesTransferred();
     map[CaptchaImageRole] = captchaImage();
     map[CaptchaTimeoutRole] = captchaTimeout();
+    map[CaptchaTimeoutStringRole] = captchaTimeoutString();
     map[CustomCommandRole] = customCommand();
     map[DownloadPathRole] = downloadPath();
     map[ErrorStringRole] = errorString();
@@ -193,6 +197,8 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[ProgressStringRole] = progressString();
     map[RequestedSettingsRole] = requestedSettings();
     map[RequestedSettingsTimeoutRole] = requestedSettingsTimeout();
+    map[RequestedSettingsTimeoutStringRole] = requestedSettingsTimeoutString();
+    map[RequestedSettingsTitleRole] = requestedSettingsTitle();
     map[SizeRole] = size();
     map[SpeedRole] = speed();
     map[SpeedStringRole] = speedString();
@@ -210,6 +216,7 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(BytesTransferredRole)] = bytesTransferred();
     map[roleNames().value(CaptchaImageRole)] = captchaImage();
     map[roleNames().value(CaptchaTimeoutRole)] = captchaTimeout();
+    map[roleNames().value(CaptchaTimeoutStringRole)] = captchaTimeoutString();
     map[roleNames().value(CustomCommandRole)] = customCommand();
     map[roleNames().value(DownloadPathRole)] = downloadPath();
     map[roleNames().value(ErrorStringRole)] = errorString();
@@ -226,6 +233,8 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(ProgressStringRole)] = progressString();
     map[roleNames().value(RequestedSettingsRole)] = requestedSettings();
     map[roleNames().value(RequestedSettingsTimeoutRole)] = requestedSettingsTimeout();
+    map[roleNames().value(RequestedSettingsTimeoutStringRole)] = requestedSettingsTimeoutString();
+    map[roleNames().value(RequestedSettingsTitleRole)] = requestedSettingsTitle();
     map[roleNames().value(SizeRole)] = size();
     map[roleNames().value(SpeedRole)] = speed();
     map[roleNames().value(SpeedStringRole)] = speedString();
@@ -361,6 +370,7 @@ QByteArray Transfer::captchaImage() const {
 void Transfer::setCaptchaImage(const QImage &image) {
     QByteArray ba;
     QBuffer buffer(&ba);
+    buffer.open(QBuffer::WriteOnly);
     image.save(&buffer, "JPEG");
     m_captchaImageData = ba.toBase64();
     emit dataChanged(this, CaptchaImageRole);
@@ -374,11 +384,29 @@ void Transfer::clearCaptchaImage() {
 }
 
 int Transfer::captchaTimeout() const {
+    return status() == AwaitingCaptchaResponse ? m_timeRemaining : 0;
+}
+
+QString Transfer::captchaTimeoutString() const {
+    return Utils::formatMSecs(captchaTimeout());
+}
+
+void Transfer::updateCaptchaTimeout() {
     switch (status()) {
-    case Transfer::AwaitingCaptchaResponse:
-        return m_captchaDialog.isNull() ? 0 : m_captchaDialog->timeRemaining();
+    case AwaitingCaptchaResponse:
+        m_timeRemaining -= m_timer->interval();
+        emit dataChanged(this, CaptchaTimeoutRole);
+        
+        if (m_timeRemaining <= 0) {
+            stopWaitTimer();
+            setErrorString(tr("No captcha response"));
+            setStatus(Failed);
+        }
+        
+        break;
     default:
-        return 0;
+        stopWaitTimer();
+        break;
     }
 }
 
@@ -497,15 +525,19 @@ QVariantList Transfer::requestedSettings() const {
     return m_requestedSettings;
 }
 
-void Transfer::setRequestedSettings(const QVariantList &settings) {
+void Transfer::setRequestedSettings(const QString &title, const QVariantList &settings) {
+    m_requestedSettingsTitle = title;
     m_requestedSettings = settings;
     emit dataChanged(this, RequestedSettingsRole);
+    emit dataChanged(this, RequestedSettingsTitleRole);
 }
 
 void Transfer::clearRequestedSettings() {
     if (!m_requestedSettings.isEmpty()) {
+        m_requestedSettingsTitle.clear();
         m_requestedSettings.clear();
         emit dataChanged(this, RequestedSettingsRole);
+        emit dataChanged(this, RequestedSettingsTitleRole);
     }
 }
 
@@ -514,9 +546,38 @@ int Transfer::requestedSettingsTimeout() const {
     case AwaitingDecaptchaSettingsResponse:
     case AwaitingRecaptchaSettingsResponse:
     case AwaitingServiceSettingsResponse:
-        return m_settingsDialog.isNull() ? 0 : m_settingsDialog->timeRemaining();
+        return m_timeRemaining;
     default:
         return 0;
+    }
+}
+
+QString Transfer::requestedSettingsTimeoutString() const {
+    return Utils::formatMSecs(requestedSettingsTimeout());
+}
+
+QString Transfer::requestedSettingsTitle() const {
+    return m_requestedSettingsTitle;
+}
+
+void Transfer::updateRequestedSettingsTimeout() {
+    switch (status()) {
+    case AwaitingDecaptchaSettingsResponse:
+    case AwaitingRecaptchaSettingsResponse:
+    case AwaitingServiceSettingsResponse:
+        m_timeRemaining -= m_timer->interval();
+        emit dataChanged(this, RequestedSettingsTimeoutRole);
+        
+        if (m_timeRemaining <= 0) {
+            stopWaitTimer();
+            setErrorString(tr("No settings response"));
+            setStatus(Failed);
+        }
+        
+        break;
+    default:
+        stopWaitTimer();
+        break;
     }
 }
 
@@ -555,6 +616,12 @@ QString Transfer::statusString() const {
         return QString("%1: %2").arg(TransferItem::statusString(WaitingInactive)).arg(waitTimeString());
     case WaitingActive:
         return QString("%1: %2").arg(TransferItem::statusString(WaitingActive)).arg(waitTimeString());
+    case AwaitingCaptchaResponse:
+        return QString("%1: %2").arg(TransferItem::statusString(AwaitingCaptchaResponse)).arg(captchaTimeoutString());
+    case AwaitingDecaptchaSettingsResponse:
+    case AwaitingRecaptchaSettingsResponse:
+    case AwaitingServiceSettingsResponse:
+        return QString("%1: %2").arg(TransferItem::statusString(status())).arg(requestedSettingsTimeoutString());
     default:
         return TransferItem::statusString(status());
     }
@@ -596,7 +663,7 @@ void Transfer::setUrl(const QString &u) {
 }
 
 int Transfer::waitTime() const {
-    return m_waitTime;
+    return m_timeRemaining;
 }
 
 QString Transfer::waitTimeString() const {
@@ -607,10 +674,10 @@ void Transfer::updateWaitTime() {
     switch (status()) {
     case WaitingActive:
     case WaitingInactive:
-        m_waitTime -= m_timer->interval();
+        m_timeRemaining -= m_timer->interval();
         emit dataChanged(this, WaitTimeRole);
         
-        if (m_waitTime <= 0) {
+        if (m_timeRemaining <= 0) {
             stopWaitTimer();
             
             if (status() == WaitingInactive) {
@@ -1063,33 +1130,19 @@ bool Transfer::openFile() {
     return m_file->open(QFile::WriteOnly | QFile::Append);
 }
 
-void Transfer::openCaptchaDialog(const QImage &image) {
-    CaptchaDialog dialog;
-    m_captchaDialog = &dialog;
-    dialog.setImage(image);
-    connect(this, SIGNAL(dataChanged(TransferItem*, int)), &dialog, SLOT(reject()));
-    
-    if (dialog.exec() == QDialog::Accepted) {
-        submitCaptchaResponse(dialog.response());
-    }
-    else if (status() == AwaitingCaptchaResponse) {
-        setErrorString(tr("No captcha response"));
-        setStatus(Failed);
-    }
-}
-
 void Transfer::startSpeedTimer() {
     m_speedTime.start();
 }
 
-void Transfer::startWaitTimer() {
+void Transfer::startWaitTimer(int msecs, const char* slot) {
     if (!m_timer) {
         m_timer = new QTimer(this);
         m_timer->setInterval(1000);
     }
-
+    
+    m_timeRemaining = msecs;
     disconnect(m_timer, 0, this, 0);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(updateWaitTime()));
+    connect(m_timer, SIGNAL(timeout()), this, slot);
     m_timer->start();
 }
 
@@ -1142,9 +1195,9 @@ void Transfer::onCaptchaReady(const QString &challenge, const QImage &image) {
     }
 
     m_reportCaptchaError = false;
-    setStatus(AwaitingCaptchaResponse);
+    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateCaptchaTimeout()));
     setCaptchaImage(image);
-    openCaptchaDialog(image);
+    setStatus(AwaitingCaptchaResponse);
 }
 
 void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey,
@@ -1223,8 +1276,7 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
 }
 
 void Transfer::onWaitRequest(int msecs, bool isLongDelay) {
-    m_waitTime = msecs;
-    startWaitTimer();
+    startWaitTimer(msecs, SLOT(updateWaitTime()));
 
     if (isLongDelay) {
         setStatus(WaitingInactive);
@@ -1236,56 +1288,23 @@ void Transfer::onWaitRequest(int msecs, bool isLongDelay) {
 
 void Transfer::onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
     m_callback = callback;
-    setRequestedSettings(settings);
+    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
+    setRequestedSettings(title, settings);
     setStatus(AwaitingDecaptchaSettingsResponse);
-    PluginSettingsDialog dialog(settings);
-    m_settingsDialog = &dialog;
-    dialog.setWindowTitle(title);
-    connect(this, SIGNAL(dataChanged(TransferItem*, int)), &dialog, SLOT(reject()));
-    
-    if (dialog.exec() == QDialog::Accepted) {
-        submitSettingsResponse(dialog.settings());
-    }
-    else if (status() == AwaitingDecaptchaSettingsResponse) {
-        setErrorString(tr("No settings response"));
-        setStatus(Failed);
-    }
 }
 
 void Transfer::onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
     m_callback = callback;
-    setRequestedSettings(settings);
+    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
+    setRequestedSettings(title, settings);
     setStatus(AwaitingRecaptchaSettingsResponse);
-    PluginSettingsDialog dialog(settings);
-    m_settingsDialog = &dialog;
-    dialog.setWindowTitle(title);
-    connect(this, SIGNAL(dataChanged(TransferItem*, int)), &dialog, SLOT(reject()));
-    
-    if (dialog.exec() == QDialog::Accepted) {
-        submitSettingsResponse(dialog.settings());
-    }
-    else if (status() == AwaitingRecaptchaSettingsResponse) {
-        setErrorString(tr("No settings response"));
-        setStatus(Failed);
-    }
 }
 
 void Transfer::onServiceSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
     m_callback = callback;
-    setRequestedSettings(settings);
+    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
+    setRequestedSettings(title, settings);
     setStatus(AwaitingServiceSettingsResponse);
-    PluginSettingsDialog dialog(settings);
-    m_settingsDialog = &dialog;
-    dialog.setWindowTitle(title);
-    connect(this, SIGNAL(dataChanged(TransferItem*, int)), &dialog, SLOT(reject()));
-    
-    if (dialog.exec() == QDialog::Accepted) {
-        submitSettingsResponse(dialog.settings());
-    }
-    else if (status() == AwaitingServiceSettingsResponse) {
-        setErrorString(tr("No settings response"));
-        setStatus(Failed);
-    }
 }
 
 void Transfer::onDecaptchaError(const QString &errorString) {

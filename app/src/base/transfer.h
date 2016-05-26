@@ -19,13 +19,10 @@
 
 #include "transferitem.h"
 #include <QNetworkRequest>
-#include <QPointer>
 #include <QTime>
 #include <QUrl>
 
-class CaptchaDialog;
 class DecaptchaPlugin;
-class PluginSettingsDialog;
 class RecaptchaPlugin;
 class ServicePlugin;
 class QFile;
@@ -44,6 +41,7 @@ class Transfer : public TransferItem
     Q_PROPERTY(QString fileSuffix READ fileSuffix)
     Q_PROPERTY(QByteArray captchaImage READ captchaImage)
     Q_PROPERTY(int captchaTimeout READ captchaTimeout)
+    Q_PROPERTY(QString captchaTimeoutString READ captchaTimeoutString)
     Q_PROPERTY(QString id READ id WRITE setId)
     Q_PROPERTY(QString pluginIconPath READ pluginIconPath)
     Q_PROPERTY(QString pluginId READ pluginId)
@@ -58,6 +56,8 @@ class Transfer : public TransferItem
     Q_PROPERTY(QString speedString READ speedString)
     Q_PROPERTY(QVariantList requestedSettings READ requestedSettings)
     Q_PROPERTY(int requestedSettingsTimeout READ requestedSettingsTimeout)
+    Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString)
+    Q_PROPERTY(QString requestedSettingsTitle READ requestedSettingsTitle)
     Q_PROPERTY(Status status READ status)
     Q_PROPERTY(QString statusString READ statusString)
     Q_PROPERTY(QString errorString READ errorString)
@@ -94,6 +94,7 @@ public:
 
     QByteArray captchaImage() const;
     int captchaTimeout() const;
+    QString captchaTimeoutString() const;
 
     QString id() const;
     void setId(const QString &i);
@@ -115,6 +116,8 @@ public:
 
     QVariantList requestedSettings() const;
     int requestedSettingsTimeout() const;
+    QString requestedSettingsTimeoutString() const;
+    QString requestedSettingsTitle() const;
 
     Status status() const;
     QString statusString() const;
@@ -139,6 +142,8 @@ public Q_SLOTS:
     bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
+    void updateCaptchaTimeout();
+    void updateRequestedSettingsTimeout();
     void updateSpeed();
     void updateWaitTime();
     
@@ -172,7 +177,7 @@ private:
     void setSize(qint64 s);
     void setSpeed(int s);
 
-    void setRequestedSettings(const QVariantList &settings);
+    void setRequestedSettings(const QString &title, const QVariantList &settings);
     void clearRequestedSettings();
 
     void setStatus(Status s);
@@ -189,10 +194,8 @@ private:
     bool openBuffer(const QByteArray &data);
     bool openFile();
 
-    void openCaptchaDialog(const QImage &image);
-
     void startSpeedTimer();
-    void startWaitTimer();
+    void startWaitTimer(int msecs, const char* slot);
     void stopSpeedTimer();
     void stopWaitTimer();
 
@@ -208,9 +211,6 @@ private:
     QNetworkReply *m_reply;
     QFile *m_file;
     QTimer *m_timer;
-
-    QPointer<CaptchaDialog> m_captchaDialog;
-    QPointer<PluginSettingsDialog> m_settingsDialog;
 
     QString m_customCommand;
     QString m_downloadPath;
@@ -242,6 +242,7 @@ private:
     QString m_recaptchaKey;
     QString m_decaptchaId;
 
+    QString m_requestedSettingsTitle;
     QVariantList m_requestedSettings;
 
     QByteArray m_callback;
@@ -251,7 +252,7 @@ private:
     bool m_deleteFiles;
 
     int m_redirects;
-    int m_waitTime;
+    int m_timeRemaining;
 };
     
 #endif // TRANSFER_H

@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 
+class TransferItem;
 class ValueSelectorAction;
 class QLabel;
 class QModelIndex;
@@ -63,6 +64,9 @@ private Q_SLOTS:
     void showClipboardUrlsDialog();
     void showSettingsDialog();
     void showAboutDialog();
+    
+    void showCaptchaDialog(TransferItem *transfer);
+    void showPluginSettingsDialog(TransferItem *transfer);
 
     void loadPlugins();
 

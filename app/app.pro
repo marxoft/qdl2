@@ -21,8 +21,10 @@ HEADERS += \
     src/base/selectionmodel.h \
     src/base/serviceselectionmodel.h \
     src/base/stringmodel.h \
+    src/base/transfer.h \
     src/base/transferitem.h \
     src/base/transferitemprioritymodel.h \
+    src/base/transfermodel.h \
     src/base/urlactionmodel.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \
@@ -54,7 +56,9 @@ SOURCES += \
     src/base/logger.cpp \
     src/base/selectionmodel.cpp \
     src/base/stringmodel.cpp \
+    src/base/transfer.cpp \
     src/base/transferitem.cpp \
+    src/base/transfermodel.cpp \
     src/base/urlretrievalmodel.cpp \
     src/base/urlretriever.cpp \
     src/base/utils.cpp \
@@ -106,8 +110,6 @@ maemo5 {
         src/maemo5/servicesdialog.h \
         src/maemo5/settings.h \
         src/maemo5/settingsdialog.h \
-        src/maemo5/transfer.h \
-        src/maemo5/transfermodel.h \
         src/maemo5/transferpropertiesdialog.h \
         src/maemo5/urlcheckdialog.h \
         src/maemo5/urlcheckmodel.h \
@@ -139,8 +141,6 @@ maemo5 {
         src/maemo5/servicesdialog.cpp \
         src/maemo5/settings.cpp \
         src/maemo5/settingsdialog.cpp \
-        src/maemo5/transfer.cpp \
-        src/maemo5/transfermodel.cpp \
         src/maemo5/transferpropertiesdialog.cpp \
         src/maemo5/urlcheckdialog.cpp \
         src/maemo5/urlcheckmodel.cpp \
@@ -195,8 +195,6 @@ maemo5 {
         src/symbian/qdl.h \
         src/symbian/screenorientationmodel.h \
         src/symbian/settings.h \
-        src/symbian/transfer.h \
-        src/symbian/transfermodel.h \
         src/symbian/urlcheckmodel.h
     
     SOURCES += \
@@ -206,8 +204,6 @@ maemo5 {
         src/symbian/package.cpp \
         src/symbian/qdl.cpp \
         src/symbian/settings.cpp \
-        src/symbian/transfer.cpp \
-        src/symbian/transfermodel.cpp \
         src/symbian/urlcheckmodel.cpp
     
     qml.sources = $$files(src/symbian/qml/*.qml)
@@ -271,9 +267,7 @@ maemo5 {
         src/desktop/settings.h \
         src/desktop/settingsdialog.h \
         src/desktop/settingstab.h \
-        src/desktop/transfer.h \
         src/desktop/transferdelegate.h \
-        src/desktop/transfermodel.h \
         src/desktop/transferpropertiesdialog.h \
         src/desktop/urlcheckdialog.h \
         src/desktop/urlcheckmodel.h
@@ -304,9 +298,7 @@ maemo5 {
         src/desktop/settings.cpp \
         src/desktop/settingsdialog.cpp \
         src/desktop/settingstab.cpp \
-        src/desktop/transfer.cpp \
         src/desktop/transferdelegate.cpp \
-        src/desktop/transfermodel.cpp \
         src/desktop/transferpropertiesdialog.cpp \
         src/desktop/urlcheckdialog.cpp \
         src/desktop/urlcheckmodel.cpp

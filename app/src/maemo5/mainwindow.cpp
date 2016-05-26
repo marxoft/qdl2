@@ -18,11 +18,13 @@
 #include "aboutdialog.h"
 #include "actionmodel.h"
 #include "addurlsdialog.h"
+#include "captchadialog.h"
 #include "clipboardurlsdialog.h"
 #include "concurrenttransfersmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "packagepropertiesdialog.h"
+#include "pluginsettingsdialog.h"
 #include "qdl.h"
 #include "recaptchapluginmanager.h"
 #include "retrieveurlsdialog.h"
@@ -161,6 +163,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onMaximumConcurrentTransfersChanged(int)));
     connect(Settings::instance(), SIGNAL(nextActionChanged(int)), this, SLOT(onNextActionChanged(int)));
     
+    connect(TransferModel::instance(), SIGNAL(captchaRequest(TransferItem*)), this, SLOT(showCaptchaDialog(TransferItem*)));
+    connect(TransferModel::instance(), SIGNAL(settingsRequest(TransferItem*)), this, SLOT(showPluginSettingsDialog(TransferItem*)));
     connect(TransferModel::instance(), SIGNAL(activeTransfersChanged(int)), this, SLOT(onActiveTransfersChanged(int)));
     connect(TransferModel::instance(), SIGNAL(totalSpeedChanged(int)), this, SLOT(onTotalSpeedChanged(int)));
 
@@ -432,6 +436,56 @@ void MainWindow::showSettingsDialog() {
 
 void MainWindow::showAboutDialog() {
     AboutDialog(this).exec();
+}
+
+void MainWindow::showCaptchaDialog(TransferItem *t) {
+    QPointer<TransferItem> transfer(t);
+    CaptchaDialog dialog(this);
+    dialog.setImage(QImage::fromData(QByteArray::fromBase64(transfer->data(TransferItem::CaptchaImageRole).toByteArray())));
+    dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
+    connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
+    
+    switch (dialog.exec()) {
+    case QDialog::Accepted:
+        if (transfer) {
+            transfer->setData(TransferItem::CaptchaImageRole, dialog.response());
+        }
+        
+        break;
+    case QDialog::Rejected:
+        if (transfer) {
+            transfer->setData(TransferItem::CaptchaImageRole, QString());
+        }
+        
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::showPluginSettingsDialog(TransferItem *t) {
+    QPointer<TransferItem> transfer(t);
+    PluginSettingsDialog dialog(transfer->data(TransferItem::RequestedSettingsRole).toList(), this);
+    dialog.setWindowTitle(transfer->data(TransferItem::RequestedSettingsTitleRole).toString());
+    dialog.setTimeout(transfer->data(TransferItem::RequestedSettingsTimeoutRole).toInt());
+    connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
+    
+    switch (dialog.exec()) {
+    case QDialog::Accepted:
+        if (transfer) {
+            transfer->setData(TransferItem::RequestedSettingsRole, dialog.settings());
+        }
+        
+        break;
+    case QDialog::Rejected:
+        if (transfer) {
+            transfer->setData(TransferItem::RequestedSettingsRole, QVariant());
+        }
+        
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::loadPlugins() {

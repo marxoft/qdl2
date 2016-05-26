@@ -29,6 +29,7 @@ public:
         insert(TransferItem::CanStartRole, "canStart");
         insert(TransferItem::CaptchaImageRole, "captchaImage");
         insert(TransferItem::CaptchaTimeoutRole, "captchaTimeout");
+        insert(TransferItem::CaptchaTimeoutStringRole, "captchaTimeoutString");
         insert(TransferItem::CategoryRole, "category");
         insert(TransferItem::CreateSubfolderRole, "createSubfolder");
         insert(TransferItem::CustomCommandRole, "customCommand");
@@ -49,6 +50,8 @@ public:
         insert(TransferItem::ProgressStringRole, "progressString");
         insert(TransferItem::RequestedSettingsRole, "requestedSettings");
         insert(TransferItem::RequestedSettingsTimeoutRole, "requestedSettingsTimeout");
+        insert(TransferItem::RequestedSettingsTimeoutStringRole, "requestedSettingsTimeoutString");
+        insert(TransferItem::RequestedSettingsTitleRole, "requestedSettingsTitle");
         insert(TransferItem::RowRole, "row");
         insert(TransferItem::RowCountRole, "count");
         insert(TransferItem::SizeRole, "size");
