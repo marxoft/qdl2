@@ -37,7 +37,10 @@ public Q_SLOTS:
     void addUrl(const QString &url);
     void addUrls(const QStringList &urls);
     
+    virtual void accept();
     virtual void reject();
+    
+    void clear();
 
 private Q_SLOTS:
     void showContextMenu(const QPoint &pos);

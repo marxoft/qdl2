@@ -45,10 +45,6 @@ RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :
     setWindowTitle(tr("Retrieve URLs"));
     setMinimumHeight(360);
 
-    if (UrlRetrievalModel::instance()->status() != UrlRetrievalModel::Active) {
-        UrlRetrievalModel::instance()->clear();
-    }
-
     m_scrollArea->setWidget(m_container);
     m_scrollArea->setWidgetResizable(true);
     
@@ -91,8 +87,12 @@ void RetrieveUrlsDialog::accept() {
 }
 
 void RetrieveUrlsDialog::reject() {
-    UrlRetrievalModel::instance()->clear();
+    clear();
     QDialog::reject();
+}
+
+void RetrieveUrlsDialog::clear() {
+    UrlRetrievalModel::instance()->clear();
 }
 
 QStringList RetrieveUrlsDialog::results() const {

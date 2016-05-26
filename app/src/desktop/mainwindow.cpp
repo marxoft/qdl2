@@ -569,6 +569,7 @@ void MainWindow::showRetrieveUrlsDialog() {
 
     if (dialog.exec() == QDialog::Accepted) {
         const QStringList results = dialog.results();
+        dialog.clear();
 
         if (!results.isEmpty()) {
             showAddUrlsDialog(results);
@@ -582,7 +583,8 @@ void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
 
     if (dialog.exec() == QDialog::Accepted) {
         const QStringList results = dialog.results();
-
+        dialog.clear();
+        
         if (!results.isEmpty()) {
             showAddUrlsDialog(results);
         }

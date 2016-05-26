@@ -41,10 +41,6 @@ RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :
 {
     setWindowTitle(tr("Retrieve URLs"));
     setAcceptDrops(true);
-
-    if (UrlRetrievalModel::instance()->status() != UrlRetrievalModel::Active) {
-        UrlRetrievalModel::instance()->clear();
-    }
     
     m_serviceSelector->setModel(m_serviceModel);
     m_serviceSelector->setCurrentIndex(m_serviceSelector->findData(Settings::defaultServicePlugin()));
@@ -78,8 +74,12 @@ void RetrieveUrlsDialog::accept() {
 }
 
 void RetrieveUrlsDialog::reject() {
-    UrlRetrievalModel::instance()->clear();
+    clear();
     QDialog::reject();
+}
+
+void RetrieveUrlsDialog::clear() {
+    UrlRetrievalModel::instance()->clear();
 }
 
 QStringList RetrieveUrlsDialog::results() const {

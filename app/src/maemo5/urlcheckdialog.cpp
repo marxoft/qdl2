@@ -34,10 +34,6 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
 {
     setWindowTitle(tr("Check URLs"));
 
-    if (UrlCheckModel::instance()->status() != UrlCheckModel::Active) {
-        UrlCheckModel::instance()->clear();
-    }
-
     m_view->setModel(UrlCheckModel::instance());
     m_view->setSelectionBehavior(QTreeView::SelectRows);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -80,9 +76,18 @@ void UrlCheckDialog::addUrls(const QStringList &urls) {
     UrlCheckModel::instance()->append(urls);
 }
 
+void UrlCheckDialog::accept() {
+    clear();
+    QDialog::accept();
+}
+
 void UrlCheckDialog::reject() {
-    UrlCheckModel::instance()->clear();
+    clear();
     QDialog::reject();
+}
+
+void UrlCheckDialog::clear() {
+    UrlCheckModel::instance()->clear();
 }
 
 void UrlCheckDialog::showContextMenu(const QPoint &pos) {

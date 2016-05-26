@@ -50,6 +50,8 @@ public Q_SLOTS:
     virtual void accept();
     virtual void reject();
     
+    virtual void clear();
+    
     void setText(const QString &t);
 
     void setUrls(const QStringList &u);

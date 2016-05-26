@@ -361,12 +361,7 @@ QByteArray Transfer::captchaImage() const {
 void Transfer::setCaptchaImage(const QImage &image) {
     QByteArray ba;
     QBuffer buffer(&ba);
-
-    if (buffer.open(QBuffer::WriteOnly)) {
-        image.save(&buffer);
-        buffer.close();
-    }
-
+    image.save(&buffer, "JPEG");
     m_captchaImageData = ba.toBase64();
     emit dataChanged(this, CaptchaImageRole);
 }
