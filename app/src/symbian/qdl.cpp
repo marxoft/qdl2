@@ -102,11 +102,16 @@ static QVariantMap configToVariantMap(const ServicePluginConfig *config) {
     return map;
 }
 
-static void getConfigSetting(const PluginSettings &plugin, QVariantMap &setting) {
-    const QString key = setting.value("key").toString();
+static void getConfigSetting(const PluginSettings &plugin, QVariantMap &setting, const QString &group = QString()) {
+    QString key = setting.value("key").toString();
 
     if (key.isEmpty()) {
         return;
+    }
+    
+    if (!group.isEmpty()) {
+        key.prepend("/");
+        key.prepend(group);
     }
 
     const QString type = setting.value("type").toString();
@@ -116,7 +121,7 @@ static void getConfigSetting(const PluginSettings &plugin, QVariantMap &setting)
         
         for (int i = 0; i < settings.size(); i++) {
             QVariantMap map = settings.at(i).toMap();
-            getConfigSetting(plugin, map);
+            getConfigSetting(plugin, map, key);
             settings[i] = map;
         }
 
@@ -125,7 +130,7 @@ static void getConfigSetting(const PluginSettings &plugin, QVariantMap &setting)
     else {
         setting["value"] = plugin.value(key, setting.value("value"));
     }
-}       
+}     
 
 static QVariantList getConfigSettings(const DecaptchaPluginConfig *config) {
     QVariantList settings = config->settings();
@@ -270,6 +275,35 @@ QVariantMap Qdl::getTransfer(const QString &id, bool includeChildren) {
     }
 
     return QVariantMap();
+}
+
+QVariantList Qdl::searchTransfers(const QString &property, const QVariant &value, int hits, bool includeChildren) {
+    QVariantList transfers;
+    const QModelIndexList indexes =
+    TransferModel::instance()->match(TransferModel::instance()->index(0, 0),
+                                     TransferItem::roleNames().key(property.toUtf8()), value, hits,
+                                     Qt::MatchExactly | Qt::MatchRecursive);
+    
+    foreach (const QModelIndex &index, indexes) {
+        QVariantMap transfer = TransferModel::instance()->itemDataWithRoleNames(index);
+        
+        if (!transfer.isEmpty()) {
+            if (includeChildren) {
+                QVariantList children;
+                const int count = TransferModel::instance()->rowCount(index);
+                
+                for (int i = 0; i < count; i++) {
+                    children << TransferModel::instance()->itemDataWithRoleNames(TransferModel::instance()->index(i, 0, index));
+                }
+                
+                transfer["children"] = children;
+            }
+            
+            transfers << transfer;
+        }
+    }
+    
+    return transfers;
 }
 
 bool Qdl::setTransferProperty(const QString &id, const QString &property, const QVariant &value) {

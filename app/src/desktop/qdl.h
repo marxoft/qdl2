@@ -56,6 +56,8 @@ public Q_SLOTS:
     Q_SCRIPTABLE static void addTransfers(const QStringList &urls);
     Q_SCRIPTABLE static QVariantMap getTransfers(int offset = 0, int limit = -1, bool includeChildren = true);
     Q_SCRIPTABLE static QVariantMap getTransfer(const QString &id, bool includeChildren = true);
+    Q_SCRIPTABLE static QVariantList searchTransfers(const QString &property, const QVariant &value, int hits = -1,
+                                                     bool includeChildren = true);
     Q_SCRIPTABLE static bool setTransferProperty(const QString &id, const QString &property, const QVariant &value);
     Q_SCRIPTABLE static bool setTransferProperties(const QString &id, const QVariantMap &properties);
     Q_SCRIPTABLE static bool startTransfer(const QString &id);
