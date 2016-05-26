@@ -1,3 +1,9 @@
+qdl (2.0.2) unstable; urgency=low
+
+  * Separate display of transfer captcha/settings dialogs from the backend.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 26 May 2016 19:23:14 +0000
+
 qdl (2.0.1) unstable; urgency=low
 
   * Remove option not to check URLs.
