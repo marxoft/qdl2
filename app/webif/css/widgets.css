@@ -126,6 +126,8 @@
 }
 
 .MenuItem {
+    height: 26px;
+    line-height: 26px;
     padding: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -138,7 +140,7 @@
 }
 
 .MenuItem:active {
-    background-color: #444852;
+    background-color: #5294e2;
     cursor: default;
 }
 
@@ -288,16 +290,16 @@
 
 .TableHeader {
     width: 100%;
-    height: 20px;
-    line-height: 20px;
+    height: 26px;
+    line-height: 26px;
     padding: 2px;
     display: inline-block;
 }
 
 .TableRow {
     width: 100%;
-    height: 20px;
-    line-height: 20px;
+    height: 26px;
+    line-height: 26px;
     padding: 2px;
     display: inline-block;
 }

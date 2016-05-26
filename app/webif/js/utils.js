@@ -44,3 +44,10 @@ function formatBytes(bytes) {
     
     return bytes.toFixed(1) + "B";
 }
+
+function formatMSecs(ms) {
+    var date = new Date(ms);
+    var min = date.getMinutes();
+    var sec = date.getSeconds();
+    return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec;
+}

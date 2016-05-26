@@ -13,7 +13,6 @@
 <body onload="init()">
 <div id="toolBar" class="ToolBar">
 <input type="button" id="addUrlsButton" class="ToolButton" title="Add URLs" value="Add" />
-<input type="button" id="importUrlsButton" class="ToolButton" title="Import URLs" value="Import" />
 <input type="button" id="retrieveUrlsButton" class="ToolButton" title="Retrieve URLs" value="Retrieve" />
 <div class="Spacer"></div>
 <input type="button" id="startButton" class="ToolButton" title="Start all downloads" value="Start" />
@@ -31,36 +30,65 @@
 <input type="button" id="quitButton" class="ToolButton" title="Quit QDL" value="Quit" />
 </div>
 </div>
-<table id="transfersTable" class="TableView">
-<tr class="TableRow">
-<th class="TransferIconColumn"></th>
-<th class="TransferNameColumn">Name</th>
-<th class="TransferPriorityColumn">Priority</th>
-<th class="TransferProgressColumn">Progress</th>
-<th class="TransferSpeedColumn">Speed</th>
-<th class="TransferStatusColumn">Status</th>
-</tr>
-</table>
+<div id="transfersHeader" class="TableHeader">
+<div class="TransferIndicatorColumn"><br></div>
+<div class="TransferNameColumn">Name</div>
+<div class="TransferPriorityColumn">Priority</div>
+<div class="TransferProgressColumn">Progress</div>
+<div class="TransferSpeedColumn">Speed</div>
+<div class="TransferStatusColumn">Status</div>
+</div>
+<ul id="transfersTable" class="TableView"></ul>
 <div id="statusBar" class="StatusBar">
 <div id="activeLabel">0DLs</div>
 <div id="speedLabel">0kB/s</div>
 </div>
 <div id="popupBackground" class="PopupBackground"></div>
+<div id="packageMenu" class="Menu">
+<div id="packageReloadItem" class="MenuItem">Reload</div>
+<div id="packageStartItem" class="MenuItem">Start</div>
+<div id="packagePauseItem" class="MenuItem">Pause</div>
+<div id="packageCancelItem" class="MenuItem">Remove</div>
+<div id="packageCancelDeleteItem" class="MenuItem">Remove and delete files</div>
+</div>
+<div id="transferMenu" class="Menu">
+<div id="transferReloadItem" class="MenuItem">Reload</div>
+<div id="transferStartItem" class="MenuItem">Start</div>
+<div id="transferPauseItem" class="MenuItem">Pause</div>
+<div id="transferCancelItem" class="MenuItem">Remove</div>
+<div id="transferCancelDeleteItem" class="MenuItem">Remove and delete files</div>
+</div>
+<div id="captchaDialog" class="Dialog">
+<div id="captchaDialogTitle" class="DialogTitle">Enter captcha</div>
+<div id="captchadialogContent" class="DialogContent">
+<div class="HBox">
+<img id="captchaImage"></img>
+</div>
+<div class="HBox">
+<label id="captchaLabel" for="captchaResponseEdit"></label>
+</div>
+<div class="HBox">
+<input type="text" id="captchaResponseEdit" class="TextField" />
+</div>
+</div>
+<div id="captchaButtonBox" class="DialogButtonBox">
+<input type="button" id="captchaCancelButton" class="Button" value="Cancel" />
+<input type="button" id="captchaOkButton" class="Button" value="Ok" />
+</div>
+</div>
+<div id="settingsRequestDialog" class="Dialog">
+<div id="settingsRequestDialogTitle" class="DialogTitle">Enter settings</div>
+<div id="settingsRequestDialogContent" class="DialogContent"></div>
+<div id="captchaButtonBox" class="DialogButtonBox">
+<input type="button" id="settingsRequestCancelButton" class="Button" value="Cancel" />
+<input type="button" id="settingsRequestOkButton" class="Button" value="Ok" />
+</div>
+</div>
 <div id="addUrlsDialog" class="Dialog">
 <div id="addUrlsDialogTitle" class="DialogTitle">Add URLs</div>
 <div id="addUrlsDialogContent" class="DialogContent">
 <div class="HBox">
 <textarea id="addUrlsEdit" class="TextEdit" rows="5"></textarea>
-</div>
-<div class="HBox">
-<input type="checkbox" id="addUrlsCheckBox" class="CheckBox" />
-<label for="addUrlsCheckBox">Check URLs</label>
-</div>
-<div class="HBox">
-<label for="addUrlsServiceSelector">Service:</label>
-<select id="addUrlsServiceSelector" class="Selector">
-<option value="">Any</option>
-</select>
 </div>
 <div class="HBox">
 <label for="addUrlsCategorySelector">Category:</label>
@@ -71,7 +99,7 @@
 </div>
 <div id="addUrlsButtonBox" class="DialogButtonBox">
 <input type="button" id="addUrlsCancelButton" class="Button" value="Cancel" />
-<input type="submit" id="addUrlsOkButton" class="Button" value="Ok" />
+<input type="button" id="addUrlsOkButton" class="Button" value="Ok" />
 </div>
 </div>
 <div id="retrieveUrlsDialog" class="Dialog">
@@ -101,19 +129,17 @@
 </div>
 <div id="retrieveUrlsButtonBox" class="DialogButtonBox">
 <input type="button" id="retrieveUrlsCancelButton" class="Button" value="Cancel" />
-<input type="button" id="retrieveUrlsOkButton" class="Button" value="Ok" />
 </div>
 </div>
 <div id="urlCheckDialog" class="Dialog">
 <div id="urlCheckDialogTitle" class="DialogTitle">Check URLs</div>
 <div id="urlCheckDialogContent" class="DialogContent">
-<div class="HBox">
-<table id="urlCheckTable" class="TableView">
-<tr class="TableRow">
-<th class="UrlCheckUrlColumn">URL</th>
-<th class="UrlCheckOkColumn">Ok</th>
-</tr>
-</table>
+<div id="urlCheckBox" class="HBox">
+<div id="urlCheckHeader" class="TableHeader">
+<div class="UrlCheckUrlColumn">URL</div>
+<div class="UrlCheckOkColumn">Ok</div>
+</div>
+<ul id="urlCheckTable" class="TableView"></ul>
 </div>
 <div class="HBox">
 <div id="urlCheckProgressBar" class="ProgressBar">
@@ -135,20 +161,14 @@
 <div id="settingsDialogContent" class="DialogContent">
 <div id="settingsTabBar" class="TabBar">
 <a id="generalSettingsButton" class="TabButton" href="#" data-current="true">General</a>
-<a id="networkSettingsButton" class="TabButton" href="#">Network</a>
-<a id="categorySettingsButton" class="TabButton" href="#">Categories</a>
 <a id="serviceSettingsButton" class="TabButton" href="#">Services</a>
 <a id="recaptchaSettingsButton" class="TabButton" href="#">Recaptcha</a>
 <a id="decaptchaSettingsButton" class="TabButton" href="#">Decaptcha</a>
 </div>
 <div id="generalSettingsTab" class="Tab" data-current="true">
 <div class="HBox">
-<label for="downloadPathField">Download path:</label>
-<input type="text" id="downloadPathField" class="TextField" />
-</div>
-<div class="HBox">
-<label for="concurrentDownloadsSelector">Maximum concurrent downloads:</label>
-<select id="concurrentDownloadsSelector" class="Selector">
+<label for="concurrentTransfersSelector">Maximum concurrent downloads:</label>
+<select id="concurrentTransfersSelector" class="Selector">
 <option value="1">1</option>
 <option value="2">2</option>
 <option value="3">3</option>
@@ -156,8 +176,8 @@
 </select>
 </div>
 <div class="HBox">
-<input type="checkbox" id="automaticDownloadsCheckBox" class="CheckBox" />
-<label for="automaticDownloadsCheckBox">Start downloads automatically</label>
+<input type="checkbox" id="automaticCheckBox" class="CheckBox" />
+<label for="automaticCheckBox">Start downloads automatically</label>
 </div>
 <div class="HBox">
 <input type="checkbox" id="subfoldersCheckBox" class="CheckBox" />
@@ -172,81 +192,30 @@
 <label for="deleteArchivesCheckBox">Delete extracted archives</label>
 </div>
 </div>
-<div id="networkSettingsTab" class="Tab">
-<div class="HBox">
-<input type="checkbox" id="networkProxyCheckBox" class="CheckBox" />
-<label for="networkProxyCheckBox">Use network proxy</label>
-</div>
-<div class="HBox">
-<label for="networkProxyTypeSelector">Type:</label>
-<select id="networkProxyTypeSelector" class="Selector">
-<option value="3">HTTP</option>
-<option value="4">HTTP caching</option>
-<option value="1">SOCKS5</option>
-</select>
-</div>
-<div class="HBox">
-<label for="networkProxyHostField">Host:</label>
-<input type="text" id="networkProxyHostField" class="TextField" />
-</div>
-<div class="HBox">
-<label for="networkProxyPortField">Port:</label>
-<input type="text" id="networkProxyPortField" class="TextField" />
-</div>
-<div class="HBox">
-<label for="networkProxyUsernameField">Username:</label>
-<input type="text" id="networkProxyUsernameField" class="TextField" />
-</div>
-<div class="HBox">
-<label for="networkProxyPasswordField">Password:</label>
-<input type="text" id="networkProxyPasswordField" class="TextField" />
-</div>
-</div>
-<div id="categorySettingsTab" class="Tab">
-<div class="HBox">
-<table id="categoriesTable" class="TableView">
-<tr class="TableRow">
-<th class="CategoryNameColumn">Name</th>
-<th class="CategoryPathColumn">Path</th>
-</tr>
-</table>
-</div>
-<div class="HBox">
-<label for="categoryNameField">Name:</label>
-<input type="text" id="categoryNameField" class="TextField" />
-</div>
-<div class="HBox">
-<label for="categoryPathField">Path:</label>
-<input type="text" id="categoryPathField" class="TextField" />
-</div>
-</div>
 <div id="serviceSettingsTab" class="Tab">
-<div class="HBox">
-<table id="serviceTable" class="TableView"></table>
+<div id="serviceBox" class="HBox">
+<ul id="serviceTable" class="TableView"></ul>
 <div id="serviceSettings"></div>
 </div>
 </div>
 <div id="recaptchaSettingsTab" class="Tab">
-<div class="HBox">
-<table id="recaptchaTable" class="TableView"></table>
+<div id="recaptchaBox" class="HBox">
+<ul id="recaptchaTable" class="TableView"></ul>
 <div id="recaptchaSettings"></div>
 </div>
 </div>
 <div id="decaptchaSettingsTab" class="Tab">
-<div class="HBox">
-<table id="decaptchaTable" class="TableView"></table>
+<div id="decaptchaBox" class="HBox">
+<ul id="decaptchaTable" class="TableView"></ul>
 <div id="decaptchaSettings">
-<div class="HBox">
 <input type="checkbox" id="decaptchaCheckBox" class="CheckBox" />
 <label for="decaptchaCheckBox">Use this decaptcha plugin</label>
 </div>
 </div>
 </div>
 </div>
-</div>
 <div id="settingsButtonBox" class="DialogButtonBox">
-<input type="button" id="settingsCancelButton"  class="Button" value="Cancel" />
-<input type="button" id="settingsSaveButton" class="Button" value="Save" />
+<input type="button" id="settingsOkButton" class="Button" value="Ok" />
 </div>
 </div>
 </body>

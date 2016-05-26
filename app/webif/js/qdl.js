@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Endpoints
 var APPLICATION_PATH = "/app";
 var CATEGORIES_PATH = "/categories";
 var DECAPTCHA_PATH = "/decaptcha";
@@ -23,6 +24,73 @@ var SETTINGS_PATH = "/settings"
 var TRANSFERS_PATH = "/transfers";
 var URLCHECK_PATH = "/urlcheck";
 var URLRETRIEVAL_PATH = "/urlretrieval";
+
+// Qdl enums
+var Action = {
+    "Continue": 0,
+    "Stop": 1,
+    "Quit": 2
+}
+
+// TransferItem enums
+var TransferItemType = {
+    "ListType": 0,
+    "PackageType": 1,
+    "TransferType": 2
+}
+
+var TransferItemPriority = {
+    "HighestPriority": 0,
+    "HighPriority": 1,
+    "NormalPriority": 2,
+    "LowPriority": 3,
+    "LowestPriority": 4
+}
+
+var TransferItemStatus = {
+    "Null": 0,
+    "Paused": 1,
+    "Canceled": 2,
+    "CanceledAndDeleted": 3,
+    "Failed": 4,
+    "Completed": 5,
+    "WaitingInactive": 6,
+    "Queued": 7,
+    "Connecting": 8,
+    "WaitingInactive": 9,
+    "RetrievingCaptchaChallenge": 10,
+    "AwaitingCaptchaResponse": 11,
+    "RetrievingCaptchaResponse": 12,
+    "SubmittingCaptchaResponse": 13,
+    "ReportingCaptchaResponse": 14,
+    "AwaitingDecaptchaSettingsResponse": 15,
+    "AwaitingRecaptchaSettingsResponse": 16,
+    "AwaitingServiceSettingsResponse": 17,
+    "SubmittingDecaptchaSettingsResponse": 18,
+    "SubmittingRecaptchaSettingsResponse": 19,
+    "SubmittingServiceSettingsResponse": 20,
+    "Downloading": 21,
+    "Canceling": 22,
+    "ExtractingArchive": 23,
+    "MovingFiles": 24,
+    "ExecutingCustomCommand": 25
+}
+
+// UrlCheckModel enums
+var UrlCheckStatus = {
+    "Idle": 0,
+    "Active": 1,
+    "Completed": 2,
+    "Canceled": 3
+}
+
+// UrlRetrievalModel enums
+var UrlRetrievalStatus = {
+    "Idle": 0,
+    "Active": 1,
+    "Completed": 2,
+    "Canceled": 3
+}
 
 var Qdl = function (address, username, password) {
     this.ipaddress = address || "";
@@ -157,8 +225,13 @@ Qdl.prototype.getTransfer = function (id, includeChildren, callback_ok, callback
     this.get(TRANSFERS_PATH + "/" + id + "?includeChildren=" + includeChildren, callback_ok, callback_error);
 }
 
+Qdl.prototype.searchTransfers = function (property, value, hits, includeChildren, callback_ok, callback_error) {
+    this.get(TRANSFERS_PATH + "/search?property=" + property + "&value=" + value.toString() + "&hits=" + hits
+             + "&includeChildren=" + includeChildren, callback_ok, callback_error);
+}
+
 Qdl.prototype.setTransferProperty = function (id, property, value, callback_ok, callback_error) {
-    var propeties = {};
+    var properties = {};
     properties[property] = value;
     this.put(TRANSFERS_PATH + "/" + id, properties, callback_ok, callback_error);
 }
@@ -175,8 +248,8 @@ Qdl.prototype.pauseTransfer = function (id, callback_ok, callback_error) {
     this.get(TRANSFERS_PATH + "/pause?id=" + id, callback_ok, callback_error);
 }
 
-Qdl.prototype.removeTransfer = function (id, callback_ok, callback_error) {
-    this.get(TRANSFERS_PATH + "/remove?id=" + id, callback_ok, callback_error);
+Qdl.prototype.removeTransfer = function (id, deleteFiles, callback_ok, callback_error) {
+    this.get(TRANSFERS_PATH + "/remove?id=" + id + "&deleteFiles=" + deleteFiles, callback_ok, callback_error);
 }
 
 Qdl.prototype.moveTransfer = function (sourceId, destinationId, destinationRow, callback_ok, callback_error) {
@@ -264,8 +337,8 @@ Qdl.prototype.setSettings = function (settings, callback_ok, callback_error) {
     this.put(SETTINGS_PATH, settings, callback_ok, callback_error);
 }
 
-Qdl.prototype.addUrlChecks = function (urls, pluginId, category, callback_ok, callback_error) {
-    this.post(URLCHECK_PATH, {"urls": urls, "pluginId": pluginId, "category": category},
+Qdl.prototype.addUrlChecks = function (urls, category, callback_ok, callback_error) {
+    this.post(URLCHECK_PATH, {"urls": urls, "category": category},
               callback_ok, callback_error);
 }
 
