@@ -92,9 +92,11 @@ public:
     Q_INVOKABLE TransferItem *get(const QVariant &index) const;
 
 public Q_SLOTS:
-    void append(const QString &url);
-    void append(const QString &url, const QString &fileName);
-    void append(const QStringList &urls);
+    void append(const QString &url, const QString &requestMethod = QByteArray("GET"),
+                const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QByteArray());
+    void append(const QStringList &urls, const QString &requestMethod = QByteArray("GET"),
+                const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QByteArray());
+    
     void append(const UrlResult &result);
     void append(const UrlResultList &results, const QString &packageName);
 

@@ -33,8 +33,10 @@ public:
         insert(TransferItem::CategoryRole, "category");
         insert(TransferItem::CreateSubfolderRole, "createSubfolder");
         insert(TransferItem::CustomCommandRole, "customCommand");
+        insert(TransferItem::CustomCommandOverrideEnabledRole, "customCommandOverrideEnabled");
         insert(TransferItem::DownloadPathRole, "downloadPath");
         insert(TransferItem::ErrorStringRole, "errorString");
+        insert(TransferItem::ExpandedRole, "expanded");
         insert(TransferItem::FileNameRole, "fileName");
         insert(TransferItem::FilePathRole, "filePath");
         insert(TransferItem::IdRole, "id");
@@ -44,6 +46,7 @@ public:
         insert(TransferItem::PluginIconPathRole, "pluginIconPath");
         insert(TransferItem::PluginIdRole, "pluginId");
         insert(TransferItem::PluginNameRole, "pluginName");
+        insert(TransferItem::PostDataRole, "postData");
         insert(TransferItem::PriorityRole, "priority");
         insert(TransferItem::PriorityStringRole, "priorityString");
         insert(TransferItem::ProgressRole, "progress");
@@ -52,6 +55,8 @@ public:
         insert(TransferItem::RequestedSettingsTimeoutRole, "requestedSettingsTimeout");
         insert(TransferItem::RequestedSettingsTimeoutStringRole, "requestedSettingsTimeoutString");
         insert(TransferItem::RequestedSettingsTitleRole, "requestedSettingsTitle");
+        insert(TransferItem::RequestHeadersRole, "requestHeaders");
+        insert(TransferItem::RequestMethodRole, "requestMethod");
         insert(TransferItem::RowRole, "row");
         insert(TransferItem::RowCountRole, "count");
         insert(TransferItem::SizeRole, "size");
@@ -61,6 +66,7 @@ public:
         insert(TransferItem::StatusStringRole, "statusString");
         insert(TransferItem::SuffixRole, "suffix");
         insert(TransferItem::UrlRole, "url");
+        insert(TransferItem::UsePluginsRole, "usePlugins");
         insert(TransferItem::WaitTimeRole, "waitTime");
         insert(TransferItem::WaitTimeStringRole, "waitTimeString");
     }
@@ -70,6 +76,7 @@ QHash<int, QByteArray> TransferItem::roles = TransferItemRoleNames();
 
 TransferItem::TransferItem(QObject *parent) :
     QObject(parent),
+    m_expanded(false),
     m_row(-1),
     m_parentItem(0)
 {
@@ -157,6 +164,8 @@ QVariant TransferItem::data(int role) const {
         return canPause();
     case CanStartRole:
         return canStart();
+    case ExpandedRole:
+        return expanded();
     case ItemTypeRole:
         return itemType();
     case ItemTypeStringRole:
@@ -174,8 +183,14 @@ QVariant TransferItem::data(const QByteArray &roleName) const {
     return data(roles.key(roleName));
 }
 
-bool TransferItem::setData(int, const QVariant &) {
-    return false;
+bool TransferItem::setData(int role, const QVariant &value) {
+    switch (role) {
+    case ExpandedRole:
+        setExpanded(value.toBool());
+        return true;
+    default:
+        return false;
+    }
 }
 
 bool TransferItem::setData(const QByteArray &roleName, const QVariant &value) {
@@ -187,6 +202,7 @@ QMap<int, QVariant> TransferItem::itemData() const {
     map[CanCancelRole] = canCancel();
     map[CanPauseRole] = canPause();
     map[CanStartRole] = canStart();
+    map[ExpandedRole] = expanded();
     map[ItemTypeRole] = itemType();
     map[ItemTypeStringRole] = itemTypeString();
     map[RowRole] = row();
@@ -199,6 +215,7 @@ QVariantMap TransferItem::itemDataWithRoleNames() const {
     map[roles.value(CanCancelRole)] = canCancel();
     map[roles.value(CanPauseRole)] = canPause();
     map[roles.value(CanStartRole)] = canStart();
+    map[roles.value(ExpandedRole)] = expanded();
     map[roles.value(ItemTypeRole)] = itemType();
     map[roles.value(ItemTypeStringRole)] = itemTypeString();
     map[roles.value(RowRole)] = row();
@@ -256,6 +273,17 @@ QString TransferItem::itemTypeString() const {
         return tr("Transfer");
     default:
         return tr("Unknown");
+    }
+}
+
+bool TransferItem::expanded() const {
+    return m_expanded;
+}
+
+void TransferItem::setExpanded(bool enabled) {
+    if (enabled != expanded()) {
+        m_expanded = enabled;
+        emit dataChanged(this, ExpandedRole);
     }
 }
 

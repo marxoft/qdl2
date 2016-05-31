@@ -32,6 +32,7 @@ class TransferItem : public QObject
     Q_PROPERTY(bool canStart READ canStart)
     Q_PROPERTY(bool canPause READ canPause)
     Q_PROPERTY(bool canCancel READ canCancel)
+    Q_PROPERTY(bool expanded READ expanded WRITE setExpanded)
     Q_PROPERTY(int row READ row)
     Q_PROPERTY(int count READ rowCount)
 
@@ -63,8 +64,10 @@ public:
         CategoryRole,
         CreateSubfolderRole,
         CustomCommandRole,
+        CustomCommandOverrideEnabledRole,
         DownloadPathRole,
         ErrorStringRole,
+        ExpandedRole,
         FileNameRole,
         FilePathRole,
         IdRole,
@@ -74,6 +77,7 @@ public:
         PluginIconPathRole,
         PluginIdRole,
         PluginNameRole,
+        PostDataRole,
         PriorityRole,
         PriorityStringRole,
         ProgressRole,
@@ -82,6 +86,8 @@ public:
         RequestedSettingsTimeoutRole,
         RequestedSettingsTimeoutStringRole,
         RequestedSettingsTitleRole,
+        RequestHeadersRole,
+        RequestMethodRole,
         RowRole,
         RowCountRole,
         SizeRole,
@@ -91,6 +97,7 @@ public:
         StatusStringRole,
         SuffixRole,
         UrlRole,
+        UsePluginsRole,
         WaitTimeRole,
         WaitTimeStringRole
     };
@@ -150,6 +157,9 @@ public:
     virtual bool canPause() const;
     virtual bool canCancel() const;
 
+    bool expanded() const;
+    void setExpanded(bool enabled);
+
     int row() const;
     int rowCount() const;
 
@@ -188,6 +198,8 @@ protected:
     void setParentItem(TransferItem *item);
     
     static QHash<int, QByteArray> roles;
+
+    bool m_expanded;
 
     int m_row;
 

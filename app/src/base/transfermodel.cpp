@@ -405,12 +405,10 @@ TransferItem* TransferModel::get(const QVariant &index) const {
     return get(index.value<QModelIndex>());
 }
 
-void TransferModel::append(const QString &url) {
-    append(url, url.mid(url.lastIndexOf("/") + 1));
-}
-
-void TransferModel::append(const QString &url, const QString &fileName) {
-    Logger::log("TransferModel::append(): " + url + " " + fileName);
+void TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
+                           const QString &postData) {
+    Logger::log("TransferModel::append(): " + url + " " + requestMethod);
+    const QString fileName = url.mid(url.lastIndexOf("/") + 1);
     TransferItem *package = findPackage(fileName);
 
     if (!package) {
@@ -428,7 +426,11 @@ void TransferModel::append(const QString &url, const QString &fileName) {
     transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
     transfer->setFileName(Utils::getSanitizedFileName(fileName));
     transfer->setId(transferId);
+    transfer->setPostData(postData);
+    transfer->setRequestHeaders(requestHeaders);
+    transfer->setRequestMethod(requestMethod);
     transfer->setUrl(url);
+    transfer->setUsePlugins(false);
 
     beginInsertRows(index(package->row(), 0, QModelIndex()), transferCount, transferCount);
     package->appendRow(transfer);
@@ -441,14 +443,43 @@ void TransferModel::append(const QString &url, const QString &fileName) {
     }
 }
 
-void TransferModel::append(const QStringList &urls) {
+void TransferModel::append(const QStringList &urls, const QString &requestMethod, const QVariantMap &requestHeaders,
+                           const QString &postData) {
     foreach (const QString &url, urls) {
-        append(url);
+        append(url, requestMethod, requestHeaders, postData);
     }
 }
 
 void TransferModel::append(const UrlResult &result) {
-    append(result.url, result.fileName);
+    Logger::log("TransferModel::append(): " + result.url + " " + result.fileName);
+    TransferItem *package = findPackage(result.fileName);
+
+    if (!package) {
+        package = createPackage(result.fileName);
+        const int packageCount = m_packages->rowCount();        
+        beginInsertRows(QModelIndex(), packageCount, packageCount);
+        m_packages->appendRow(package);
+        endInsertRows();
+    }
+
+    const int transferCount = package->rowCount();
+    const QString transferId = Utils::createId();
+    Logger::log("TransferModel::append(): Creating transfer " + transferId);
+    Transfer *transfer = new Transfer(package);
+    transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
+    transfer->setFileName(Utils::getSanitizedFileName(result.fileName));
+    transfer->setId(transferId);
+    transfer->setUrl(result.url);
+
+    beginInsertRows(index(package->row(), 0, QModelIndex()), transferCount, transferCount);
+    package->appendRow(transfer);
+    endInsertRows();
+
+    connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onTransferDataChanged(TransferItem*, int)));
+
+    if (Settings::startTransfersAutomatically()) {
+        transfer->queue();
+    }
 }
 
 void TransferModel::append(const UrlResultList &results, const QString &packageName) {
@@ -722,6 +753,7 @@ void TransferModel::onPackageDataChanged(TransferItem *package, int role) {
         onPackageStatusChanged(package);
         column = 4;
         break;
+    case TransferItem::ExpandedRole:
     case TransferItem::NameRole:
         column = 0;
         break;
@@ -757,6 +789,7 @@ void TransferModel::onTransferDataChanged(TransferItem *transfer, int role) {
         onTransferStatusChanged(transfer);
         column = 4;
         break;
+    case TransferItem::ExpandedRole:
     case TransferItem::FileNameRole:
     case TransferItem::NameRole:
     case TransferItem::PluginIconPathRole:
