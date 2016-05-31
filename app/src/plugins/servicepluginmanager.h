@@ -21,7 +21,6 @@
 #include "serviceplugin.h"
 #include "servicepluginconfig.h"
 #include <QDateTime>
-#include <QPointer>
 
 struct ServicePluginPair
 {
@@ -31,8 +30,8 @@ struct ServicePluginPair
     {
     }
 
-    QPointer<ServicePluginConfig> config;
-    QPointer<ServicePlugin> plugin;
+    ServicePluginConfig *config;
+    ServicePlugin *plugin;
 };
 
 typedef QList<ServicePluginPair> ServicePluginList;

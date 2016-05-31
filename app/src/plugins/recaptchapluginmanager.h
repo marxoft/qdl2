@@ -21,7 +21,6 @@
 #include "recaptchaplugin.h"
 #include "recaptchapluginconfig.h"
 #include <QDateTime>
-#include <QPointer>
 
 struct RecaptchaPluginPair
 {
@@ -31,8 +30,8 @@ struct RecaptchaPluginPair
     {
     }
 
-    QPointer<RecaptchaPluginConfig> config;
-    QPointer<RecaptchaPlugin> plugin;
+    RecaptchaPluginConfig *config;
+    RecaptchaPlugin *plugin;
 };
 
 typedef QList<RecaptchaPluginPair> RecaptchaPluginList;

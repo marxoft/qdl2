@@ -21,7 +21,6 @@
 #include "decaptchaplugin.h"
 #include "decaptchapluginconfig.h"
 #include <QDateTime>
-#include <QPointer>
 
 struct DecaptchaPluginPair
 {
@@ -31,8 +30,8 @@ struct DecaptchaPluginPair
     {
     }
 
-    QPointer<DecaptchaPluginConfig> config;
-    QPointer<DecaptchaPlugin> plugin;
+    DecaptchaPluginConfig *config;
+    DecaptchaPlugin *plugin;
 };
 
 typedef QList<DecaptchaPluginPair> DecaptchaPluginList;
