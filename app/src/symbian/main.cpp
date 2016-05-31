@@ -21,6 +21,7 @@
 #include "concurrenttransfersmodel.h"
 #include "decaptchapluginconfigmodel.h"
 #include "definitions.h"
+#include "logger.h"
 #include "maskeditem.h"
 #include "networkproxytypemodel.h"
 #include "package.h"
@@ -34,6 +35,7 @@
 #include "transfer.h"
 #include "transferitemprioritymodel.h"
 #include "transfermodel.h"
+#include "transferlistmodel.h"
 #include "urlactionmodel.h"
 #include "urlcheckmodel.h"
 #include "urlretrievalmodel.h"
@@ -60,6 +62,7 @@ void registerTypes() {
     qmlRegisterType<ServicePluginConfigModel>("Qdl", 2, 0, "ServicePluginConfigModel");
     qmlRegisterType<ServiceSelectionModel>("Qdl", 2, 0, "ServiceSelectionModel");
     qmlRegisterType<TransferItemPriorityModel>("Qdl", 2, 0, "TransferItemPriorityModel");
+    qmlRegisterType<TransferListModel>("Qdl", 2, 0, "TransferListModel");
     qmlRegisterType<UrlActionModel>("Qdl", 2, 0, "UrlActionModel");
     
     qmlRegisterUncreatableType<Package>("Qdl", 2, 0, "Package", "");
@@ -78,6 +81,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QSslConfiguration config = QSslConfiguration::defaultConfiguration();
     config.setProtocol(QSsl::TlsV1);
     QSslConfiguration::setDefaultConfiguration(config);
+
+    Logger::setVerbosity(10);
     
     QScopedPointer<Categories> categories(Categories::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
