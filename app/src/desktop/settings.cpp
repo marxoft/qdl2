@@ -69,6 +69,20 @@ void Settings::setCustomCommand(const QString &command) {
     }
 }
 
+bool Settings::customCommandEnabled() {
+    return value("customCommandEnabled", false).toBool();
+}
+
+void Settings::setCustomCommandEnabled(bool enabled) {
+    if (enabled != customCommandEnabled()) {
+        setValue("customCommandEnabled", enabled);
+        
+        if (self) {
+            emit self->customCommandEnabledChanged(enabled);
+        }
+    }
+}
+
 QString Settings::decaptchaPlugin() {
     return value("Plugins/decaptchaPlugin").toString();
 }
@@ -107,6 +121,20 @@ void Settings::setDefaultServicePlugin(const QString &pluginId) {
 
         if (self) {
             emit self->defaultServicePluginChanged(pluginId);
+        }
+    }
+}
+
+bool Settings::usePlugins() {
+    return value("Plugins/usePlugins", true).toBool();
+}
+
+void Settings::setUsePlugins(bool enabled) {
+    if (enabled != usePlugins()) {
+        setValue("Plugins/usePlugins", enabled);
+        
+        if (self) {
+            emit self->usePluginsChanged(enabled);
         }
     }
 }

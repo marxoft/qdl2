@@ -27,10 +27,13 @@ class Settings : public QObject
     Q_PROPERTY(bool clipboardMonitorEnabled READ clipboardMonitorEnabled WRITE setClipboardMonitorEnabled
                NOTIFY clipboardMonitorEnabledChanged)
     Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand NOTIFY customCommandChanged)
+    Q_PROPERTY(bool customCommandEnabled READ customCommandEnabled WRITE setCustomCommandEnabled
+               NOTIFY customCommandEnabledChanged)
     Q_PROPERTY(QString decaptchaPlugin READ decaptchaPlugin WRITE setDecaptchaPlugin NOTIFY decaptchaPluginChanged)
     Q_PROPERTY(QString defaultCategory READ defaultCategory WRITE setDefaultCategory NOTIFY defaultCategoryChanged)
     Q_PROPERTY(QString defaultServicePlugin READ defaultServicePlugin WRITE setDefaultServicePlugin
                NOTIFY defaultServicePluginChanged)
+    Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins NOTIFY usePluginsChanged)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged)
     Q_PROPERTY(bool createSubfolders READ createSubfolders WRITE setCreateSubfolders NOTIFY createSubfoldersChanged)
     Q_PROPERTY(bool extractArchives READ extractArchives WRITE setExtractArchives NOTIFY extractArchivesChanged)
@@ -64,12 +67,14 @@ public:
     static bool clipboardMonitorEnabled();
 
     static QString customCommand();
+    static bool customCommandEnabled();
 
     static QString decaptchaPlugin();
 
     static QString defaultCategory();
 
     static QString defaultServicePlugin();
+    static bool usePlugins();
 
     static QString downloadPath();
     static bool createSubfolders();
@@ -97,12 +102,14 @@ public Q_SLOTS:
     static void setClipboardMonitorEnabled(bool enabled);
 
     static void setCustomCommand(const QString &command);
+    static void setCustomCommandEnabled(bool enabled);
 
     static void setDecaptchaPlugin(const QString &pluginId);
     
     static void setDefaultCategory(const QString &category);
 
     static void setDefaultServicePlugin(const QString &pluginId);
+    static void setUsePlugins(bool enabled);
 
     static void setDownloadPath(const QString &path);
     static void setCreateSubfolders(bool enabled);
@@ -130,9 +137,11 @@ public Q_SLOTS:
 Q_SIGNALS:
     void clipboardMonitorEnabledChanged(bool enabled);
     void customCommandChanged(const QString &command);
+    void customCommandEnabledChanged(bool enabled);
     void decaptchaPluginChanged(const QString &pluginId);
     void defaultCategoryChanged(const QString &category);
     void defaultServicePluginChanged(const QString &pluginId);
+    void usePluginsChanged(bool enabled);
     void downloadPathChanged(const QString &path);
     void createSubfoldersChanged(bool enabled);
     void extractArchivesChanged(bool enabled);
