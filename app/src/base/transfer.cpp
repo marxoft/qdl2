@@ -51,8 +51,10 @@ Transfer::Transfer(QObject *parent) :
     m_size(0),
     m_speed(0),
     m_status(Paused),
+    m_requestMethod("GET"),
     m_servicePluginIcon(DEFAULT_ICON),
-    m_servicePluginName(tr("Unknown")),
+    m_customCommandOverrideEnabled(false),
+    m_usePlugins(true),
     m_reportCaptchaError(false),
     m_metadataSet(false),
     m_redirects(0),
@@ -72,6 +74,8 @@ QVariant Transfer::data(int role) const {
         return captchaTimeoutString();
     case CustomCommandRole:
         return customCommand();
+    case CustomCommandOverrideEnabledRole:
+        return customCommandOverrideEnabled();
     case DownloadPathRole:
         return downloadPath();
     case ErrorStringRole:
@@ -89,6 +93,8 @@ QVariant Transfer::data(int role) const {
         return pluginId();
     case PluginNameRole:
         return pluginName();
+    case PostDataRole:
+        return postData();
     case PriorityRole:
         return priority();
     case PriorityStringRole:
@@ -105,6 +111,10 @@ QVariant Transfer::data(int role) const {
         return requestedSettingsTimeoutString();
     case RequestedSettingsTitleRole:
         return requestedSettingsTitle();
+    case RequestHeadersRole:
+        return requestHeaders();
+    case RequestMethodRole:
+        return requestMethod();
     case SizeRole:
         return size();
     case SpeedRole:
@@ -119,6 +129,8 @@ QVariant Transfer::data(int role) const {
         return fileSuffix();
     case UrlRole:
         return url();
+    case UsePluginsRole:
+        return usePlugins();
     case WaitTimeRole:
         return waitTime();
     case WaitTimeStringRole:
@@ -135,6 +147,9 @@ bool Transfer::setData(int role, const QVariant &value) {
     case CustomCommandRole:
         setCustomCommand(value.toString());
         return true;
+    case CustomCommandOverrideEnabledRole:
+        setCustomCommandOverrideEnabled(value.toBool());
+        return true;
     case DownloadPathRole:
         setDownloadPath(value.toString());
         return true;
@@ -148,11 +163,20 @@ bool Transfer::setData(int role, const QVariant &value) {
     case IdRole:
         setId(value.toString());
         return true;
+    case PostDataRole:
+        setPostData(value.toByteArray());
+        return true;
     case PriorityRole:
         setPriority(TransferItem::Priority(value.toInt()));
         return true;
     case RequestedSettingsRole:
         return submitSettingsResponse(value.toMap());
+    case RequestHeadersRole:
+        setRequestHeaders(value.toMap());
+        return true;
+    case RequestMethodRole:
+        setRequestMethod(value.toByteArray());
+        return true;
     case StatusRole:
         switch (value.toInt()) {
         case Queued:
@@ -171,6 +195,9 @@ bool Transfer::setData(int role, const QVariant &value) {
     case UrlRole:
         setUrl(value.toString());
         return true;
+    case UsePluginsRole:
+        setUsePlugins(value.toBool());
+        return true;
     default:
         return TransferItem::setData(role, value);
     }
@@ -183,6 +210,7 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[CaptchaTimeoutRole] = captchaTimeout();
     map[CaptchaTimeoutStringRole] = captchaTimeoutString();
     map[CustomCommandRole] = customCommand();
+    map[CustomCommandOverrideEnabledRole] = customCommandOverrideEnabled();
     map[DownloadPathRole] = downloadPath();
     map[ErrorStringRole] = errorString();
     map[FileNameRole] = fileName();
@@ -191,6 +219,7 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[PluginIconPathRole] = pluginIconPath();
     map[PluginIdRole] = pluginId();
     map[PluginNameRole] = pluginName();
+    map[PostDataRole] = postData();
     map[PriorityRole] = priority();
     map[PriorityStringRole] = priorityString();
     map[ProgressRole] = progress();
@@ -199,6 +228,8 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[RequestedSettingsTimeoutRole] = requestedSettingsTimeout();
     map[RequestedSettingsTimeoutStringRole] = requestedSettingsTimeoutString();
     map[RequestedSettingsTitleRole] = requestedSettingsTitle();
+    map[RequestHeadersRole] = requestHeaders();
+    map[RequestMethodRole] = requestMethod();
     map[SizeRole] = size();
     map[SpeedRole] = speed();
     map[SpeedStringRole] = speedString();
@@ -206,6 +237,7 @@ QMap<int, QVariant> Transfer::itemData() const {
     map[StatusStringRole] = statusString();
     map[SuffixRole] = fileSuffix();
     map[UrlRole] = url();
+    map[UsePluginsRole] = usePlugins();
     map[WaitTimeRole] = waitTime();
     map[WaitTimeStringRole] = waitTimeString();
     return map;
@@ -218,6 +250,7 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(CaptchaTimeoutRole)] = captchaTimeout();
     map[roleNames().value(CaptchaTimeoutStringRole)] = captchaTimeoutString();
     map[roleNames().value(CustomCommandRole)] = customCommand();
+    map[roleNames().value(CustomCommandOverrideEnabledRole)] = customCommandOverrideEnabled();
     map[roleNames().value(DownloadPathRole)] = downloadPath();
     map[roleNames().value(ErrorStringRole)] = errorString();
     map[roleNames().value(FileNameRole)] = fileName();
@@ -227,6 +260,7 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(PluginIconPathRole)] = pluginIconPath();
     map[roleNames().value(PluginIdRole)] = pluginId();
     map[roleNames().value(PluginNameRole)] = pluginName();
+    map[roleNames().value(PostDataRole)] = postData();
     map[roleNames().value(PriorityRole)] = priority();
     map[roleNames().value(PriorityStringRole)] = priorityString();
     map[roleNames().value(ProgressRole)] = progress();
@@ -235,6 +269,8 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(RequestedSettingsTimeoutRole)] = requestedSettingsTimeout();
     map[roleNames().value(RequestedSettingsTimeoutStringRole)] = requestedSettingsTimeoutString();
     map[roleNames().value(RequestedSettingsTitleRole)] = requestedSettingsTitle();
+    map[roleNames().value(RequestHeadersRole)] = requestHeaders();
+    map[roleNames().value(RequestMethodRole)] = requestMethod();
     map[roleNames().value(SizeRole)] = size();
     map[roleNames().value(SpeedRole)] = speed();
     map[roleNames().value(SpeedStringRole)] = speedString();
@@ -242,6 +278,7 @@ QVariantMap Transfer::itemDataWithRoleNames() const {
     map[roleNames().value(StatusStringRole)] = statusString();
     map[roleNames().value(SuffixRole)] = fileSuffix();
     map[roleNames().value(UrlRole)] = url();
+    map[roleNames().value(UsePluginsRole)] = usePlugins();
     map[roleNames().value(WaitTimeRole)] = waitTime();
     map[roleNames().value(WaitTimeStringRole)] = waitTimeString();
     return map;
@@ -296,6 +333,17 @@ void Transfer::setCustomCommand(const QString &c) {
     if (c != customCommand()) {
         m_customCommand = c;
         emit dataChanged(this, CustomCommandRole);
+    }
+}
+
+bool Transfer::customCommandOverrideEnabled() const {
+    return m_customCommandOverrideEnabled;
+}
+
+void Transfer::setCustomCommandOverrideEnabled(bool enabled) {
+    if (enabled != customCommandOverrideEnabled()) {
+        m_customCommandOverrideEnabled = enabled;
+        emit dataChanged(this, CustomCommandOverrideEnabledRole);
     }
 }
 
@@ -454,6 +502,28 @@ void Transfer::setPluginName(const QString &n) {
     }
 }
 
+bool Transfer::usePlugins() const {
+    return m_usePlugins;
+}
+
+void Transfer::setUsePlugins(bool enabled) {
+    if (enabled != usePlugins()) {
+        m_usePlugins = enabled;
+        emit dataChanged(this, UsePluginsRole);
+    }
+}
+
+QString Transfer::postData() const {
+    return m_postData;
+}
+
+void Transfer::setPostData(const QString &data) {
+    if (data != postData()) {
+        m_postData = data;
+        emit dataChanged(this, PostDataRole);
+    }
+}
+
 TransferItem::Priority Transfer::priority() const {
     return m_priority;
 }
@@ -581,6 +651,32 @@ void Transfer::updateRequestedSettingsTimeout() {
     }
 }
 
+QVariantMap Transfer::requestHeaders() const {
+    return m_requestHeaders;
+}
+
+void Transfer::setRequestHeaders(const QVariantMap &headers) {
+    m_requestHeaders = headers;
+    emit dataChanged(this, RequestHeadersRole);
+}
+
+QString Transfer::requestMethod() const {
+    return m_requestMethod;
+}
+
+void Transfer::setRequestMethod(const QString &method) {
+    if (method != requestMethod()) {
+        if (method.isEmpty()) {
+            m_requestMethod = QString("GET");
+        }
+        else {
+            m_requestMethod = method.toUpper();
+        }
+        
+        emit dataChanged(this, RequestMethodRole);
+    }
+}
+
 TransferItem::Status Transfer::status() const {
     return m_status;
 }
@@ -703,6 +799,11 @@ bool Transfer::queue() {
 
 bool Transfer::start() {
     if (canStart()) {
+        if (!usePlugins()) {
+            startDownload();
+            return true;
+        }
+        
         if (initServicePlugin()) {
             setStatus(Connecting);
             m_servicePlugin->getDownloadRequest(url());
@@ -841,15 +942,20 @@ bool Transfer::cancel(bool deleteFiles) {
 
 void Transfer::restore(const QSettings &settings) {
     setCustomCommand(settings.value("customCommand").toString());
+    setCustomCommandOverrideEnabled(settings.value("customCommandOverrideEnabled", false).toBool());
     setDownloadPath(settings.value("downloadPath").toString());
     setErrorString(settings.value("errorString").toString());
     setFileName(settings.value("fileName").toString());
     setId(settings.value("id").toString());
-    setPriority(TransferItem::Priority(settings.value("priority").toInt()));
+    setPostData(settings.value("postData").toByteArray());
+    setPriority(TransferItem::Priority(settings.value("priority", NormalPriority).toInt()));
+    setRequestHeaders(settings.value("requestHeaders").toMap());
+    setRequestMethod(settings.value("requestMethod").toByteArray());
     setSize(qMax(qlonglong(0), settings.value("size").toLongLong()));
     setUrl(settings.value("url").toString());
+    setUsePlugins(settings.value("usePlugins", true).toBool());
 
-    const TransferItem::Status status = TransferItem::Status(settings.value("status").toInt());
+    const TransferItem::Status status = TransferItem::Status(settings.value("status", Paused).toInt());
 
     switch (status) {
     case Paused:
@@ -865,13 +971,18 @@ void Transfer::restore(const QSettings &settings) {
 
 void Transfer::save(QSettings &settings) {
     settings.setValue("customCommand", customCommand());
+    settings.setValue("customCommandOverrideEnabled", customCommandOverrideEnabled());
     settings.setValue("downloadPath", downloadPath());
     settings.setValue("errorString", errorString());
     settings.setValue("fileName", fileName());
     settings.setValue("id", id());
+    settings.setValue("postData", postData());
     settings.setValue("priority", TransferItem::Priority(priority()));
+    settings.setValue("requestHeaders", requestHeaders());
+    settings.setValue("requestMethod", requestMethod());
     settings.setValue("size", size());
     settings.setValue("url", url());
+    settings.setValue("usePlugins", usePlugins());
 
     switch (status()) {
     case Paused:
@@ -1158,6 +1269,47 @@ void Transfer::stopWaitTimer() {
     }
 }
 
+void Transfer::startDownload() {
+    Logger::log(QString("Transfer::startDownload(). URL: %1, Method: %2").arg(url()).arg(requestMethod()));
+    m_redirects = 0;
+    m_metadataSet = false;
+    initNetworkAccessManager();
+    
+    QNetworkRequest request(url());
+    QMapIterator<QString, QVariant> iterator(requestHeaders());
+    
+    while (iterator.hasNext()) {
+        iterator.next();
+        request.setRawHeader(iterator.key().toUtf8(), iterator.value().toByteArray());
+    }
+
+    if (bytesTransferred() > 0) {
+        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()));
+        request.setRawHeader("Range", "bytes=" + QByteArray::number(bytesTransferred()) + "-");
+    }
+
+    if (postData().isEmpty()) {
+        setStatus(Downloading);
+        startSpeedTimer();
+        m_reply = m_nam->sendCustomRequest(request, requestMethod().toUtf8());
+        connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
+        connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
+        connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
+    }
+    else {
+        setStatus(Downloading);
+        startSpeedTimer();
+        QBuffer *buffer = new QBuffer;
+        buffer->setData(postData().toUtf8());
+        buffer->open(QBuffer::ReadOnly);
+        m_reply = m_nam->sendCustomRequest(request, requestMethod().toUtf8(), buffer);
+        buffer->setParent(m_reply);
+        connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
+        connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
+        connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
+    }
+}
+
 void Transfer::followRedirect(const QUrl &url) {
     Logger::log("Transfer::followRedirect(): " + url.toString());
     m_redirects++;
@@ -1247,9 +1399,9 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
     m_redirects = 0;
     m_metadataSet = false;
     initNetworkAccessManager();
-
+    
     if (bytesTransferred() > 0) {
-        Logger::log("Transfer::onDownloadRequest(). Setting 'Range' header to " + QString::number(bytesTransferred()));
+        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()));
         request.setRawHeader("Range", "bytes=" + QByteArray::number(bytesTransferred()) + "-");
     }
 

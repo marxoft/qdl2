@@ -35,6 +35,8 @@ class Transfer : public TransferItem
     Q_OBJECT
 
     Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand)
+    Q_PROPERTY(bool customCommandOverrideEnabled READ customCommandOverrideEnabled
+               WRITE setCustomCommandOverrideEnabled)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath)
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(QString filePath READ filePath WRITE setFilePath)
@@ -46,6 +48,7 @@ class Transfer : public TransferItem
     Q_PROPERTY(QString pluginIconPath READ pluginIconPath)
     Q_PROPERTY(QString pluginId READ pluginId)
     Q_PROPERTY(QString pluginName READ pluginName)
+    Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins)
     Q_PROPERTY(Priority priority READ priority WRITE setPriority)
     Q_PROPERTY(QString priorityString READ priorityString)
     Q_PROPERTY(int progress READ progress)
@@ -54,6 +57,9 @@ class Transfer : public TransferItem
     Q_PROPERTY(qint64 size READ size)
     Q_PROPERTY(int speed READ speed)
     Q_PROPERTY(QString speedString READ speedString)
+    Q_PROPERTY(QString postData READ postData WRITE setPostData)
+    Q_PROPERTY(QVariantMap requestHeaders READ requestHeaders WRITE setRequestHeaders)
+    Q_PROPERTY(QString requestMethod READ requestMethod WRITE setRequestMethod)
     Q_PROPERTY(QVariantList requestedSettings READ requestedSettings)
     Q_PROPERTY(int requestedSettingsTimeout READ requestedSettingsTimeout)
     Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString)
@@ -82,6 +88,8 @@ public:
 
     QString customCommand() const;
     void setCustomCommand(const QString &c);
+    bool customCommandOverrideEnabled() const;
+    void setCustomCommandOverrideEnabled(bool enabled);
     
     QString downloadPath() const;
     void setDownloadPath(const QString &p);
@@ -95,14 +103,18 @@ public:
     QByteArray captchaImage() const;
     int captchaTimeout() const;
     QString captchaTimeoutString() const;
+    
+    QString iconPath() const;
 
     QString id() const;
     void setId(const QString &i);
-
+    
     QString pluginIconPath() const;
     QString pluginId() const;
     QString pluginName() const;
-
+    bool usePlugins() const;
+    void setUsePlugins(bool enabled);
+    
     Priority priority() const;
     void setPriority(Priority p);
     QString priorityString() const;
@@ -113,6 +125,14 @@ public:
     qint64 size() const;
     int speed() const;
     QString speedString() const;
+    
+    QString postData() const;
+    void setPostData(const QString &data);
+    
+    QVariantMap requestHeaders() const;
+    void setRequestHeaders(const QVariantMap &headers);
+    QString requestMethod() const;
+    void setRequestMethod(const QString &method);
 
     QVariantList requestedSettings() const;
     int requestedSettingsTimeout() const;
@@ -199,6 +219,7 @@ private:
     void stopSpeedTimer();
     void stopWaitTimer();
 
+    void startDownload();
     void followRedirect(const QUrl &url);
 
     void deleteFile();
@@ -228,6 +249,11 @@ private:
 
     Status m_status;
 
+    QString m_postData;
+    QString m_requestMethod;
+    
+    QVariantMap m_requestHeaders;
+    
     QString m_url;
 
     QString m_decaptchaPluginId;
@@ -246,7 +272,9 @@ private:
     QVariantList m_requestedSettings;
 
     QByteArray m_callback;
-
+    
+    bool m_customCommandOverrideEnabled;
+    bool m_usePlugins;
     bool m_reportCaptchaError;
     bool m_metadataSet;
     bool m_deleteFiles;
