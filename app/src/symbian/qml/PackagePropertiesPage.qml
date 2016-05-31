@@ -56,7 +56,7 @@ MyPage {
                 height: platformStyle.paddingLarge
             }
             
-            MyCheckBox {
+            MySwitch {
                 id: subfolderCheckBox
                 
                 width: parent.width

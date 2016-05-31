@@ -50,7 +50,7 @@ MyPage {
             }
             spacing: platformStyle.paddingLarge
 
-            MyCheckBox {
+            MySwitch {
                 text: qsTr("Use this decaptcha plugin")
                 checked: settings.decaptchaPlugin == plugin.pluginId;
                 visible: !inputContext.visible
@@ -103,7 +103,7 @@ MyPage {
     Component {
         id: checkBox
 
-        MyCheckBox {
+        MySwitch {
             property string key
 
             function init(modelData, group) {
@@ -209,6 +209,7 @@ MyPage {
                 inputMethodHints: Qt.ImhDigitsOnly
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }
@@ -244,6 +245,7 @@ MyPage {
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }
@@ -278,6 +280,7 @@ MyPage {
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: plugin.setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }

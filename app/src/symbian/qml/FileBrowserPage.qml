@@ -93,7 +93,7 @@ MyPage {
             id: folderListModel
 
             nameFilters: root.showFiles ? [] : ["*.foo_bar"]
-            folder: "file://" + root.startFolder
+            folder: "file:///" + root.startFolder
             showDotAndDotDot: false
             showDirs: true
         }

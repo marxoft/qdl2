@@ -64,13 +64,17 @@ MyPage {
                 top: parent.top
                 margins: platformStyle.paddingLarge
             }
-            spacing: platformStyle.paddingLarge
             
             TextArea {
                 id: urlsEdit
                 
                 width: parent.width
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+            }
+
+            Item {
+                width: parent.width
+                height: platformStyle.paddingLarge
             }
             
             ValueSelector {
@@ -86,17 +90,23 @@ MyPage {
                 onAccepted: settings.defaultCategory = value
             }
             
-            ListItem {
+            MyListItem {
+                id: methodButton
+
                 x: -platformStyle.paddingLarge
                 width: parent.width + platformStyle.paddingLarge * 2
                 flickableMode: true
                 subItemIndicator: true
-                enabled: settings.usePlugins
+                enabled: !settings.usePlugins
+                visible: !inputContext.visible
                 
-                ListItemText {
-                    anchors.fill: paddingItem
+                MyListItemText {
+                    anchors {
+                        left: methodButton.paddingItem.left
+                        right: methodButton.paddingItem.right
+                        verticalCenter: methodButton.paddingItem.verticalCenter
+                    }
                     role: "Title"
-                    verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                     text: qsTr("Method")
                 }
@@ -111,36 +121,48 @@ MyPage {
                 }
             }
             
-            ListItem {
+            MyListItem {
+                id: headersButton
+
                 x: -platformStyle.paddingLarge
                 width: parent.width + platformStyle.paddingLarge * 2
                 flickableMode: true
                 subItemIndicator: true
-                enabled: settings.usePlugins
+                enabled: !settings.usePlugins
+                visible: !inputContext.visible
                 
-                ListItemText {
-                    anchors.fill: paddingItem
+                MyListItemText {
+                    anchors {
+                        left: headersButton.paddingItem.left
+                        right: headersButton.paddingItem.right
+                        verticalCenter: headersButton.paddingItem.verticalCenter
+                    }
                     role: "Title"
-                    verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
                     text: qsTr("Headers")
                 }
                 
                 onClicked: {
-                    var page = appWindow.pageStack.push(Qt.resolvedUrl("AddUrlsMethodPage.qml"),
-                    {headers: root.headers});
+                    var page = appWindow.pageStack.push(Qt.resolvedUrl("AddUrlsHeadersPage.qml"),
+                    {requestHeaders: root.requestHeaders});
                     page.accepted.connect(function () {
-                        root.headers = page.headers;
+                        root.requestHeaders = page.requestHeaders;
                     });
                 }
             }
+
+            Item {
+                width: parent.width
+                height: platformStyle.paddingLarge
+            }
             
-            MyCheckBox {
+            MySwitch {
                 id: pluginCheckBox
                 
                 width: parent.width
                 text: qsTr("Use plugins")
                 checked: settings.usePlugins
+                visible: !inputContext.visible
                 onCheckedChanged: settings.usePlugins = checked
             }
         }

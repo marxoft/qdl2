@@ -25,7 +25,7 @@ MyPage {
         BackToolButton {}
     }
     
-    MyFlickable {
+    KeyNavFlickable {
         id: flickable
         
         anchors.fill: parent
@@ -46,6 +46,8 @@ MyPage {
                 id: icon
 
                 x: Math.floor((parent.width - width) / 2)
+                sourceSize.width: 64
+                sourceSize.height: 64
                 source: "images/qdl2.png"
             }
 
@@ -78,9 +80,25 @@ MyPage {
                 onClicked: root.accept()
             }
             
-            Button {
-                x: Math.floor((parent.width - width) / 2)
-                text: qsTr("Plugins")
+            MyListItem {
+                id: pluginsButton
+
+                x: -platformStyle.paddingLarge
+                width: parent.width + platformStyle.paddingLarge * 2
+                flickableMode: true
+                subItemIndicator: true
+
+                MyListItemText {
+                    anchors {
+                        left: pluginsButton.paddingItem.left
+                        right: pluginsButton.paddingItem.right
+                        verticalCenter: pluginsButton.paddingItem.verticalCenter
+                    }
+                    role: "Title"
+                    elide: Text.ElideRight
+                    text: qsTr("Plugins")
+                }
+
                 onClicked: appWindow.pageStack.push(Qt.resolvedUrl("AboutPluginsPage.qml"))
             }
         }

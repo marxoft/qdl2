@@ -81,8 +81,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QSslConfiguration config = QSslConfiguration::defaultConfiguration();
     config.setProtocol(QSsl::TlsV1);
     QSslConfiguration::setDefaultConfiguration(config);
-
-    Logger::setVerbosity(10);
     
     QScopedPointer<Categories> categories(Categories::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());

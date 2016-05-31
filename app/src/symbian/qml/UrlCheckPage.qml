@@ -39,13 +39,16 @@ MyPage {
             bottomMargin: platformStyle.paddingLarge
         }
         model: urlCheckModel
-        delegate: MyListItem {
+        delegate: Item {
+            width: view.width
+            height: platformStyle.graphicSizeLarge
+
             MyListItemText {
                 anchors {
-                    left: paddingItem.left
+                    left: parent.left
                     right: indicator.left
-                    rightMargin: platformStyle.paddingLarge
-                    verticalCenter: paddingItem.verticalCenter
+                    verticalCenter: parent.verticalCenter
+                    margins: platformStyle.paddingLarge
                 }
                 role: "Title"
                 elide: Text.ElideRight
@@ -56,12 +59,23 @@ MyPage {
                 id: indicator
                 
                 anchors {
-                    right: paddingItem.right
-                    verticalCenter: paddingItem.verticalCenter
+                    right: parent.right
+                    rightMargin: platformStyle.paddingLarge
+                    verticalCenter: parent.verticalCenter
                 }
                 sourceSize.width: platformStyle.graphicSizeSmall
                 sourceSize.height: platformStyle.graphicSizeSmall
                 source: checked ? ok ? "images/yes.png" : "images/no.png" : ""
+            }
+
+            Rectangle {
+                height: 1
+                color: platformStyle.colorDisabledMid
+                anchors {
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
             }
         }
     }

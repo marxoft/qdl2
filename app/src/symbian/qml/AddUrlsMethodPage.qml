@@ -67,8 +67,9 @@ MyPage {
                 id: methodEdit
                 
                 width: parent.width
-                inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhUpperCaseOnly
+                inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhUppercaseOnly
                 visible: (!inputContext.visible) || (activeFocus)
+                onAccepted: postEdit.forceActiveFocus()
             }
             
             Label {
@@ -83,6 +84,7 @@ MyPage {
                 width: parent.width
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 visible: (!inputContext.visible) || (activeFocus)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }

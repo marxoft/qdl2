@@ -62,8 +62,8 @@ MyPage {
         model: SelectionModel {
             id: headerModel
         }
-        delegate: ListItem {
-            ListItemText {
+        delegate: MyListItem {
+            MyListItemText {
                 anchors {
                     left: paddingItem.left
                     right: paddingItem.right
@@ -74,7 +74,7 @@ MyPage {
                 text: name
             }
             
-            ListItemText {
+            MyListItemText {
                 anchors {
                     left: paddingItem.left
                     right: paddingItem.right
@@ -85,12 +85,29 @@ MyPage {
                 text: value
             }
             
-            onPressAndHold: popups.open(contextMenu)
+            onPressAndHold: popups.open(contextMenu, root)
         }
     }
     
     ScrollDecorator {
         flickableItem: view
+    }
+
+    Label {
+        id: label
+
+        anchors {
+            fill: parent
+            margins: platformStyle.paddingLarge
+        }
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        wrapMode: Text.WordWrap
+        color: platformStyle.colorNormalMid
+        font.bold: true
+        font.pixelSize: 32
+        text: qsTr("No headers")
+        visible: headerModel.count == 0
     }
     
     PopupLoader {

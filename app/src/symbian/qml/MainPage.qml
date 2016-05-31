@@ -45,22 +45,6 @@ MyPage {
     MyListView {
         id: transferView
         
-        property variant expandedIndexes: []
-        
-        function toggleExpanded(index) {
-            var e = expandedIndexes;
-            var i = e.indexOf(index);
-            
-            if (i == -1) {
-                e.push(index);
-            }
-            else {
-                e.splice(i, 1);
-            }
-            
-            expandedIndexes = e;
-        }
-        
         anchors.fill: parent
         model: transferModel
         delegate: TransferDelegate {}

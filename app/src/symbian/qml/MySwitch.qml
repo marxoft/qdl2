@@ -26,7 +26,7 @@ Item {
     property bool platformInverted: false
 
     width: parent.width
-    height: switcher.height + platformStyle.paddingLarge
+    height: Math.max(title.height, switcher.height)
 
     Keys.forwardTo: switcher
 
@@ -50,7 +50,6 @@ Item {
 
         anchors {
             left: parent.left
-            leftMargin: platformStyle.paddingLarge
             right: switcher.left
             rightMargin: platformStyle.paddingSmall
             verticalCenter: parent.verticalCenter
@@ -68,7 +67,6 @@ Item {
 
         anchors {
             right: parent.right
-            rightMargin: platformStyle.paddingLarge
             verticalCenter: parent.verticalCenter
         }
     }

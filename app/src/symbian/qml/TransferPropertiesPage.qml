@@ -107,13 +107,13 @@ MyPage {
                 id: commandEdit
                 
                 width: parent.width
+                onAccepted: closeSoftwareInputPanel()
             }
             
-            MyCheckBox {
+            MySwitch {
                 id: commandOverrideSwitch
                 
                 width: parent.width
-                wrapMode: Text.WordWrap
                 text: qsTr("Override global custom command")
                 visible: !inputContext.visible
                 onCheckedChanged: transfer.customCommandOverrideEnabled = checked

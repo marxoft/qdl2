@@ -64,6 +64,7 @@ MyPage {
                 id: nameEdit
 
                 width: parent.width
+                onAccepted: closeSoftwareInputPanel()
             }
 
             ValueListItem {

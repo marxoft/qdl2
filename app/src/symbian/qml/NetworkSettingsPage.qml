@@ -41,6 +41,7 @@ MyPage {
                 left: parent.left
                 right: parent.right
                 top: parent.top
+                margins: platformStyle.paddingLarge
             }
             spacing: platformStyle.paddingLarge
             
@@ -57,7 +58,8 @@ MyPage {
             ValueSelector {
                 id: typeSelector
                 
-                width: parent.width
+                x: -platformStyle.paddingLarge
+                width: parent.width + platformStyle.paddingLarge * 2
                 focusItem: flickable
                 title: qsTr("Type")
                 model: NetworkProxyTypeModel {}
@@ -67,8 +69,7 @@ MyPage {
             }
             
             Label {
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 elide: Text.ElideRight
                 text: qsTr("Host")
                 visible: hostEdit.visible
@@ -77,17 +78,16 @@ MyPage {
             MyTextField {
                 id: hostEdit
                 
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyHost
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyHost = text
+                onAccepted: portEdit.forceActiveFocus()
             }
             
             Label {
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 elide: Text.ElideRight
                 text: qsTr("Port")
                 visible: portEdit.visible
@@ -96,8 +96,7 @@ MyPage {
             MyTextField {
                 id: portEdit
                 
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 inputMethodHints: Qt.ImhDigitsOnly
                 text: settings.networkProxyPort
                 visible: (!inputContext.visible) || (activeFocus)
@@ -106,6 +105,7 @@ MyPage {
                     top: 100000
                 }
                 onTextChanged: settings.networkProxyPort = parseInt(text)
+                onAccepted: closeSoftwareInputPanel()
             }
             
             MySwitch {
@@ -119,8 +119,7 @@ MyPage {
             }
             
             Label {
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 elide: Text.ElideRight
                 text: qsTr("Username")
                 visible: usernameEdit.visible
@@ -129,17 +128,16 @@ MyPage {
             MyTextField {
                 id: usernameEdit
                 
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyUsername
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyUsername = text
+                onAccepted: passwordEdit.forceActiveFocus()
             }
             
             Label {
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 elide: Text.ElideRight
                 text: qsTr("Password")
                 visible: passwordEdit.visible
@@ -148,13 +146,13 @@ MyPage {
             MyTextField {
                 id: passwordEdit
                 
-                x: platformStyle.paddingLarge
-                width: parent.width - platformStyle.paddingLarge * 2
+                width: parent.width
                 echoMode: TextInput.Password
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 text: settings.networkProxyPassword
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: settings.networkProxyPassword = text
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }

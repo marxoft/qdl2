@@ -114,7 +114,7 @@ MyPage {
     Component {
         id: checkBox
 
-        MyCheckBox {
+        MySwitch {
             property string key
 
             function init(modelData, group) {
@@ -220,6 +220,7 @@ MyPage {
                 inputMethodHints: Qt.ImhDigitsOnly
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }
@@ -254,6 +255,7 @@ MyPage {
                 echoMode: TextInput.Password
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }
@@ -287,6 +289,7 @@ MyPage {
                 width: parent.width
                 visible: (!inputContext.visible) || (activeFocus)
                 onTextChanged: setValue(key, text)
+                onAccepted: closeSoftwareInputPanel()
             }
         }
     }
@@ -331,6 +334,11 @@ MyPage {
                 transfer.submitSettingsResponse(null);
             }
         }
+    }
+
+    Connections {
+        target: transfer
+        onFinished: appWindow.pageStack.pop()
     }
 
     onTransferChanged: {

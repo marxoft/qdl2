@@ -50,6 +50,7 @@ Item {
                 right: parent.right
             }
         }
+
         Loader {
             id: faderLoader
             opacity: 0

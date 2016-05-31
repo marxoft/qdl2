@@ -74,6 +74,11 @@ MyPage {
                 
                 width: parent.width
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                onAccepted: {
+                    closeSoftwareInputPanel();
+                    transfer.submitCaptchaResponse(responseEdit.text);
+                    appWindow.pageStack.pop();
+                }
             }
         }
     }
@@ -97,6 +102,11 @@ MyPage {
                 appWindow.pageStack.pop();
             }
         }
+    }
+
+    Connections {
+        target: transfer
+        onFinished: appWindow.pageStack.pop()
     }
 
     onTransferChanged: {
