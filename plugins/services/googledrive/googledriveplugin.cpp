@@ -31,10 +31,10 @@
 
 #if QT_VERSION >= 0x050000
 QString GoogleDrivePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/googledrive");
+                                       + "/.config/qdl2/plugins/qdl2-googledrive");
 #else
 QString GoogleDrivePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/googledrive");
+                                       + "/.config/qdl2/plugins/qdl2-googledrive");
 #endif
 QStringList GoogleDrivePlugin::VIDEO_FORMATS = QStringList() << "37" << "46" << "22" << "45" << "44" << "35" << "18"
                                                              << "43" << "34" << "36" << "17";

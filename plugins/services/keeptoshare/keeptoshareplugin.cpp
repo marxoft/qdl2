@@ -34,10 +34,10 @@ QString KeepToSharePlugin::LOGIN_URL("http://keep2share.cc/login.html");
 QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString KeepToSharePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/keeptoshare");
+                                       + "/.config/qdl2/plugins/qdl2-keeptoshare");
 #else
 QString KeepToSharePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/keeptoshare");
+                                       + "/.config/qdl2/plugins/qdl2-keeptoshare");
 #endif
 int KeepToSharePlugin::MAX_REDIRECTS = 8;
 

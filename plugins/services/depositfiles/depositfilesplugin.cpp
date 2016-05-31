@@ -36,10 +36,10 @@ QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php")
 QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
 QString DepositFilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                        + "/.config/qdl2/plugins/depositfiles");
+                                        + "/.config/qdl2/plugins/qdl2-depositfiles");
 #else
 QString DepositFilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                        + "/.config/qdl2/plugins/depositfiles");
+                                        + "/.config/qdl2/plugins/qdl2-depositfiles");
 #endif
 
 int DepositFilesPlugin::MAX_REDIRECTS = 8;

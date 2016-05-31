@@ -39,10 +39,10 @@ QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
 #if QT_VERSION >= 0x050000
 QString RapidGatorPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                      + "/.config/qdl2/plugins/rapidgator");
+                                      + "/.config/qdl2/plugins/qdl2-rapidgator");
 #else
 QString RapidGatorPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                      + "/.config/qdl2/plugins/rapidgator");
+                                      + "/.config/qdl2/plugins/qdl2-rapidgator");
 #endif
 int RapidGatorPlugin::MAX_REDIRECTS = 8;
 

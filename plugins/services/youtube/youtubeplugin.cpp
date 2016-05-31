@@ -30,10 +30,10 @@
 
 #if QT_VERSION >= 0x050000
 QString YouTubePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/.config/qdl2/plugins/youtube");
+                                   + "/.config/qdl2/plugins/qdl2-youtube");
 #else
 QString YouTubePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/.config/qdl2/plugins/youtube");
+                                   + "/.config/qdl2/plugins/qdl2-youtube");
 #endif
 QString YouTubePlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
 QString YouTubePlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");

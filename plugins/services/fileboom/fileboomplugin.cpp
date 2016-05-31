@@ -34,10 +34,10 @@ QString FileBoomPlugin::LOGIN_URL("http://fboom.me/login.html");
 QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString FileBoomPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                    + "/.config/qdl2/plugins/fileboom");
+                                    + "/.config/qdl2/plugins/qdl2-fileboom");
 #else
 QString FileBoomPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                    + "/.config/qdl2/plugins/fileboom");
+                                    + "/.config/qdl2/plugins/qdl2-fileboom");
 #endif
 int FileBoomPlugin::MAX_REDIRECTS = 8;
 

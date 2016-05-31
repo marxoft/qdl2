@@ -34,10 +34,10 @@ QString DepFilePlugin::LOGIN_URL("https://depfile.com");
 QString DepFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString DepFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/.config/qdl2/plugins/depfile");
+                                   + "/.config/qdl2/plugins/qdl2-depfile");
 #else
 QString DepFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/.config/qdl2/plugins/depfile");
+                                   + "/.config/qdl2/plugins/qdl2-depfile");
 #endif
 int DepFilePlugin::MAX_REDIRECTS = 8;
 

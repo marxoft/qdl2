@@ -38,10 +38,10 @@ QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
 #if QT_VERSION >= 0x050000
 QString UploadedPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                    + "/.config/qdl2/plugins/uploaded");
+                                    + "/.config/qdl2/plugins/qdl2-uploaded");
 #else
 QString UploadedPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                    + "/.config/qdl2/plugins/uploaded");
+                                    + "/.config/qdl2/plugins/qdl2-uploaded");
 #endif
 int UploadedPlugin::MAX_REDIRECTS = 8;
 

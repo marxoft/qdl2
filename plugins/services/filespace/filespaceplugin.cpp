@@ -34,10 +34,10 @@ QString FilespacePlugin::LOGIN_URL("http://filespace.com");
 QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
 QString FilespacePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                     + "/.config/qdl2/plugins/filespace");
+                                     + "/.config/qdl2/plugins/qdl2-filespace");
 #else
 QString FilespacePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                     + "/.config/qdl2/plugins/filespace");
+                                     + "/.config/qdl2/plugins/qdl2-filespace");
 #endif
 int FilespacePlugin::MAX_REDIRECTS = 8;
 

@@ -38,10 +38,10 @@ QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCap
 QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
 QString FileFactoryPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/filefactory");
+                                       + "/.config/qdl2/plugins/qdl2-filefactory");
 #else
 QString FileFactoryPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/filefactory");
+                                       + "/.config/qdl2/plugins/qdl2-filefactory");
 #endif
 int FileFactoryPlugin::MAX_REDIRECTS = 8;
 

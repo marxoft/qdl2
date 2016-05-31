@@ -34,10 +34,10 @@ QString PublishToMePlugin::LOGIN_URL("http://publish2.me/login.html");
 QString PublishToMePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString PublishToMePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/publishtome");
+                                       + "/.config/qdl2/plugins/qdl2-publishtome");
 #else
 QString PublishToMePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/publishtome");
+                                       + "/.config/qdl2/plugins/qdl2-publishtome");
 #endif
 int PublishToMePlugin::MAX_REDIRECTS = 8;
 
