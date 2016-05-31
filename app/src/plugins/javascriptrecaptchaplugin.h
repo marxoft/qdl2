@@ -61,6 +61,8 @@ private:
     QString m_id;
 
     QScriptValue m_callback;
+    
+    bool m_evaluated;
 };
 
 class JavaScriptRecaptchaPluginGlobalObject : public JavaScriptPluginGlobalObject

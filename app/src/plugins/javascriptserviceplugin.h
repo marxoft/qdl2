@@ -66,6 +66,8 @@ private:
     QString m_id;
 
     QScriptValue m_callback;
+    
+    bool m_evaluated;
 };
 
 class JavaScriptServicePluginGlobalObject : public JavaScriptPluginGlobalObject

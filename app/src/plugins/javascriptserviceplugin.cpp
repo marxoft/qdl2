@@ -26,7 +26,8 @@ JavaScriptServicePlugin::JavaScriptServicePlugin(const QString &id, const QStrin
     ServicePlugin(parent),
     m_engine(0),
     m_fileName(fileName),
-    m_id(id)
+    m_id(id),
+    m_evaluated(false)
 {
 }
 
@@ -43,32 +44,29 @@ ServicePlugin* JavaScriptServicePlugin::createPlugin(QObject *parent) {
 }
 
 void JavaScriptServicePlugin::initEngine() {
+    if (m_evaluated) {
+        return;
+    }
+    
     if (!m_engine) {
         m_engine = new QScriptEngine(this);
-        QFile file(fileName());
+    }
 
-        if (file.open(QFile::ReadOnly)) {
-            const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
-            file.close();
-
-            if (result.isError()) {
-                Logger::log("JavaScriptServicePlugin::initEngine(): Error evaluating JavaScript file: "
-                            + result.toString());
-                delete m_engine;
-                m_engine = 0;
-                return;
-            }
-            
-            Logger::log("JavaScriptServicePlugin::initEngine(): JavaScript file evaluated OK");            
-        }
-        else {
-            Logger::log("JavaScriptServicePlugin::initEngine(): Error reading JavaScript file: "
-                        + file.errorString());
-            delete m_engine;
-            m_engine = 0;
+    QFile file(fileName());
+    
+    if (file.open(QFile::ReadOnly)) {
+        const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
+        file.close();
+        
+        if (result.isError()) {
+            Logger::log("JavaScriptServicePlugin::initEngine(): Error evaluating JavaScript file: "
+                        + result.toString());
             return;
         }
-
+        
+        Logger::log("JavaScriptServicePlugin::initEngine(): JavaScript file evaluated OK");
+        m_evaluated = true;
+        
         JavaScriptServicePluginGlobalObject *global = new JavaScriptServicePluginGlobalObject(m_engine);
         connect(global, SIGNAL(captchaRequest(QString, QString, QScriptValue)),
                 this, SLOT(onCaptchaRequest(QString, QString, QScriptValue)));
@@ -80,9 +78,13 @@ void JavaScriptServicePlugin::initEngine() {
         connect(global, SIGNAL(urlChecked(QVariantMap)), this, SLOT(onUrlChecked(QVariantMap)));
         connect(global, SIGNAL(urlChecked(QVariantList, QString)), this, SLOT(onUrlChecked(QVariantList, QString)));
         connect(global, SIGNAL(waitRequest(int, bool)), this, SIGNAL(waitRequest(int, bool)));
-
+        
         m_engine->installTranslatorFunctions();
         m_engine->globalObject().setProperty("settings", m_engine->newQObject(new PluginSettings(id(), m_engine)));
+    }
+    else {
+        Logger::log("JavaScriptServicePlugin::initEngine(): Error reading JavaScript file: "
+                    + file.errorString());
     }
 }
 

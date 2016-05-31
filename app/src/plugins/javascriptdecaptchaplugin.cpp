@@ -26,7 +26,8 @@ JavaScriptDecaptchaPlugin::JavaScriptDecaptchaPlugin(const QString &id, const QS
     DecaptchaPlugin(parent),
     m_engine(0),
     m_fileName(fileName),
-    m_id(id)
+    m_id(id),
+    m_evaluated(false)
 {
 }
 
@@ -43,31 +44,28 @@ DecaptchaPlugin* JavaScriptDecaptchaPlugin::createPlugin(QObject *parent) {
 }
 
 void JavaScriptDecaptchaPlugin::initEngine() {
+    if (m_evaluated) {
+        return;
+    }
+    
     if (!m_engine) {
         m_engine = new QScriptEngine(this);
-        QFile file(fileName());
+    }
 
-        if (file.open(QFile::ReadOnly)) {
-            const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
-            file.close();
-
-            if (result.isError()) {
-                Logger::log("JavaScriptDecaptchaPlugin::initEngine(): Error evaluating JavaScript file: "
-                            + result.toString());
-                delete m_engine;
-                m_engine = 0;
-                return;
-            }
-            
-            Logger::log("JavaScriptDecaptchaPlugin::initEngine(): JavaScript file evaluated OK");            
-        }
-        else {
-            Logger::log("JavaScriptDecaptchaPlugin::initEngine(): Error reading JavaScript file: "
-                        + file.errorString());
-            delete m_engine;
-            m_engine = 0;
+    QFile file(fileName());
+    
+    if (file.open(QFile::ReadOnly)) {
+        const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
+        file.close();
+        
+        if (result.isError()) {
+            Logger::log("JavaScriptDecaptchaPlugin::initEngine(): Error evaluating JavaScript file: "
+                        + result.toString());
             return;
         }
+        
+        Logger::log("JavaScriptDecaptchaPlugin::initEngine(): JavaScript file evaluated OK");
+        m_evaluated = true;
 
         JavaScriptDecaptchaPluginGlobalObject *global = new JavaScriptDecaptchaPluginGlobalObject(m_engine);
         connect(global, SIGNAL(captchaResponse(QString, QString)), this, SIGNAL(captchaResponse(QString, QString)));
@@ -78,6 +76,10 @@ void JavaScriptDecaptchaPlugin::initEngine() {
 
         m_engine->installTranslatorFunctions();
         m_engine->globalObject().setProperty("settings", m_engine->newQObject(new PluginSettings(id(), m_engine)));
+    }
+    else {
+        Logger::log("JavaScriptDecaptchaPlugin::initEngine(): Error reading JavaScript file: "
+                    + file.errorString());
     }
 }
 
