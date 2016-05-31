@@ -1,6 +1,6 @@
 QT += network
 CONFIG += plugin
-TARGET = googlerecaptcha
+TARGET = qdl2-googlerecaptcha
 TEMPLATE = lib
 
 HEADERS += googlerecaptchaplugin.h
@@ -19,16 +19,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     googlerecaptcha_deployment.pkg_prerules += vendorinfo
 
-    config.sources = googlerecaptcha.json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/recaptcha
 
-    icon.sources = googlerecaptcha.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = googlerecaptcha.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = googlerecaptcha.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/recaptcha
 
     DEPLOYMENT.display_name = QDL Plugins Google Recaptcha
@@ -43,10 +43,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/recaptchaplugin.h
 
-    config.files = googlerecaptcha.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/recaptcha
 
-    icon.files = googlerecaptcha.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/recaptcha

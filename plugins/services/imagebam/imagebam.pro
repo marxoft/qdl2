@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = imagebam.json
+    config.sources = qdl2-imagebam.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = imagebam.jpg
+    icon.sources = qdl2-imagebam.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = imagebam.js
+    plugin.sources = qdl2-imagebam.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = imagebam.json
+    config.files = qdl2-imagebam.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = imagebam.jpg
+    icon.files = qdl2-imagebam.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = imagebam.js
+    plugin.files = qdl2-imagebam.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = spankbang.json
+    config.sources = qdl2-spankbang.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = spankbang.jpg
+    icon.sources = qdl2-spankbang.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = spankbang.js
+    plugin.sources = qdl2-spankbang.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = spankbang.json
+    config.files = qdl2-spankbang.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = spankbang.jpg
+    icon.files = qdl2-spankbang.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = spankbang.js
+    plugin.files = qdl2-spankbang.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

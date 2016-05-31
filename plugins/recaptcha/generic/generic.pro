@@ -1,6 +1,6 @@
 QT += network
 CONFIG += plugin
-TARGET = genericrecaptcha
+TARGET = qdl2-genericrecaptcha
 TEMPLATE = lib
 
 HEADERS += genericrecaptchaplugin.h
@@ -19,16 +19,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     genericrecaptcha_deployment.pkg_prerules += vendorinfo
 
-    config.sources = genericrecaptcha.json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/recaptcha
 
-    icon.sources = genericrecaptcha.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = genericrecaptcha.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = genericrecaptcha.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/recaptcha
 
     DEPLOYMENT.display_name = QDL Plugins Generic Recaptcha
@@ -43,10 +43,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/recaptchaplugin.h
     
-    config.files = genericrecaptcha.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/recaptcha
 
-    icon.files = genericrecaptcha.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/recaptcha

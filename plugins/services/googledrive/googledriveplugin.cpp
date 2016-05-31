@@ -365,5 +365,5 @@ QString GoogleDrivePlugin::unescape(const QString &s) {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(googledrive, GoogleDrivePlugin)
+Q_EXPORT_PLUGIN2(qdl2-googledrive, GoogleDrivePlugin)
 #endif

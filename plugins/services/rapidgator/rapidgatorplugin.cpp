@@ -35,7 +35,7 @@ QString RapidGatorPlugin::LOGIN_URL("https://rapidgator.net/auth/login");
 QString RapidGatorPlugin::SESSION_ID_URL("http://rapidgator.net/download/AjaxStartTimer");
 QString RapidGatorPlugin::DOWNLOAD_LINK_URL("http://rapidgator.net/download/AjaxGetDownloadLink");
 QString RapidGatorPlugin::CAPTCHA_URL("http://rapidgator.net/download/captcha");
-QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("solvemediarecaptcha");
+QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
 #if QT_VERSION >= 0x050000
 QString RapidGatorPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
@@ -592,5 +592,5 @@ void RapidGatorPlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(rapidgator, RapidGatorPlugin)
+Q_EXPORT_PLUGIN2(qdl2-rapidgator, RapidGatorPlugin)
 #endif

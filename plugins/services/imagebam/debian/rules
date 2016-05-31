@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-imagebam/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-imagebam/opt/qdl2/plugins/icons
-	cp imagebam.js imagebam.json debian/qdl-plugins-imagebam/opt/qdl2/plugins/services
-	cp imagebam.jpg debian/qdl-plugins-imagebam/opt/qdl2/plugins/icons
+	cp qdl2-imagebam.js qdl2-imagebam.json debian/qdl-plugins-imagebam/opt/qdl2/plugins/services
+	cp qdl2-imagebam.jpg debian/qdl-plugins-imagebam/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

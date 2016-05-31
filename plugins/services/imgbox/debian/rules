@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-imgbox/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-imgbox/opt/qdl2/plugins/icons
-	cp imgbox.js imgbox.json debian/qdl-plugins-imgbox/opt/qdl2/plugins/services
-	cp imgbox.jpg debian/qdl-plugins-imgbox/opt/qdl2/plugins/icons
+	cp qdl2-imgbox.js qdl2-imgbox.json debian/qdl-plugins-imgbox/opt/qdl2/plugins/services
+	cp qdl2-imgbox.jpg debian/qdl-plugins-imgbox/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

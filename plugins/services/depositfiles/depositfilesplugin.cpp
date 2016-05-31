@@ -33,7 +33,7 @@
 QRegExp DepositFilesPlugin::FILE_REGEXP("http(s|)://fileshare\\d+\\.(depositfiles|dfiles)\\.\\w+/[^'\"]+");
 QString DepositFilesPlugin::LOGIN_URL("https://depositfiles.com/api/user/login");
 QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php");
-QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("solvemediarecaptcha");
+QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
 QString DepositFilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                         + "/.config/qdl2/plugins/depositfiles");
@@ -521,5 +521,5 @@ void DepositFilesPlugin::checkCaptcha() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(depositfiles, DepositFilesPlugin)
+Q_EXPORT_PLUGIN2(qdl2-depositfiles, DepositFilesPlugin)
 #endif

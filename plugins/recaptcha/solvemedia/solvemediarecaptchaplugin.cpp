@@ -152,5 +152,5 @@ void SolveMediaRecaptchaPlugin::onCaptchaImageDownloaded() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(solvemediarecaptcha, SolveMediaRecaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-solvemediarecaptcha, SolveMediaRecaptchaPlugin)
 #endif

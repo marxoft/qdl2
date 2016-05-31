@@ -1,7 +1,7 @@
 {
     "type": "qt",
     "name": "1Fichier",
-    "icon": "onefichier.jpg",
+    "icon": "qdl2-onefichier.jpg",
     "version": 1,
     "regExp": "http(s|)://(\\w+\\.1fichier\\.com|1fichier\\.com/\\?\\w+)",
     "settings": [

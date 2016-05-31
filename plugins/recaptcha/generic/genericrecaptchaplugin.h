@@ -25,7 +25,7 @@ class GenericRecaptchaPlugin : public RecaptchaPlugin
 
     Q_INTERFACES(RecaptchaPlugin)
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.KeepToShareRecaptchaPlugin")
+    Q_PLUGIN_METADATA(IID "org.qdl2.GenericRecaptchaPlugin")
 #endif
 
 public:

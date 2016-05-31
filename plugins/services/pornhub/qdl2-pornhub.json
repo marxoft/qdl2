@@ -1,9 +1,9 @@
 {
     "type": "js",
-    "name": "XHamster",
-    "icon": "xhamster.jpg",
+    "name": "Pornhub",
+    "icon": "qdl2-pornhub.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)xhamster\\.com/movies/\\d+",
+    "regExp": "http(s|)://www\\.pornhub\\.com/view_video\\.php\\?viewkey=\\w+"
     "settings": [
         {
             "type": "boolean",
@@ -16,26 +16,26 @@
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "1080p",
+            "value": "1080",
             "options": [
                 {
                     "label": "1080P",
-                    "value": "1080p"
+                    "value": "1080"
                 },
 
                 {
                     "label": "720P",
-                    "value": "720p"
+                    "value": "720"
                 },
 
                 {
                     "label": "480P",
-                    "value": "480p"
+                    "value": "480"
                 },
 
                 {
                     "label": "240P",
-                    "value": "240p"
+                    "value": "240"
                 }
             ]
         }

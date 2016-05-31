@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = xvideos.json
+    config.sources = qdl2-xvideos.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = xvideos.jpg
+    icon.sources = qdl2-xvideos.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = xvideos.js
+    plugin.sources = qdl2-xvideos.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = xvideos.json
+    config.files = qdl2-xvideos.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = xvideos.jpg
+    icon.files = qdl2-xvideos.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = xvideos.js
+    plugin.files = qdl2-xvideos.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

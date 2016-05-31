@@ -1,9 +1,9 @@
 {
     "type": "js",
-    "name": "Image Upper",
-    "icon": "imageupper.jpg",
+    "name": "imgbox",
+    "icon": "qdl2-imgbox.jpg",
     "version": 1,
-    "regExp": "http://imageupper\\.com/((i|g)/\\?|gi/\\?galID=)\\w+",
+    "regExp": "http(s|)://imgbox\\.com/(g/|)\\w+",
     "settings": [
         {
             "type": "boolean",

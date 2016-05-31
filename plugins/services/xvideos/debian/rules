@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-xvideos/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-xvideos/opt/qdl2/plugins/icons
-	cp xvideos.js xvideos.json debian/qdl-plugins-xvideos/opt/qdl2/plugins/services
-	cp xvideos.jpg debian/qdl-plugins-xvideos/opt/qdl2/plugins/icons
+	cp qdl2-xvideos.js qdl2-xvideos.json debian/qdl-plugins-xvideos/opt/qdl2/plugins/services
+	cp qdl2-xvideos.jpg debian/qdl-plugins-xvideos/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

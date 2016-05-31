@@ -1,14 +1,21 @@
 {
     "type": "qt",
-    "name": "Death By Captcha",
-    "icon": "deathbycaptcha.jpg",
+    "name": "Filefactory",
+    "icon": "qdl2-filefactory.jpg",
     "version": 1,
+    "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|stream)/\\w+",
     "settings": [
         {
             "type": "group",
             "label": "Account",
             "key": "Account",
             "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use login",
+                    "key": "useLogin"
+                },
+                
                 {
                     "type": "text",
                     "label": "Username",

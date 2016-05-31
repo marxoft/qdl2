@@ -1,6 +1,6 @@
 QT += core network
 CONFIG += plugin
-TARGET = deathbycaptcha
+TARGET = qdl2-deathbycaptcha
 TEMPLATE = lib
 
 HEADERS += \
@@ -24,16 +24,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     deathbycaptcha_deployment.pkg_prerules += vendorinfo
 
-    config.sources = deathbycaptcha.json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/decaptcha
 
-    icon.sources = deathbycaptcha.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = deathbycaptcha.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = deathbycaptcha.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/decaptcha
 
     DEPLOYMENT.display_name = QDL Plugins Death By Captcha
@@ -48,10 +48,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/decaptchaplugin.h
 
-    config.files = deathbycaptcha.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/decaptcha
 
-    icon.files = deathbycaptcha.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/decaptcha

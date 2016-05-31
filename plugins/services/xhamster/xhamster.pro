@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = xhamster.json
+    config.sources = qdl2-xhamster.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = xhamster.jpg
+    icon.sources = qdl2-xhamster.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = xhamster.js
+    plugin.sources = qdl2-xhamster.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = xhamster.json
+    config.files = qdl2-xhamster.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = xhamster.jpg
+    icon.files = qdl2-xhamster.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = xhamster.js
+    plugin.files = qdl2-xhamster.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

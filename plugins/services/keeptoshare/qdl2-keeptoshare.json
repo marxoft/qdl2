@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "Filespace",
-    "icon": "filespace.jpg",
+    "name": "Keep2Share",
+    "icon": "qdl2-keeptoshare.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)filespace\\.com/\\w+",
+    "regExp": "http(s|)://(www\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
     "settings": [
         {
             "type": "group",
@@ -18,7 +18,7 @@
                 
                 {
                     "type": "text",
-                    "label": "Username",
+                    "label": "Email",
                     "key": "username"
                 },
 

@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "DepFile",
-    "icon": "depfile.jpg",
+    "name": "DepositFiles",
+    "icon": "qdl2-depositfiles.jpg",
     "version": 1,
-    "regExp": "http(s|)://(depfile\\.com|yep\\.pm)/\\w+",
+    "regExp": "http(s|)://(www\\.|)(depositfiles\\.(com|org)|dfiles\\.[a-z]+)/(\\w+/|)files/\\w+",
     "settings": [
         {
             "type": "group",
@@ -18,7 +18,7 @@
                 
                 {
                     "type": "text",
-                    "label": "Email",
+                    "label": "Username",
                     "key": "username"
                 },
 

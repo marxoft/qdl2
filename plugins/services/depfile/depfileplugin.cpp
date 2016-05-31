@@ -31,7 +31,7 @@
 QRegExp DepFilePlugin::FILE_REGEXP("http(s|)://\\d+\\w+\\.\\w+/\\d+/\\d+/\\d+/\\w+/[^'\"]+");
 QRegExp DepFilePlugin::WAIT_REGEXP("No less than (\\d+) min should pass before next download");
 QString DepFilePlugin::LOGIN_URL("https://depfile.com");
-QString DepFilePlugin::RECAPTCHA_PLUGIN_ID("genericrecaptcha");
+QString DepFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString DepFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                    + "/.config/qdl2/plugins/depfile");
@@ -456,5 +456,5 @@ void DepFilePlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(depfile, DepFilePlugin)
+Q_EXPORT_PLUGIN2(qdl2-depfile, DepFilePlugin)
 #endif

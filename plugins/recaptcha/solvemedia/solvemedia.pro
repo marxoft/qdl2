@@ -1,6 +1,6 @@
 QT += network
 CONFIG += plugin
-TARGET = solvemediarecaptcha
+TARGET = qdl2-solvemediarecaptcha
 TEMPLATE = lib
 
 HEADERS += \
@@ -24,16 +24,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     solvemediarecaptcha_deployment.pkg_prerules += vendorinfo
 
-    config.sources = solvemediarecaptcha.json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/recaptcha
 
-    icon.sources = solvemediarecaptcha.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = solvemediarecaptcha.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = solvemediarecaptcha.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/recaptcha
 
     DEPLOYMENT.display_name = QDL Plugins Solve Media Recaptcha
@@ -48,10 +48,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/recaptchaplugin.h
 
-    config.files = solvemediarecaptcha.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/recaptcha
 
-    icon.files = solvemediarecaptcha.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/recaptcha

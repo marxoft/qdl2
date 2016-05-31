@@ -1,6 +1,6 @@
 QT += core network
 CONFIG += plugin
-TARGET = publishtome
+TARGET = qdl2-publishtome
 TEMPLATE = lib
 
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -23,16 +23,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     publishtome_deployment.pkg_prerules += vendorinfo
 
-    config.sources = publishtome.json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = publishtome.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = publishtome.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = publishtome.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/services
 
     DEPLOYMENT.display_name = QDL Plugins Publish2.me
@@ -47,10 +47,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/serviceplugin.h
 
-    config.files = publishtome.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = publishtome.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/services

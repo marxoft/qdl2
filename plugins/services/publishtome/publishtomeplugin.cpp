@@ -31,7 +31,7 @@
 
 QRegExp PublishToMePlugin::FILE_REGEXP("(http(s|)://publish2\\.me|)/file/url\\.html\\?file=[^'\"]+");
 QString PublishToMePlugin::LOGIN_URL("http://publish2.me/login.html");
-QString PublishToMePlugin::RECAPTCHA_PLUGIN_ID("genericrecaptcha");
+QString PublishToMePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString PublishToMePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                        + "/.config/qdl2/plugins/publishtome");
@@ -664,5 +664,5 @@ void PublishToMePlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(publishtome, PublishToMePlugin)
+Q_EXPORT_PLUGIN2(qdl2-publishtome, PublishToMePlugin)
 #endif

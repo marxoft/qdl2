@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "Keep2Share",
-    "icon": "keeptoshare.jpg",
+    "name": "DepFile",
+    "icon": "qdl2-depfile.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
+    "regExp": "http(s|)://(depfile\\.com|yep\\.pm)/\\w+",
     "settings": [
         {
             "type": "group",

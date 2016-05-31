@@ -1,6 +1,6 @@
 QT += core network
 CONFIG += plugin
-TARGET = youtube
+TARGET = qdl2-youtube
 TEMPLATE = lib
 
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -10,8 +10,8 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 HEADERS += youtubeplugin.h
 SOURCES += youtubeplugin.cpp
 
-config.files = youtube.json
-icon.files = youtube.jpg
+config.files = "$$TARGET".json
+icon.files = "$$TARGET".jpg
 
 unix {
     LIBS += -L/usr/lib -lqyoutube

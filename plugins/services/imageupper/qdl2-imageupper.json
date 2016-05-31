@@ -1,9 +1,9 @@
 {
     "type": "js",
-    "name": "ImageBam",
-    "icon": "imagebam.jpg",
+    "name": "Image Upper",
+    "icon": "qdl2-imageupper.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)imagebam\\.com/(image|gallery)/\\w+",
+    "regExp": "http://imageupper\\.com/((i|g)/\\?|gi/\\?galID=)\\w+",
     "settings": [
         {
             "type": "boolean",

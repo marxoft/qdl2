@@ -1,17 +1,17 @@
 {
     "type": "qt",
-    "name": "Google Drive",
-    "icon": "googledrive.jpg",
+    "name": "YouTube",
+    "icon": "qdl2-youtube.jpg",
     "version": 1,
-    "regExp": "http(s|)://(drive|docs)\\.google\\.com/file/d/[\\w_-]+",
+    "regExp": "(http(s|)://(www.|m.|)youtube.com/(v/|.+)(v=|list=|)|http(s|)://youtu.be/)",
     "settings": [
         {
             "type": "boolean",
-            "label": "Use YouTube video formats",
-            "key": "useYouTubeFormats"
-            "value": false
+            "label": "Use default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
         },
-
+        
         {
             "type": "list",
             "label": "Default video format",

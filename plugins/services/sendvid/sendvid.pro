@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = sendvid.json
+    config.sources = qdl2-sendvid.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = sendvid.jpg
+    icon.sources = qdl2-sendvid.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = sendvid.js
+    plugin.sources = qdl2-sendvid.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = sendvid.json
+    config.files = qdl2-sendvid.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = sendvid.jpg
+    icon.files = qdl2-sendvid.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = sendvid.js
+    plugin.files = qdl2-sendvid.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

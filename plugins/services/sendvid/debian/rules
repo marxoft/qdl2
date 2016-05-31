@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-sendvid/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-sendvid/opt/qdl2/plugins/icons
-	cp sendvid.js sendvid.json debian/qdl-plugins-sendvid/opt/qdl2/plugins/services
-	cp sendvid.jpg debian/qdl-plugins-sendvid/opt/qdl2/plugins/icons
+	cp qdl2-sendvid.js qdl2-sendvid.json debian/qdl-plugins-sendvid/opt/qdl2/plugins/services
+	cp qdl2-sendvid.jpg debian/qdl-plugins-sendvid/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

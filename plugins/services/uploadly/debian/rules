@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-uploadly/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-uploadly/opt/qdl2/plugins/icons
-	cp uploadly.js uploadly.json debian/qdl-plugins-uploadly/opt/qdl2/plugins/services
-	cp uploadly.png debian/qdl-plugins-uploadly/opt/qdl2/plugins/icons
+	cp qdl2-uploadly.js qdl2-uploadly.json debian/qdl-plugins-uploadly/opt/qdl2/plugins/services
+	cp qdl2-uploadly.png debian/qdl-plugins-uploadly/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

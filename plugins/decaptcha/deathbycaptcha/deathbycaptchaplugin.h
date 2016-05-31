@@ -26,7 +26,7 @@ class DeathByCaptchaPlugin : public DecaptchaPlugin
     
     Q_INTERFACES(DecaptchaPlugin)
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.DeatchByCaptchaPlugin")
+    Q_PLUGIN_METADATA(IID "org.qdl2.DeathByCaptchaPlugin")
 #endif
 
 public:

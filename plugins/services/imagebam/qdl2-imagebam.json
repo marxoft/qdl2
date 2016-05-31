@@ -1,9 +1,9 @@
 {
     "type": "js",
-    "name": "imgbox",
-    "icon": "imgbox.jpg",
+    "name": "ImageBam",
+    "icon": "qdl2-imagebam.jpg",
     "version": 1,
-    "regExp": "http(s|)://imgbox\\.com/(g/|)\\w+",
+    "regExp": "http(s|)://(www\\.|)imagebam\\.com/(image|gallery)/\\w+",
     "settings": [
         {
             "type": "boolean",

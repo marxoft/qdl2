@@ -1,7 +1,7 @@
 {
     "type": "js",
     "name": "Uploadly",
-    "icon": "uploadly.png",
+    "icon": "qdl2-uploadly.png",
     "version": 1,
     "regExp": "http(s|)://((i|v)\\.|)uploadly\\.com/\\w+",
     "settings": [

@@ -35,7 +35,7 @@ QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/g
 QRegExp FileFactoryPlugin::NOT_FOUND_REGEXP("file is no longer available|file has been deleted");
 QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
 QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
-QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("googlerecaptcha");
+QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
 QString FileFactoryPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                        + "/.config/qdl2/plugins/filefactory");
@@ -541,5 +541,5 @@ void FileFactoryPlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(filefactory, FileFactoryPlugin)
+Q_EXPORT_PLUGIN2(qdl2-filefactory, FileFactoryPlugin)
 #endif

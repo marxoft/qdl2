@@ -34,7 +34,7 @@ QString UploadedPlugin::LOGIN_URL("http://uploaded.net/io/login");
 QString UploadedPlugin::BASE_FILE_URL("http://uploaded.net/file/");
 QString UploadedPlugin::NOT_FOUND_URL("http://uploaded.net/404");
 QString UploadedPlugin::CAPTCHA_URL("http://uploaded.net/io/ticket/captcha/");
-QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("googlerecaptcha");
+QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
 #if QT_VERSION >= 0x050000
 QString UploadedPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
@@ -489,5 +489,5 @@ QNetworkRequest UploadedPlugin::buildDownloadRequest(const QUrl &url) const {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(uploaded, UploadedPlugin)
+Q_EXPORT_PLUGIN2(qdl2-uploaded, UploadedPlugin)
 #endif

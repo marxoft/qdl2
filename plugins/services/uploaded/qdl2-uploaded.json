@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "RapidGator",
-    "icon": "rapidgator.jpg",
+    "name": "Uploaded",
+    "icon": "qdl2-uploaded.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)(rg\\.to|rapidgator\\.net)/file/\\S+",
+    "regExp": "(http(s|)://(www\\.|)uploaded\\.(net|to)/f(ile|)/|http(s|)://ul\\.to/)\\w+",
     "settings": [
         {
             "type": "group",

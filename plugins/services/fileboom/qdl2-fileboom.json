@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "Filefactory",
-    "icon": "filefactory.jpg",
+    "name": "FileBoom",
+    "icon": "qdl2-fileboom.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|stream)/\\w+",
+    "regExp": "http(s|)://(www\\.|)f(ile|)boom\\.me/file/\\w+",
     "settings": [
         {
             "type": "group",

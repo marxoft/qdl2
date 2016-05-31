@@ -133,5 +133,5 @@ void GenericRecaptchaPlugin::checkCaptchaImage() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(genericrecaptcha, GenericRecaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-genericrecaptcha, GenericRecaptchaPlugin)
 #endif

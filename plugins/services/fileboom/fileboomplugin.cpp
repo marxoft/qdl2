@@ -31,7 +31,7 @@
 
 QRegExp FileBoomPlugin::FILE_REGEXP("(http(s|)://fboom\\.me|)/file/url\\.html\\?file=[^'\"]+");
 QString FileBoomPlugin::LOGIN_URL("http://fboom.me/login.html");
-QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("genericrecaptcha");
+QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 QString FileBoomPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                     + "/.config/qdl2/plugins/fileboom");
@@ -663,5 +663,5 @@ void FileBoomPlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(fileboom, FileBoomPlugin)
+Q_EXPORT_PLUGIN2(qdl2-fileboom, FileBoomPlugin)
 #endif

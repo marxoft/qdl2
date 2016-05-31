@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-xhamster/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-xhamster/opt/qdl2/plugins/icons
-	cp xhamster.js xhamster.json debian/qdl-plugins-xhamster/opt/qdl2/plugins/services
-	cp xhamster.jpg debian/qdl-plugins-xhamster/opt/qdl2/plugins/icons
+	cp qdl2-xhamster.js qdl2-xhamster.json debian/qdl-plugins-xhamster/opt/qdl2/plugins/services
+	cp qdl2-xhamster.jpg debian/qdl-plugins-xhamster/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install

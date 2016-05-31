@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "Publish2.me",
-    "icon": "publishtome.jpg",
+    "name": "RapidGator",
+    "icon": "qdl2-rapidgator.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)publish2\\.me/file/\\w+",
+    "regExp": "http(s|)://(www\\.|)(rg\\.to|rapidgator\\.net)/file/\\S+",
     "settings": [
         {
             "type": "group",

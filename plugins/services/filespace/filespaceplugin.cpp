@@ -31,7 +31,7 @@
 
 QRegExp FilespacePlugin::FILE_REGEXP("http(s|)://[\\w-_]+\\.filespace\\.com:\\d+/[^'\"]+");
 QString FilespacePlugin::LOGIN_URL("http://filespace.com");
-QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("solvemediarecaptcha");
+QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
 QString FilespacePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                                      + "/.config/qdl2/plugins/filespace");
@@ -521,5 +521,5 @@ void FilespacePlugin::stopWaitTimer() {
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(filespace, FilespacePlugin)
+Q_EXPORT_PLUGIN2(qdl2-filespace, FilespacePlugin)
 #endif

@@ -1,9 +1,9 @@
 {
     "type": "js",
-    "name": "XVideos",
-    "icon": "xvideos.jpg",
+    "name": "SpankBang",
+    "icon": "qdl2-spankbang.jpg",
     "version": 1,
-    "regExp": "http://www\\.xvideos\\.com/video\\d+",
+    "regExp": "http://spankbang\\.com/\\w+/(video|embed)",
     "settings": [
         {
             "type": "boolean",
@@ -11,21 +11,26 @@
             "key": "useDefaultVideoFormat",
             "value": true
         },
-
+        
         {
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "mp4",
+            "value": "720p",
             "options": [
                 {
-                    "label": "MP4",
-                    "value": "mp4"
+                    "label": "720P",
+                    "value": "720p"
                 },
 
                 {
-                    "label": "3GP",
-                    "value": "3gp"
+                    "label": "480P",
+                    "value": "480p"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "240p"
                 }
             ]
         }

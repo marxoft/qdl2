@@ -1,9 +1,9 @@
 {
     "type": "qt",
-    "name": "DepositFiles",
-    "icon": "depositfiles.jpg",
+    "name": "Filespace",
+    "icon": "qdl2-filespace.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)(depositfiles\\.(com|org)|dfiles\\.[a-z]+)/(\\w+/|)files/\\w+",
+    "regExp": "http(s|)://(www\\.|)filespace\\.com/\\w+",
     "settings": [
         {
             "type": "group",

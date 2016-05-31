@@ -1,6 +1,6 @@
 QT += core network
 CONFIG += plugin
-TARGET = depfile
+TARGET = qdl2-depfile
 TEMPLATE = lib
 
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -23,16 +23,16 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     depfile_deployment.pkg_prerules += vendorinfo
 
-    config.sources = depfile.json
+    config.sources = "$TARGET".json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = depfile.jpg
+    icon.sources = "$$TARGET".jpg
     icon.path = !:/qdl2/plugins/icons
 
-    lib.sources = depfile.dll
+    lib.sources = "$$TARGET".dll
     lib.path = !:/sys/bin
 
-    stub.sources = depfile.qtplugin
+    stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/services
 
     DEPLOYMENT.display_name = QDL Plugins DepFile
@@ -47,10 +47,10 @@ symbian {
     INCLUDEPATH += /usr/include/qdl2
     HEADERS += /usr/include/qdl2/serviceplugin.h
 
-    config.files = depfile.json
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = depfile.jpg
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
     target.path = /opt/qdl2/plugins/services

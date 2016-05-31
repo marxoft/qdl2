@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 
 symbian {
-    config.sources = imgbox.json
+    config.sources = qdl2-imgbox.json
     config.path = !:/qdl2/plugins/services
 
-    icon.sources = imgbox.jpg
+    icon.sources = qdl2-imgbox.jpg
     icon.path = !:/qdl2/plugins/icons
 
-    plugin.sources = imgbox.js
+    plugin.sources = qdl2-imgbox.js
     plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
@@ -21,13 +21,13 @@ symbian {
         plugin
 
 } else:unix {
-    config.files = imgbox.json
+    config.files = qdl2-imgbox.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = imgbox.jpg
+    icon.files = qdl2-imgbox.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = imgbox.js
+    plugin.files = qdl2-imgbox.js
     plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \

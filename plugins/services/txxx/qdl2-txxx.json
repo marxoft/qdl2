@@ -1,0 +1,7 @@
+{
+    "type": "js",
+    "name": "TXXX",
+    "icon": "qdl2-txxx.jpg",
+    "version": 1,
+    "regExp": "http://www\\.txxx\\.com/(videos|get_file)/\\d+/[\\w-]+/"
+}
