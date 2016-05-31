@@ -43,12 +43,15 @@ bool TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
         if (request->method() == QHttpRequest::HTTP_POST) {
             const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
             const QStringList urls = properties.value("urls").toStringList();
+            const QString method = properties.value("requestMethod", "GET").toString();
+            const QVariantMap headers = properties.value("requestHeaders").toMap();
+            const QString data = properties.value("postData").toString();
             
             if (urls.isEmpty()) {
                 writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
             }
             else {
-                Qdl::addTransfers(urls);
+                Qdl::addTransfers(urls, method, headers, data);
                 writeResponse(response, QHttpResponse::STATUS_CREATED);
             }
             

@@ -204,12 +204,14 @@ void Qdl::quit() {
     QCoreApplication::instance()->quit();
 }
 
-void Qdl::addTransfer(const QString &url) {
-    TransferModel::instance()->append(url);
+void Qdl::addTransfer(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
+                      const QString &postData) {
+    TransferModel::instance()->append(url, requestMethod, requestHeaders, postData);
 }
 
-void Qdl::addTransfers(const QStringList &urls) {
-    TransferModel::instance()->append(urls);
+void Qdl::addTransfers(const QStringList &urls, const QString &requestMethod, const QVariantMap &requestHeaders,
+                       const QString &postData) {
+    TransferModel::instance()->append(urls, requestMethod, requestHeaders, postData);
 }
 
 QVariantMap Qdl::getTransfers(int offset, int limit, bool includeChildren) {

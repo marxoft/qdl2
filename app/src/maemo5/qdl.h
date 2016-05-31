@@ -53,8 +53,12 @@ public Q_SLOTS:
     Q_SCRIPTABLE static void showWindow();
     Q_SCRIPTABLE static void closeWindow();
 
-    Q_SCRIPTABLE static void addTransfer(const QString &url);
-    Q_SCRIPTABLE static void addTransfers(const QStringList &urls);
+    Q_SCRIPTABLE static void addTransfer(const QString &url, const QString &requestMethod = QString("GET"),
+                                         const QVariantMap &requestHeaders = QVariantMap(),
+                                         const QString &postData = QString());
+    Q_SCRIPTABLE static void addTransfers(const QStringList &urls, const QString &requestMethod = QString("GET"),
+                                          const QVariantMap &requestHeaders = QVariantMap(),
+                                          const QString &postData = QString());
     Q_SCRIPTABLE static QVariantMap getTransfers(int offset = 0, int limit = -1, bool includeChildren = true);
     Q_SCRIPTABLE static QVariantMap getTransfer(const QString &id, bool includeChildren = true);
     Q_SCRIPTABLE static QVariantList searchTransfers(const QString &property, const QVariant &value, int hits = -1,
