@@ -30,8 +30,8 @@ CategorySettingsTab::CategorySettingsTab(QWidget *parent) :
     m_view(new QTreeView(this)),
     m_nameEdit(new QLineEdit(this)),
     m_pathEdit(new QLineEdit(this)),
-    m_pathButton(new QPushButton(QIcon::fromTheme("document-open"), tr("Browse"), this)),
-    m_saveButton(new QPushButton(QIcon::fromTheme("document-save"), tr("Save"), this)),
+    m_pathButton(new QPushButton(QIcon::fromTheme("document-open"), tr("&Browse"), this)),
+    m_saveButton(new QPushButton(QIcon::fromTheme("document-save"), tr("&Save"), this)),
     m_layout(new QFormLayout(this))
 {
     setWindowTitle(tr("Categories"));

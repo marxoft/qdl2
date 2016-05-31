@@ -283,7 +283,7 @@ void AddUrlsDialog::showHeadersTab() {
         m_headerNameEdit = new QLineEdit(m_headersTab);
         m_headerNameEdit->setFocus(Qt::OtherFocusReason);
         m_headerValueEdit = new QLineEdit(m_headersTab);
-        m_headerButton = new QPushButton(QIcon::fromTheme("list-add"), tr("Add"), m_headersTab);
+        m_headerButton = new QPushButton(QIcon::fromTheme("list-add"), tr("&Add"), m_headersTab);
         m_headerButton->setEnabled(false);
         m_headerLayout = new QFormLayout(m_headersTab);
         m_headerLayout->addRow(m_headerView);
@@ -309,7 +309,7 @@ void AddUrlsDialog::showRequestHeaderContextMenu(const QPoint &pos) {
     }
     
     QMenu menu(this);
-    menu.addAction(QIcon::fromTheme("edit-delete"), tr("Remove"));
+    menu.addAction(QIcon::fromTheme("edit-delete"), tr("&Remove"));
     
     if (menu.exec(m_headerView->mapToGlobal(pos))) {
         m_headerModel->remove(m_headerView->currentIndex().row());

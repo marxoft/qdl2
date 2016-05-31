@@ -87,7 +87,7 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     }
 
     QMenu menu(this);
-    menu.addAction(QIcon::fromTheme("edit-delete"), tr("Remove"));
+    menu.addAction(QIcon::fromTheme("edit-delete"), tr("&Remove"));
 
     if (menu.exec(m_view->mapToGlobal(pos))) {
         QModelIndexList rows = m_view->selectionModel()->selectedRows();

@@ -34,8 +34,8 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
     m_pathEdit(new QLineEdit(this)),
     m_commandEdit(new QLineEdit(this)),
     m_passwordEdit(new QLineEdit(this)),
-    m_pathButton(new QPushButton(QIcon::fromTheme("document-open"), tr("Browse"), this)),
-    m_passwordButton(new QPushButton(QIcon::fromTheme("list-add"), tr("Add"), this)),
+    m_pathButton(new QPushButton(QIcon::fromTheme("document-open"), tr("&Browse"), this)),
+    m_passwordButton(new QPushButton(QIcon::fromTheme("list-add"), tr("&Add"), this)),
     m_concurrentSpinBox(new QSpinBox(this)),
     m_commandCheckBox(new QCheckBox(tr("&Enable custom command"), this)),
     m_automaticCheckBox(new QCheckBox(tr("Start downloads &automatically"), this)),
@@ -67,7 +67,7 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
     m_layout->addRow(m_deleteCheckBox);
     m_layout->addRow(new QLabel(tr("Archive passwords:"), this));
     m_layout->addRow(m_passwordView);
-    m_layout->addRow(tr("&Add password:"), m_passwordEdit);
+    m_layout->addRow(tr("Add &password:"), m_passwordEdit);
     m_layout->addWidget(m_passwordButton);
 
     connect(m_passwordEdit, SIGNAL(textChanged(QString)), this, SLOT(onPasswordChanged(QString)));
