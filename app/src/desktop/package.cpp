@@ -341,14 +341,14 @@ bool Package::cancel(bool deleteFiles) {
 
 void Package::restore(const QSettings &settings) {
     setCategory(settings.value("category").toString());
-    setCreateSubfolder(settings.value("createSubfolder").toBool());
+    setCreateSubfolder(settings.value("createSubfolder", false).toBool());
     setErrorString(settings.value("errorString").toString());
     setId(settings.value("id").toString());
     setName(settings.value("name").toString());
-    setPriority(TransferItem::Priority(settings.value("priority").toInt()));
+    setPriority(TransferItem::Priority(settings.value("priority", NormalPriority).toInt()));
     setSuffix(settings.value("suffix").toString());
 
-    const TransferItem::Status status = TransferItem::Status(settings.value("status").toInt());
+    const TransferItem::Status status = TransferItem::Status(settings.value("status", Null).toInt());
 
     switch (status) {
     case Null:
@@ -593,14 +593,26 @@ void Package::cleanup() {
 
 void Package::getCustomCommands() {
     m_commands.clear();
+    const QString defaultCommand = Settings::customCommand();
+    const bool defaultEnabled = (!defaultCommand.isEmpty()) && (Settings::customCommandEnabled());
 
     foreach (TransferItem *child, m_childItems) {
-        QString command = child->data(CustomCommandRole).toString();
+        QString command = child->data(CustomCommandRole).toString();        
 
         if (!command.isEmpty()) {
             const QString workingDirectory = child->data(DownloadPathRole).toString();
             command.replace("%f", child->data(FileNameRole).toString());
-            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2").arg(workingDirectory).arg(command));
+            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
+                               .arg(workingDirectory).arg(command));
+            m_commands << Command(workingDirectory, command);
+        }
+        
+        if ((defaultEnabled) && ((command.isEmpty()) || (!child->data(CustomCommandOverrideEnabledRole).toBool()))) {
+            const QString workingDirectory = child->data(DownloadPathRole).toString();
+            command = defaultCommand;
+            command.replace("%f", child->data(FileNameRole).toString());
+            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
+                               .arg(workingDirectory).arg(command));
             m_commands << Command(workingDirectory, command);
         }
     }
@@ -615,7 +627,11 @@ void Package::executeCustomCommand(const Command &command) {
 
     Logger::log(QString("Package::executeCustomCommand(): Working directory: %1, Command: %2")
                        .arg(command.workingDirectory).arg(command.command));
-    m_process->setWorkingDirectory(command.workingDirectory);
+    
+    if (QDir(command.workingDirectory).exists()) {
+        m_process->setWorkingDirectory(command.workingDirectory);
+    }
+    
     m_process->start(command.command);
 }
 
