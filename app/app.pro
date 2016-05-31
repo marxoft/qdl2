@@ -110,6 +110,7 @@ maemo5 {
         src/maemo5/servicesdialog.h \
         src/maemo5/settings.h \
         src/maemo5/settingsdialog.h \
+        src/maemo5/textinputdialog.h \
         src/maemo5/transferpropertiesdialog.h \
         src/maemo5/urlcheckdialog.h \
         src/maemo5/urlcheckmodel.h \
@@ -141,6 +142,7 @@ maemo5 {
         src/maemo5/servicesdialog.cpp \
         src/maemo5/settings.cpp \
         src/maemo5/settingsdialog.cpp \
+        src/maemo5/textinputdialog.cpp \
         src/maemo5/transferpropertiesdialog.cpp \
         src/maemo5/urlcheckdialog.cpp \
         src/maemo5/urlcheckmodel.cpp \
@@ -175,7 +177,7 @@ maemo5 {
     TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
     TARGET.EPOCSTACKSIZE = 0x14000
     
-    VERSION = 2.0.1
+    VERSION = 2.1.0
     ICON = desktop/symbian/qdl2.svg
     
     MMP_RULES += "DEBUGGABLE_UDEBONLY"
@@ -195,6 +197,7 @@ maemo5 {
         src/symbian/qdl.h \
         src/symbian/screenorientationmodel.h \
         src/symbian/settings.h \
+        src/symbian/transferlistmodel.h \
         src/symbian/urlcheckmodel.h
     
     SOURCES += \
@@ -204,6 +207,7 @@ maemo5 {
         src/symbian/package.cpp \
         src/symbian/qdl.cpp \
         src/symbian/settings.cpp \
+        src/symbian/transferlistmodel.cpp \
         src/symbian/urlcheckmodel.cpp
     
     qml.sources = $$files(src/symbian/qml/*.qml)
