@@ -23,7 +23,7 @@ symbian {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     depfile_deployment.pkg_prerules += vendorinfo
 
-    config.sources = "$TARGET".json
+    config.sources = "$$TARGET".json
     config.path = !:/qdl2/plugins/services
 
     icon.sources = "$$TARGET".jpg
