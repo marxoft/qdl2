@@ -22,6 +22,9 @@ MyPage {
     id: root
     
     property alias text: urlsEdit.text
+    property string requestMethod: "GET"
+    property variant requestHeaders: ({})
+    property string postData
     
     title: qsTr("Add URLs")
     tools: ToolBarLayout {
@@ -33,8 +36,15 @@ MyPage {
             enabled: urlsEdit.text != ""
             onClicked: {
                 var urls = urlsEdit.text.split(/\s+/);
-                urlCheckModel.append(urls);
-                appWindow.pageStack.replace(Qt.resolvedUrl("UrlCheckPage.qml"));
+                
+                if (settings.usePlugins) {
+                    urlCheckModel.append(urls);
+                    appWindow.pageStack.replace(Qt.resolvedUrl("UrlCheckPage.qml"));
+                }
+                else {
+                    transferModel.append(urls, requestMethod, requestHeaders, postData);
+                    appWindow.pageStack.pop();
+                }
             }
         }
     }
@@ -74,6 +84,64 @@ MyPage {
                 value: settings.defaultCategory
                 visible: !inputContext.visible
                 onAccepted: settings.defaultCategory = value
+            }
+            
+            ListItem {
+                x: -platformStyle.paddingLarge
+                width: parent.width + platformStyle.paddingLarge * 2
+                flickableMode: true
+                subItemIndicator: true
+                enabled: settings.usePlugins
+                
+                ListItemText {
+                    anchors.fill: paddingItem
+                    role: "Title"
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: qsTr("Method")
+                }
+                
+                onClicked: {
+                    var page = appWindow.pageStack.push(Qt.resolvedUrl("AddUrlsMethodPage.qml"),
+                    {requestMethod: root.requestMethod, postData: root.postData});
+                    page.accepted.connect(function () {
+                        root.requestMethod = page.requestMethod;
+                        root.postData = page.postData;
+                    });
+                }
+            }
+            
+            ListItem {
+                x: -platformStyle.paddingLarge
+                width: parent.width + platformStyle.paddingLarge * 2
+                flickableMode: true
+                subItemIndicator: true
+                enabled: settings.usePlugins
+                
+                ListItemText {
+                    anchors.fill: paddingItem
+                    role: "Title"
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: qsTr("Headers")
+                }
+                
+                onClicked: {
+                    var page = appWindow.pageStack.push(Qt.resolvedUrl("AddUrlsMethodPage.qml"),
+                    {headers: root.headers});
+                    page.accepted.connect(function () {
+                        root.headers = page.headers;
+                    });
+                }
+            }
+            
+            MyCheckBox {
+                id: pluginCheckBox
+                
+                width: parent.width
+                text: qsTr("Use plugins")
+                checked: settings.usePlugins
+                onCheckedChanged: settings.usePlugins = checked
             }
         }
     }

@@ -55,7 +55,7 @@ void DecaptchaDialog::showContextMenu(const QPoint &pos) {
     action->setCheckable(true);
     action->setChecked(Settings::decaptchaPlugin() == id);
 
-    if (menu.exec(m_view->mapToGlobal(pos))) {
+    if (menu.exec(mapToGlobal(pos))) {
         Settings::setDecaptchaPlugin(action->isChecked() ? id : QString());
     }
 }

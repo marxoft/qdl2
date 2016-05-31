@@ -16,6 +16,7 @@
 
 #include "transferpropertiesdialog.h"
 #include "transferitemprioritymodel.h"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -35,6 +36,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_statusLabel(new QLabel(this)),
     m_prioritySelector(new QComboBox(this)),
     m_commandEdit(new QLineEdit(this)),
+    m_commandOverrideCheckBox(new QCheckBox(tr("&Override global custom command"), this)),
     m_progressBar(new QProgressBar(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, this)),
     m_layout(new QFormLayout(this))
@@ -61,6 +63,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_progressBar->setRange(0, 100);
 
     updateCustomCommand(transfer);
+    updateCustomCommandOverrideEnabled(transfer);
     updateIcon(transfer);
     updateName(transfer);
     updatePluginName(transfer);
@@ -81,6 +84,7 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     m_layout->addRow(m_urlLabel);
     m_layout->addRow(tr("&Priority:"), m_prioritySelector);
     m_layout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
+    m_layout->addRow(m_commandOverrideCheckBox);
     m_layout->addWidget(m_speedLabel);
     m_layout->addRow(m_progressBar);
     m_layout->addRow(m_statusLabel);
@@ -89,12 +93,19 @@ TransferPropertiesDialog::TransferPropertiesDialog(TransferItem *transfer, QWidg
     connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onDataChanged(TransferItem*, int)));
     connect(m_prioritySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(setPriority(int)));
     connect(m_commandEdit, SIGNAL(editingFinished()), this, SLOT(setCustomCommand()));
+    connect(m_commandOverrideCheckBox, SIGNAL(clicked(bool)), this, SLOT(setCustomCommandOverrideEnabled(bool)));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
 void TransferPropertiesDialog::setCustomCommand() {
     if (!m_transfer.isNull()) {
         m_transfer->setData(TransferItem::CustomCommandRole, m_commandEdit->text());
+    }
+}
+
+void TransferPropertiesDialog::setCustomCommandOverrideEnabled(bool enabled) {
+    if (!m_transfer.isNull()) {
+        m_transfer->setData(TransferItem::CustomCommandOverrideEnabledRole, enabled);
     }
 }
 
@@ -106,6 +117,10 @@ void TransferPropertiesDialog::setPriority(int index) {
 
 void TransferPropertiesDialog::updateCustomCommand(TransferItem *transfer) {
     m_commandEdit->setText(transfer->data(TransferItem::CustomCommandRole).toString());
+}
+
+void TransferPropertiesDialog::updateCustomCommandOverrideEnabled(TransferItem *transfer) {
+    m_commandOverrideCheckBox->setChecked(transfer->data(TransferItem::CustomCommandOverrideEnabledRole).toBool());
 }
 
 void TransferPropertiesDialog::updateIcon(TransferItem *transfer) {
@@ -151,6 +166,9 @@ void TransferPropertiesDialog::onDataChanged(TransferItem *transfer, int role) {
         break;
     case TransferItem::CustomCommandRole:
         updateCustomCommand(transfer);
+        break;
+    case TransferItem::CustomCommandOverrideEnabledRole:
+        updateCustomCommandOverrideEnabled(transfer);
         break;
     case TransferItem::FileNameRole:
     case TransferItem::NameRole:

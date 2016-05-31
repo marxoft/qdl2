@@ -51,13 +51,15 @@ private:
     ArchivePasswordModel *m_passwordModel;
     
     QLineEdit *m_pathEdit;
+    QLineEdit *m_commandEdit;
     QLineEdit *m_passwordEdit;
 
     QPushButton *m_pathButton;
     QPushButton *m_passwordButton;
 
     QSpinBox *m_concurrentSpinBox;
-
+    
+    QCheckBox *m_commandCheckBox;
     QCheckBox *m_automaticCheckBox;
     QCheckBox *m_subfoldersCheckBox;
     QCheckBox *m_clipboardCheckBox;

@@ -86,7 +86,7 @@ void CategoriesDialog::showContextMenu(const QPoint &pos) {
     QMenu menu(this);
     menu.addAction(tr("Remove"));
 
-    if (menu.exec(m_view->mapToGlobal(pos))) {
+    if (menu.exec(mapToGlobal(pos))) {
         m_model->remove(m_view->currentIndex().row());
     }
 }

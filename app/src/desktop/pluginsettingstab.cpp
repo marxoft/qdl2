@@ -147,25 +147,25 @@ void PluginSettingsTab::addWidget(QFormLayout *layout, const QVariantMap &settin
 }
 
 void PluginSettingsTab::setBooleanValue(bool value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }
 
 void PluginSettingsTab::setIntegerValue(int value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }
 
 void PluginSettingsTab::setListValue(int value) {
-    if (QComboBox *combobox = qobject_cast<QComboBox*>(sender())) {
+    if (const QComboBox *combobox = qobject_cast<QComboBox*>(sender())) {
         m_settings[combobox->property("key").toString()] = combobox->itemData(value);
     }
 }
 
 void PluginSettingsTab::setTextValue(const QString &value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }

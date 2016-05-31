@@ -162,25 +162,25 @@ void PluginDialog::addWidget(const QVariantMap &setting, const QString &group) {
 }
 
 void PluginDialog::setBooleanValue(bool value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }
 
 void PluginDialog::setIntegerValue(int value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }
 
 void PluginDialog::setListValue(const QVariant &value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }
 
 void PluginDialog::setTextValue(const QString &value) {
-    if (QObject *obj = sender()) {
+    if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
     }
 }

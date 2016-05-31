@@ -24,6 +24,7 @@ class ValueSelector;
 class QCheckBox;
 class QDialogButtonBox;
 class QHBoxLayout;
+class QLineEdit;
 class QMaemo5ValueButton;
 class QPushButton;
 class QScrollArea;
@@ -58,7 +59,10 @@ private:
     QMaemo5ValueButton *m_downloadPathButton;
 
     ValueSelector *m_concurrentSelector;
-
+    
+    QLineEdit *m_commandEdit;
+    
+    QCheckBox *m_commandCheckBox;
     QCheckBox *m_automaticCheckBox;
     QCheckBox *m_subfoldersCheckBox;
     QCheckBox *m_clipboardCheckBox;

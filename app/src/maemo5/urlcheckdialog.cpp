@@ -33,6 +33,7 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     m_layout(new QGridLayout(this))
 {
     setWindowTitle(tr("Check URLs"));
+    setMinimumHeight(360);
 
     m_view->setModel(UrlCheckModel::instance());
     m_view->setSelectionBehavior(QTreeView::SelectRows);

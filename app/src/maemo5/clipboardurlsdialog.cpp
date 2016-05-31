@@ -91,7 +91,7 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     QMenu menu(this);
     menu.addAction(tr("Remove"));
 
-    if (menu.exec(m_view->mapToGlobal(pos))) {
+    if (menu.exec(mapToGlobal(pos))) {
         QModelIndexList rows = m_view->selectionModel()->selectedRows();
         qSort(rows.begin(), rows.end(), rowLessThan);
 

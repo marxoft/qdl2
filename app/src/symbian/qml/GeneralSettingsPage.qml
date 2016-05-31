@@ -30,7 +30,7 @@ MyPage {
         id: flickable
         
         anchors.fill: parent
-        contentHeight: column.height + platformStyle.paddingLarge
+        contentHeight: inputContext.visible ? height : column.height + platformStyle.paddingLarge
         
         Column {
             id: column
@@ -47,8 +47,9 @@ MyPage {
                 width: parent.width
                 title: qsTr("Screen orientation")
                 model: ScreenOrientationModel {}
-                focusItem: flickable
                 value: settings.screenOrientation
+                focusItem: flickable
+                visible: !inputContext.visible
                 onAccepted: settings.screenOrientation = value
             }
             
@@ -67,14 +68,53 @@ MyPage {
                 width: parent.width
                 title: qsTr("Maximum concurrent DLs")
                 model: ConcurrentTransfersModel {}
-                focusItem: flickable
                 value: settings.maximumConcurrentTransfers
+                focusItem: flickable
+                visible: !inputContext.visible
                 onAccepted: settings.maximumConcurrentTransfers = value
             }
             
             Item {
                 width: parent.width
                 height: platformStyle.paddingLarge
+                visible: !inputContext.visible
+            }
+            
+            Label {
+                width: parent.width
+                wrapMode: Text.WordWrap
+                text: qsTr("Custom command (%f for filename)")
+                visible: commandEdit.visible
+            }
+            
+            Item {
+                width: parent.width
+                height: platformStyle.paddingLarge
+                visible: !inputContext.visible
+            }
+            
+            MyTextField {
+                id: commandEdit
+                
+                width: parent.width
+                text: settings.customCommand
+                onTextChanged: settings.customCommand = text
+            }
+            
+            Item {
+                width: parent.width
+                height: platformStyle.paddingLarge
+                visible: !inputContext.visible
+            }
+            
+            MySwitch {
+                id: commandSwitch
+                
+                width: parent.width
+                text: qsTr("Enable custom command")
+                checked: settings.customCommandEnabled
+                visible: !inputContext.visible
+                onCheckedChanged: settings.customCommandEnabled = checked
             }
             
             MySwitch {
@@ -83,12 +123,14 @@ MyPage {
                 width: parent.width
                 text: qsTr("Start DLs automatically")
                 checked: settings.startTransfersAutomatically
+                visible: !inputContext.visible
                 onCheckedChanged: settings.startTransfersAutomatically = checked
             }
             
             Item {
                 width: parent.width
                 height: platformStyle.paddingLarge
+                visible: !inputContext.visible
             }
             
             MySwitch {
@@ -97,6 +139,7 @@ MyPage {
                 width: parent.width
                 text: qsTr("Create subfolders for DLs")
                 checked: settings.createSubfolders
+                visible: !inputContext.visible
                 onCheckedChanged: settings.createSubfolders = checked
             }
         }

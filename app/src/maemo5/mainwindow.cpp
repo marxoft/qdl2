@@ -347,9 +347,15 @@ void MainWindow::showAddUrlsDialog() {
         const QStringList urls = addDialog.urls();
 
         if (!urls.isEmpty()) {
-            UrlCheckDialog checkDialog(this);
-            checkDialog.addUrls(urls);
-            checkDialog.exec();
+            if (addDialog.usePlugins()) {
+                UrlCheckDialog checkDialog(this);
+                checkDialog.addUrls(urls);
+                checkDialog.exec();
+            }
+            else {
+                TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                  addDialog.postData());
+            }
         }
     }
 }
@@ -371,7 +377,7 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
 
 void MainWindow::showImportUrlsDialog() {
     const QString filePath = QFileDialog::getOpenFileName(this, tr("Import URLs"), HOME_PATH, "*.txt");
-
+    
     if (!filePath.isEmpty()) {
         AddUrlsDialog addDialog(this);
         addDialog.importUrls(filePath);
@@ -380,9 +386,15 @@ void MainWindow::showImportUrlsDialog() {
             const QStringList urls = addDialog.urls();
 
             if (!urls.isEmpty()) {
-                UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
-                checkDialog.exec();
+                if (addDialog.usePlugins()) {
+                    UrlCheckDialog checkDialog(this);
+                    checkDialog.addUrls(urls);
+                    checkDialog.exec();
+                }
+                else {
+                    TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                      addDialog.postData());
+                }
             }
         }
     }
@@ -393,6 +405,7 @@ void MainWindow::showRetrieveUrlsDialog() {
 
     if (dialog.exec() == QDialog::Accepted) {
         const QStringList results = dialog.results();
+        dialog.clear();
 
         if (!results.isEmpty()) {
             showAddUrlsDialog(results);
@@ -406,7 +419,8 @@ void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
 
     if (dialog.exec() == QDialog::Accepted) {
         const QStringList results = dialog.results();
-
+        dialog.clear();
+        
         if (!results.isEmpty()) {
             showAddUrlsDialog(results);
         }

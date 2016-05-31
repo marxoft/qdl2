@@ -98,6 +98,7 @@ MyPage {
             
             Label {
                 width: parent.width
+                wrapMode: Text.WordWrap
                 text: qsTr("Custom command (%f for filename)")
                 visible: commandEdit.visible
             }
@@ -106,6 +107,16 @@ MyPage {
                 id: commandEdit
                 
                 width: parent.width
+            }
+            
+            MyCheckBox {
+                id: commandOverrideSwitch
+                
+                width: parent.width
+                wrapMode: Text.WordWrap
+                text: qsTr("Override global custom command")
+                visible: !inputContext.visible
+                onCheckedChanged: transfer.customCommandOverrideEnabled = checked
             }
 
             Label {
@@ -144,6 +155,7 @@ MyPage {
 
         function init() {
             updateCustomCommand();
+            updateCustomCommandOverrideEnabled();
             updateIcon();
             updateName();
             updatePluginName();
@@ -155,6 +167,10 @@ MyPage {
 
         function updateCustomCommand() {
             commandEdit.text = transfer.customCommand;
+        }
+        
+        function updateCustomCommandOverrideEnabled() {
+            commandOverrideSwitch.checked = transfer.customCommandOverrideEnabled;
         }
 
         function updateIcon() {
@@ -199,6 +215,9 @@ MyPage {
                 break;
             case TransferItem.CustomCommandRole:
                 internal.updateCustomCommand();
+                break;
+            case TransferItem.CustomCommandOverrideEnabledRole:
+                internal.updateCustomCommandOverrideEnabled();
                 break;
             case TransferItem.FileNameRole:
             case TransferItem.NameRole:

@@ -29,6 +29,7 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QScrollArea>
 #include <QVBoxLayout>
 
@@ -39,6 +40,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_container(new QWidget(m_scrollArea)),
     m_downloadPathButton(new QMaemo5ValueButton(tr("Default download path"), m_container)),
     m_concurrentSelector(new ValueSelector(tr("Maximum concurrent downloads"), m_container)),
+    m_commandEdit(new QLineEdit(Settings::customCommand(), m_container)),
+    m_commandCheckBox(new QCheckBox(tr("Enable custom command"), m_container)),
     m_automaticCheckBox(new QCheckBox(tr("Start downloads automatically"), m_container)),
     m_subfoldersCheckBox(new QCheckBox(tr("Create subfolders for downloads"), m_container)),
     m_clipboardCheckBox(new QCheckBox(tr("Monitor clipboard for URLs"), m_container)),
@@ -63,6 +66,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_downloadPathButton->setValueText(Settings::downloadPath());
     m_concurrentSelector->setModel(m_concurrentModel);
     m_concurrentSelector->setValue(Settings::maximumConcurrentTransfers());
+    m_commandCheckBox->setChecked(Settings::customCommandEnabled());
     m_automaticCheckBox->setChecked(Settings::startTransfersAutomatically());
     m_subfoldersCheckBox->setChecked(Settings::createSubfolders());
     m_clipboardCheckBox->setChecked(Settings::clipboardMonitorEnabled());
@@ -78,6 +82,9 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_vbox->addWidget(m_automaticCheckBox);
     m_vbox->addWidget(m_subfoldersCheckBox);
     m_vbox->addWidget(m_clipboardCheckBox);
+    m_vbox->addWidget(new QLabel(tr("Custom command (%f for filename)"), m_container));
+    m_vbox->addWidget(m_commandEdit);
+    m_vbox->addWidget(m_commandCheckBox);
     m_vbox->addWidget(new QLabel(QString("<p align='center'; style='color: %1'>%2</p>")
                                         .arg(midColor).arg(tr("Archives")), m_container));
     m_vbox->addWidget(m_extractCheckBox);
@@ -113,9 +120,11 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 void SettingsDialog::accept() {
     Settings::setDownloadPath(m_downloadPathButton->valueText());
     Settings::setMaximumConcurrentTransfers(m_concurrentSelector->currentValue().toInt());
+    Settings::setCustomCommand(m_commandEdit->text());
+    Settings::setCustomCommandEnabled(m_commandCheckBox->isChecked());
     Settings::setStartTransfersAutomatically(m_automaticCheckBox->isChecked());
     Settings::setCreateSubfolders(m_subfoldersCheckBox->isChecked());
-    Settings::setClipboardMonitorEnabled(m_clipboardCheckBox->isChecked());
+    Settings::setClipboardMonitorEnabled(m_clipboardCheckBox->isChecked());    
     Settings::setExtractArchives(m_extractCheckBox->isChecked());
     Settings::setDeleteExtractedArchives(m_deleteCheckBox->isChecked());
     QDialog::accept();

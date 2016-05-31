@@ -342,11 +342,10 @@ Item {
                     currentIndex = Math.min(count - 1, currentIndex + 1);
                 }
                 
-                model: VisualDataModel {
-                    id: dataModel
+                model: TransferListModel {
+                    id: listModel
                     
-                    model: transferModel
-                    rootIndex: transferModel.modelIndex(index, 0)
+                    rootItem: transferModel.get(index, 0)
                     delegate: Item {
                         id: transferItem
                         
@@ -649,35 +648,31 @@ Item {
                                     MenuItem {
                                         text: qsTr("Properties")
                                         onClicked: appWindow.pageStack.push(Qt.resolvedUrl("TransferPropertiesPage.qml"),
-                                                                            {transfer: transferModel.get(dataModel.modelIndex(index))})
+                                                                            {transfer: listModel.get(index)})
                                     }
 
                                     MenuItem {
                                         text: qsTr("Start")
                                         enabled: canStart
-                                        onClicked: transferModel.setData(dataModel.modelIndex(index),
-                                        TransferItem.Queued, "status")
+                                        onClicked: listModel.setData(index, TransferItem.Queued, "status")
                                     }
 
                                     MenuItem {
                                         text: qsTr("Pause")
                                         enabled: canPause
-                                        onClicked: transferModel.setData(dataModel.modelIndex(index),
-                                        TransferItem.Paused, "status")
+                                        onClicked: listModel.setData(index, TransferItem.Paused, "status")
                                     }
 
                                     MenuItem {
                                         text: qsTr("Remove")
                                         enabled: canCancel
-                                        onClicked: transferModel.setData(dataModel.modelIndex(index),
-                                        TransferItem.Canceled, "status")
+                                        onClicked: listModel.setData(index, TransferItem.Canceled, "status")
                                     }
 
                                     MenuItem {
                                         text: qsTr("Remove and delete files")
                                         enabled: canCancel
-                                        onClicked: transferModel.setData(dataModel.modelIndex(index),
-                                        TransferItem.CanceledAndDeleted, "status")
+                                        onClicked: listModel.setData(index, TransferItem.CanceledAndDeleted, "status")
                                     }
                                 }
                             }

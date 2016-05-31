@@ -22,6 +22,7 @@
 #include <QPointer>
 
 class TransferItemPriorityModel;
+class QCheckBox;
 class QComboBox;
 class QDialogButtonBox;
 class QFormLayout;
@@ -38,12 +39,14 @@ public:
 
 private Q_SLOTS:
     void setCustomCommand();
+    void setCustomCommandOverrideEnabled(bool enabled);
     void setPriority(int index);
     
     void onDataChanged(TransferItem *transfer, int role);
 
 private:
     void updateCustomCommand(TransferItem *transfer);
+    void updateCustomCommandOverrideEnabled(TransferItem *transfer);
     void updateIcon(TransferItem *transfer);
     void updateName(TransferItem *transfer);
     void updatePluginName(TransferItem *transfer);
@@ -67,6 +70,8 @@ private:
     QComboBox *m_prioritySelector;
 
     QLineEdit *m_commandEdit;
+    
+    QCheckBox *m_commandOverrideCheckBox;
 
     QProgressBar *m_progressBar;
 

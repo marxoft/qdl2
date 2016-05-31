@@ -32,10 +32,12 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
     SettingsTab(parent),
     m_passwordModel(new ArchivePasswordModel(this)),
     m_pathEdit(new QLineEdit(this)),
+    m_commandEdit(new QLineEdit(this)),
     m_passwordEdit(new QLineEdit(this)),
     m_pathButton(new QPushButton(QIcon::fromTheme("document-open"), tr("Browse"), this)),
     m_passwordButton(new QPushButton(QIcon::fromTheme("list-add"), tr("Add"), this)),
     m_concurrentSpinBox(new QSpinBox(this)),
+    m_commandCheckBox(new QCheckBox(tr("&Enable custom command"), this)),
     m_automaticCheckBox(new QCheckBox(tr("Start downloads &automatically"), this)),
     m_subfoldersCheckBox(new QCheckBox(tr("Create &subfolders for downloads"), this)),
     m_clipboardCheckBox(new QCheckBox(tr("Monitor &clipboard for URLs"), this)),
@@ -56,6 +58,8 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
     m_layout->addRow(tr("Download &path:"), m_pathEdit);
     m_layout->addWidget(m_pathButton);
     m_layout->addRow(tr("&Maximum concurrent downloads:"), m_concurrentSpinBox);
+    m_layout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
+    m_layout->addRow(m_commandCheckBox);
     m_layout->addRow(m_automaticCheckBox);
     m_layout->addRow(m_subfoldersCheckBox);
     m_layout->addRow(m_clipboardCheckBox);
@@ -78,6 +82,8 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
 void GeneralSettingsTab::restore() {
     m_pathEdit->setText(Settings::downloadPath());
     m_concurrentSpinBox->setValue(Settings::maximumConcurrentTransfers());
+    m_commandEdit->setText(Settings::customCommand());
+    m_commandCheckBox->setChecked(Settings::customCommandEnabled());
     m_automaticCheckBox->setChecked(Settings::startTransfersAutomatically());
     m_subfoldersCheckBox->setChecked(Settings::createSubfolders());
     m_clipboardCheckBox->setChecked(Settings::clipboardMonitorEnabled());
@@ -88,6 +94,8 @@ void GeneralSettingsTab::restore() {
 void GeneralSettingsTab::save() {
     Settings::setDownloadPath(m_pathEdit->text());
     Settings::setMaximumConcurrentTransfers(m_concurrentSpinBox->value());
+    Settings::setCustomCommand(m_commandEdit->text());
+    Settings::setCustomCommandEnabled(m_commandCheckBox->isChecked());
     Settings::setStartTransfersAutomatically(m_automaticCheckBox->isChecked());
     Settings::setCreateSubfolders(m_subfoldersCheckBox->isChecked());
     Settings::setClipboardMonitorEnabled(m_clipboardCheckBox->isChecked());
