@@ -17,6 +17,8 @@
 
 #include "googledriveplugin.h"
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
+#include <QNetworkCookieJar>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
@@ -98,11 +100,7 @@ void GoogleDrivePlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
 
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
@@ -148,10 +146,15 @@ void GoogleDrivePlugin::checkUrlIsValid() {
 
 void GoogleDrivePlugin::getDownloadRequest(const QString &url) {
     m_redirects = 0;
-    QNetworkRequest request(QUrl::fromUserInput(url));
-    QNetworkReply *reply = networkAccessManager()->get(request);
-    connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
-    connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
+    
+    if (QSettings(CONFIG_FILE, QSettings::IniFormat).value("useYouTubeFormats", false).toBool()) {
+        QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(QUrl::fromUserInput(url)));
+        connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
+        connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
+    }
+    else {
+        getDownloadPage(url.section("/d/", -1).section('/', 0, 0));
+    }
 }
 
 void GoogleDrivePlugin::followRedirect(const QUrl &url, const char* slot) {
@@ -170,12 +173,8 @@ void GoogleDrivePlugin::checkDownloadRequest() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
+    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
+    
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
             if (redirect.host().isEmpty()) {
@@ -206,37 +205,43 @@ void GoogleDrivePlugin::checkDownloadRequest() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
+    const QString url = reply->url().toString();
     reply->deleteLater();
     
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-
-    if ((response.contains("url_encoded_fmt_stream_map"))
-        && (settings.value("Google Drive/useYouTubeForVideos", false).toBool())) {
+    if (response.contains("url_encoded_fmt_stream_map")) {
         // Treat as YouTube video if possible
         const QString formatMap = response.section("url_encoded_fmt_stream_map\",\"", 1, 1).section("\"]", 0, 0)
                                           .trimmed().replace("\\u0026", "&").replace("\\u003d", "=")
                                           .remove(QRegExp("itag=\\d+"));
         const QMap<QString, QUrl> urlMap = getYouTubeVideoUrlMap(formatMap);
-        const QString format = settings.value("videoFormat", "18").toString();
-
+        const QString format = QSettings(CONFIG_FILE, QSettings::IniFormat).value("videoFormat", "18").toString();
+        
         for (int i = VIDEO_FORMATS.indexOf(format); i < VIDEO_FORMATS.size(); i++) {
-            const QUrl url = urlMap.value(VIDEO_FORMATS.at(i));
-
+            const QUrl &videoUrl = urlMap.value(VIDEO_FORMATS.at(i));
+                
             if (!url.isEmpty()) {
-                emit downloadRequest(QNetworkRequest(url));
+                emit downloadRequest(QNetworkRequest(videoUrl));
                 return;
             }
         }
-        
-        getDownloadPage(QUrl(QString("https://docs.google.com/uc?id=%1&export=download")
-                                    .arg(reply->url().toString().section("/d/", -1).section('/', 0, 0))));
     }
+
+    getDownloadPage(url.section("/d/", -1).section('/', 0, 0));
 }
 
-void GoogleDrivePlugin::getDownloadPage(const QUrl &url) {
+void GoogleDrivePlugin::getDownloadPage(const QString &id) {
     m_redirects = 0;
-    QNetworkRequest request(url);
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    QUrl url("https://docs.google.com/uc");
+#if QT_VERSION >= 0x050000
+    QUrlQuery query(url);
+    query.addQueryItem("id", id);
+    query.addQueryItem("export", "download");
+    url.setQuery(query);
+#else
+    url.addQueryItem("id", id);
+    url.addQueryItem("export", "download");
+#endif
+    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadPage()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -249,12 +254,8 @@ void GoogleDrivePlugin::checkDownloadPage() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
+    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
+    
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
             if (redirect.host().isEmpty()) {
@@ -292,14 +293,30 @@ void GoogleDrivePlugin::checkDownloadPage() {
         emit error(tr("Unknown error"));
     }
     else {
-        QUrl url = reply->request().url();
+        QUrl url = reply->url();
 #if QT_VERSION >= 0x050000
         QUrlQuery query(url);
         query.addQueryItem("confirm", confirm);
         url.setQuery(query);
+        const QString id = query.queryItemValue("id").toUtf8();
 #else
         url.addQueryItem("confirm", confirm);
+        const QString id = url.queryItemValue("id");
 #endif
+        // Set the cookie for the virus warning page. This relies on the QDL application using the same 
+        // QNetworkCookieJar instance for the download request, which is always the case.
+        QList<QNetworkCookie> cookies = networkAccessManager()->cookieJar()->cookiesForUrl(url);
+        QNetworkCookie cookie("download_warning_13058876669334088843_" + id.toUtf8(), confirm.toUtf8());
+        cookie.setDomain("google.com");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        
+        if (!cookies.isEmpty()) {
+            cookie.setExpirationDate(cookies.first().expirationDate());
+        }
+        
+        cookies << cookie;
+        networkAccessManager()->cookieJar()->setCookiesFromUrl(cookies, url);
         emit downloadRequest(QNetworkRequest(url));
     }
 
@@ -308,15 +325,15 @@ void GoogleDrivePlugin::checkDownloadPage() {
 
 QMap<QString, QUrl> GoogleDrivePlugin::getYouTubeVideoUrlMap(const QString &page) {
     QMap<QString, QUrl> urlMap;
-    QStringList parts = page.split(',', QString::SkipEmptyParts);
+    const QStringList parts = page.split(',', QString::SkipEmptyParts);
 
     foreach (QString part, parts) {
         part = unescape(part);
         part.replace(QRegExp("(^|&)sig="), "&signature=");
-        QStringList splitPart = part.split("url=");
+        const QStringList splitPart = part.split("url=");
 
         if (!splitPart.isEmpty()) {
-            QString urlString = splitPart.last();
+            const QString urlString = splitPart.last();
             QStringList params = urlString.mid(urlString.indexOf('?') + 1).split('&', QString::SkipEmptyParts);
             params.removeDuplicates();
 
@@ -324,7 +341,7 @@ QMap<QString, QUrl> GoogleDrivePlugin::getYouTubeVideoUrlMap(const QString &page
 #if QT_VERSION >= 0x050000
             QUrlQuery query;
 
-            foreach (QString param, params) {
+            foreach (const QString &param, params) {
                 query.addQueryItem(param.section('=', 0, 0), param.section('=', -1));
             }
 
@@ -336,7 +353,7 @@ QMap<QString, QUrl> GoogleDrivePlugin::getYouTubeVideoUrlMap(const QString &page
 
             urlMap[query.queryItemValue("itag")] = url;
 #else
-            foreach (QString param, params) {
+            foreach (const QString &param, params) {
                 url.addQueryItem(param.section('=', 0, 0), param.section('=', -1));
             }
 

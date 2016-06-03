@@ -59,8 +59,8 @@ private:
 
     void followRedirect(const QUrl &url, const char* slot);
 
-    void getDownloadPage(const QUrl &url);
-    
+    void getDownloadPage(const QString &id);
+        
     static QMap<QString, QUrl> getYouTubeVideoUrlMap(const QString &page);
     
     static QString unescape(const QString &s);
