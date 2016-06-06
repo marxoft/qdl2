@@ -16,6 +16,7 @@
 
 #include "xmlhttprequest.h"
 #include "definitions.h"
+#include "logger.h"
 #include <QBuffer>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -35,6 +36,8 @@ int XMLHttpRequest::readyState() const {
 }
 
 void XMLHttpRequest::setReadyState(int state) {
+    Logger::log("XMLHttpRequest::setReadyState(): readyState: " + QString::number(state));
+    
     if (state != readyState()) {
         m_readyState = state;
         m_onReadyStateChange.call(QScriptValue());
@@ -101,6 +104,9 @@ QString XMLHttpRequest::getAllResponseHeaders() const {
 }
 
 void XMLHttpRequest::open(const QString &method, const QString &url, const QString &username, const QString &password) {
+    Logger::log(QString("XMLHttpRequest::open(). Method: %1, URL: %2, Username: %3, Password: %4")
+                       .arg(method).arg(url).arg(username).arg(password));
+    
     switch (readyState()) {
     case OPENED:
     case HEADERS_RECEIVED:
@@ -122,6 +128,8 @@ void XMLHttpRequest::open(const QString &method, const QString &url, const QStri
 }
 
 void XMLHttpRequest::send(const QString &body) {
+    Logger::log("XMLHttpRequest::send(): Body: " + body);
+    
     switch (readyState()) {
     case HEADERS_RECEIVED:
     case LOADING:
@@ -142,12 +150,16 @@ void XMLHttpRequest::send(const QString &body) {
 }
 
 void XMLHttpRequest::abort() {
+    Logger::log("XMLHttpRequest::abort()");
+    
     if ((m_reply) && (m_reply->isRunning())) {
         m_reply->abort();
     }
 }
 
 void XMLHttpRequest::followRedirect(const QUrl &url) {
+    Logger::log("XMLHttpRequest::followRedirect(): URL: " + url.toString());
+    reset();
     m_redirects++;
     m_reply = m_nam->get(QNetworkRequest(url));
     setReadyState(OPENED);
@@ -183,19 +195,31 @@ void XMLHttpRequest::onReplyReadyRead() {
 }
 
 void XMLHttpRequest::onReplyFinished() {
-    QVariant redirect = m_reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-
-    if (redirect.isNull()) {
-        redirect = m_reply->header(QNetworkRequest::LocationHeader);
-
-        if (!redirect.isNull()) {
-            if (m_redirects < MAX_REDIRECTS) {
-                followRedirect(redirect.toUrl());
-                m_reply->deleteLater();
-                m_reply = 0;
-                return;
+    const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
+    
+    if (!redirect.isEmpty()) {
+        Logger::log("XMLHttpRequest::onReplyFinished(): Redirect: " + redirect);
+        
+        if (m_redirects < MAX_REDIRECTS) {
+            QUrl url(redirect);
+            
+            if (url.scheme().isEmpty()) {
+                url.setScheme(m_reply->url().scheme());
             }
+            
+            if (url.authority().isEmpty()) {
+                url.setAuthority(m_reply->url().authority());
+            }
+            
+            m_reply->deleteLater();
+            m_reply = 0;
+            followRedirect(url);
+            return;
         }
+    }
+    
+    if (m_reply->bytesAvailable() > 0) {
+        m_response += m_reply->readAll();
     }
     
     setStatus(m_reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());

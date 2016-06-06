@@ -134,15 +134,19 @@ void UrlRetriever::followRedirect(const QUrl &url) {
 void UrlRetriever::onReplyFinished() {
     const QNetworkReply::NetworkError error = m_reply->error();
     const QString errorString = m_reply->errorString();
-    const QVariant redirect = m_reply->header(QNetworkRequest::LocationHeader);
-    const QString baseUrl = QString("%1://%2").arg(m_reply->url().scheme()).arg(m_reply->url().host());
+    QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
+    const QString baseUrl = QString("%1://%2").arg(m_reply->url().scheme()).arg(m_reply->url().authority());
     const QString response = QString::fromUtf8(m_reply->readAll());
     m_reply->deleteLater();
     m_reply = 0;
 
-    if (!redirect.isNull()) {
+    if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect.toUrl());
+            if (redirect.startsWith("/")) {
+                redirect.prepend(baseUrl);
+            }
+            
+            followRedirect(redirect);
         }
         else {
             setErrorString(tr("Maximum redirects reached"));

@@ -1551,15 +1551,15 @@ void Transfer::onReplyReadyRead() {
 
 void Transfer::onReplyFinished() {
     setSpeed(0);
-    const QVariant redirect = m_reply->header(QNetworkRequest::LocationHeader);
+    const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
 
-    if (!redirect.isNull()) {
+    if (!redirect.isEmpty()) {
 	m_file->close();
         m_reply->deleteLater();
         m_reply = 0;
         
         if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect.toUrl());
+            followRedirect(redirect);
         }
         else {
             setErrorString(tr("Maximum redirects reached"));
