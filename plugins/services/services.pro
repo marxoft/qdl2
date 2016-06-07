@@ -10,6 +10,7 @@ SUBDIRS = \
     imageupper \
     imgbox \
     keeptoshare \
+    mediafire \
     onefichier \
     pornhub \
     publishtome \

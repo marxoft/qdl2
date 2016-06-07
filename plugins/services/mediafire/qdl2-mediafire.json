@@ -1,0 +1,7 @@
+{
+    "type": "js",
+    "name": "MediaFire",
+    "icon": "qdl2-mediafire.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)mediafire\\.com/(\\?|folder/|download/)\\w+"
+}
