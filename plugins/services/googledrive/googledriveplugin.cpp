@@ -16,6 +16,7 @@
  */
 
 #include "googledriveplugin.h"
+#include <QDateTime>
 #include <QNetworkAccessManager>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
