@@ -1,3 +1,9 @@
+qdl (2.1.1) unstable; urgency=low
+
+  * Enable sharing of QNetworkAccessManager instances for JavaScript plugins.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 07 Jun 2016 19:43:17 +0000
+
 qdl (2.1.0) unstable; urgency=low
 
   * Add option to customise downloads.
