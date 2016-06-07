@@ -8,7 +8,7 @@ Homepage: http://marxoft.co.uk/projects/qdl
 
 Package: qdl-plugins-deathbycaptcha
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, qdl (>= 2.0.0)
+Depends: ${shlibs:Depends}, ${misc:Depends}, qdl (>= 2.1.1)
 Description: DeathByCaptcha plugin for the QDL download manager.
  This plugin provides access to the captcha-solving service DeathByCaptcha. 
  A DeathByCaptcha account is required to use the service.

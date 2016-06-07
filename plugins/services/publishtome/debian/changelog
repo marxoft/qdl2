@@ -1,3 +1,10 @@
+qdl-plugins-publishtome (0.0.2) unstable; urgency=low
+
+  * Remove unneeded properties from the JSON declaration.
+  * Update recaptcha plugin id.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 07 Jun 2016 19:35:16 +0000
+
 qdl-plugins-publishtome (0.0.1) unstable; urgency=low
 
   * Inital release.

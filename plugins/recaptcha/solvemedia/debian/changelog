@@ -1,3 +1,9 @@
+qdl-plugins-solvemediarecaptcha (0.2.1) unstable; urgency=low
+
+  * Remove unneeded properties from the JSON declaration.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 07 Jun 2016 17:53:24 +0000
+
 qdl-plugins-solvemediarecaptcha (0.2.0) unstable; urgency=low
 
   * Changes to plugin API.

@@ -8,7 +8,7 @@ Homepage: http://marxoft.co.uk/projects/qdl
 
 Package: qdl-plugins-solvemediarecaptcha
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, qdl (>= 2.0.0)
+Depends: ${shlibs:Depends}, ${misc:Depends}, qdl (>= 2.1.1)
 Description: SolveMedia recaptcha plugin for the QDL download manager.
  This plugin provides access to the SolveMedia recaptcha service. 
  You should not normally need to install this plugin manually.
