@@ -110,6 +110,7 @@ QString TransferItem::statusString(TransferItem::Status status) {
     case Paused:
         return tr("Paused");
     case Canceled:
+    case CanceledAndDeleted:
         return tr("Canceled");
     case Failed:
         return tr("Failed");
