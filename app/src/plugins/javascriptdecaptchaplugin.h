@@ -40,6 +40,8 @@ public:
     QString id() const;
 
     virtual DecaptchaPlugin* createPlugin(QObject *parent = 0);
+    
+    virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
@@ -55,7 +57,9 @@ private Q_SLOTS:
 private:
     void initEngine();
     
+    JavaScriptPluginGlobalObject *m_global;
     QScriptEngine *m_engine;
+    QPointer<QNetworkAccessManager> m_nam;
 
     QString m_fileName;
     QString m_id;

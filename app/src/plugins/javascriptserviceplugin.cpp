@@ -18,13 +18,16 @@
 #include "logger.h"
 #include "pluginsettings.h"
 #include <QFile>
+#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QScriptEngine>
 #include <QUrl>
 
 JavaScriptServicePlugin::JavaScriptServicePlugin(const QString &id, const QString &fileName, QObject *parent) :
     ServicePlugin(parent),
+    m_global(0),
     m_engine(0),
+    m_nam(0),
     m_fileName(fileName),
     m_id(id),
     m_evaluated(false)
@@ -41,6 +44,16 @@ QString JavaScriptServicePlugin::id() const {
 
 ServicePlugin* JavaScriptServicePlugin::createPlugin(QObject *parent) {
     return new JavaScriptServicePlugin(id(), fileName(), parent);
+}
+
+void JavaScriptServicePlugin::setNetworkAccessManager(QNetworkAccessManager *manager) {
+    if (manager) {
+        m_nam = manager;
+        
+        if (m_global) {
+            m_global->setNetworkAccessManager(manager);
+        }
+    }
 }
 
 void JavaScriptServicePlugin::initEngine() {
@@ -66,18 +79,22 @@ void JavaScriptServicePlugin::initEngine() {
         
         Logger::log("JavaScriptServicePlugin::initEngine(): JavaScript file evaluated OK");
         m_evaluated = true;
+        m_global = new JavaScriptServicePluginGlobalObject(m_engine);
         
-        JavaScriptServicePluginGlobalObject *global = new JavaScriptServicePluginGlobalObject(m_engine);
-        connect(global, SIGNAL(captchaRequest(QString, QString, QScriptValue)),
+        if (m_nam) {
+            m_global->setNetworkAccessManager(m_nam);
+        }
+        
+        connect(m_global, SIGNAL(captchaRequest(QString, QString, QScriptValue)),
                 this, SLOT(onCaptchaRequest(QString, QString, QScriptValue)));
-        connect(global, SIGNAL(downloadRequest(QVariantMap, QString, QString)),
+        connect(m_global, SIGNAL(downloadRequest(QVariantMap, QString, QString)),
                 this, SLOT(onDownloadRequest(QVariantMap, QString, QString)));
-        connect(global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
+        connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+        connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
-        connect(global, SIGNAL(urlChecked(QVariantMap)), this, SLOT(onUrlChecked(QVariantMap)));
-        connect(global, SIGNAL(urlChecked(QVariantList, QString)), this, SLOT(onUrlChecked(QVariantList, QString)));
-        connect(global, SIGNAL(waitRequest(int, bool)), this, SIGNAL(waitRequest(int, bool)));
+        connect(m_global, SIGNAL(urlChecked(QVariantMap)), this, SLOT(onUrlChecked(QVariantMap)));
+        connect(m_global, SIGNAL(urlChecked(QVariantList, QString)), this, SLOT(onUrlChecked(QVariantList, QString)));
+        connect(m_global, SIGNAL(waitRequest(int, bool)), this, SIGNAL(waitRequest(int, bool)));
         
         m_engine->installTranslatorFunctions();
         m_engine->globalObject().setProperty("settings", m_engine->newQObject(new PluginSettings(id(), m_engine)));

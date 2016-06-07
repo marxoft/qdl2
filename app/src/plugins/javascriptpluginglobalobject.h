@@ -21,12 +21,16 @@
 #include <QPointer>
 #include <QScriptEngine>
 
+class QNetworkAccessManager;
+
 class JavaScriptPluginGlobalObject : public QObject
 {
     Q_OBJECT
 
 public:
     explicit JavaScriptPluginGlobalObject(QScriptEngine *engine);
+    
+    void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     QString atob(const QString &ascii) const;
@@ -42,9 +46,15 @@ protected:
     QPointer<QScriptEngine> m_engine;
 
 private:
-    bool callFunction(QScriptValue function) const;
+    static QScriptValue newXMLHttpRequest(QScriptContext *context, QScriptEngine *engine);
     
+    QNetworkAccessManager* networkAccessManager();
+        
+    bool callFunction(QScriptValue function) const;
+        
     virtual void timerEvent(QTimerEvent *event);
+    
+    QPointer<QNetworkAccessManager> m_nam;
     
     QHash<int, QScriptValue> m_intervals;
     QHash<int, QScriptValue> m_timeouts;

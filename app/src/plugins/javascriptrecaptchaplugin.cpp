@@ -19,11 +19,14 @@
 #include "pluginsettings.h"
 #include <QFile>
 #include <QImage>
+#include <QNetworkAccessManager>
 #include <QScriptEngine>
 
 JavaScriptRecaptchaPlugin::JavaScriptRecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent) :
     RecaptchaPlugin(parent),
+    m_global(0),
     m_engine(0),
+    m_nam(0),
     m_fileName(fileName),
     m_id(id),
     m_evaluated(false)
@@ -40,6 +43,16 @@ QString JavaScriptRecaptchaPlugin::id() const {
 
 RecaptchaPlugin* JavaScriptRecaptchaPlugin::createPlugin(QObject *parent) {
     return new JavaScriptRecaptchaPlugin(id(), fileName(), parent);
+}
+
+void JavaScriptRecaptchaPlugin::setNetworkAccessManager(QNetworkAccessManager *manager) {
+    if (manager) {
+        m_nam = manager;
+        
+        if (m_global) {
+            m_global->setNetworkAccessManager(manager);
+        }
+    }
 }
 
 void JavaScriptRecaptchaPlugin::initEngine() {
@@ -65,11 +78,15 @@ void JavaScriptRecaptchaPlugin::initEngine() {
         
         Logger::log("JavaScriptRecaptchaPlugin::initEngine(): JavaScript file evaluated OK");
         m_evaluated = true;
-
-        JavaScriptRecaptchaPluginGlobalObject *global = new JavaScriptRecaptchaPluginGlobalObject(m_engine);
-        connect(global, SIGNAL(captcha(QString, QString)), this, SLOT(onCaptcha(QString, QString)));
-        connect(global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
+        m_global = new JavaScriptRecaptchaPluginGlobalObject(m_engine);
+        
+        if (m_nam) {
+            m_global->setNetworkAccessManager(m_nam);
+        }
+        
+        connect(m_global, SIGNAL(captcha(QString, QString)), this, SLOT(onCaptcha(QString, QString)));
+        connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+        connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
 
         m_engine->installTranslatorFunctions();

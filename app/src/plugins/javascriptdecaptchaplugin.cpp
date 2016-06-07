@@ -20,11 +20,14 @@
 #include <QBuffer>
 #include <QFile>
 #include <QImage>
+#include <QNetworkAccessManager>
 #include <QScriptEngine>
 
 JavaScriptDecaptchaPlugin::JavaScriptDecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent) :
     DecaptchaPlugin(parent),
+    m_global(0),
     m_engine(0),
+    m_nam(0),
     m_fileName(fileName),
     m_id(id),
     m_evaluated(false)
@@ -41,6 +44,16 @@ QString JavaScriptDecaptchaPlugin::id() const {
 
 DecaptchaPlugin* JavaScriptDecaptchaPlugin::createPlugin(QObject *parent) {
     return new JavaScriptDecaptchaPlugin(id(), fileName(), parent);
+}
+
+void JavaScriptDecaptchaPlugin::setNetworkAccessManager(QNetworkAccessManager *manager) {
+    if (manager) {
+        m_nam = manager;
+        
+        if (m_global) {
+            m_global->setNetworkAccessManager(manager);
+        }
+    }
 }
 
 void JavaScriptDecaptchaPlugin::initEngine() {
@@ -66,12 +79,16 @@ void JavaScriptDecaptchaPlugin::initEngine() {
         
         Logger::log("JavaScriptDecaptchaPlugin::initEngine(): JavaScript file evaluated OK");
         m_evaluated = true;
-
-        JavaScriptDecaptchaPluginGlobalObject *global = new JavaScriptDecaptchaPluginGlobalObject(m_engine);
-        connect(global, SIGNAL(captchaResponse(QString, QString)), this, SIGNAL(captchaResponse(QString, QString)));
-        connect(global, SIGNAL(captchaResponseReported(QString)), this, SIGNAL(captchaResponseReported(QString)));
-        connect(global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
+        m_global = new JavaScriptDecaptchaPluginGlobalObject(m_engine);
+        
+        if (m_nam) {
+            m_global->setNetworkAccessManager(m_nam);
+        }
+        
+        connect(m_global, SIGNAL(captchaResponse(QString, QString)), this, SIGNAL(captchaResponse(QString, QString)));
+        connect(m_global, SIGNAL(captchaResponseReported(QString)), this, SIGNAL(captchaResponseReported(QString)));
+        connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
+        connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
 
         m_engine->installTranslatorFunctions();

@@ -93,11 +93,7 @@ DecaptchaPlugin* DecaptchaPluginManager::createPluginById(const QString &id, QOb
 }
 
 QNetworkAccessManager* DecaptchaPluginManager::networkAccessManager() {
-    if (!m_nam) {
-        m_nam = new QNetworkAccessManager(this);
-    }
-
-    return m_nam;
+    return m_nam ? m_nam :  m_nam = new QNetworkAccessManager(this);
 }
 
 int DecaptchaPluginManager::load() {
@@ -120,6 +116,7 @@ int DecaptchaPluginManager::load() {
                         if (config->pluginType() == "js") {
                             JavaScriptDecaptchaPlugin *js =
                             new JavaScriptDecaptchaPlugin(config->id(), config->pluginFilePath(), this);
+                            js->setNetworkAccessManager(networkAccessManager());
                             m_plugins << DecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("DecaptchaPluginManager::load(). JavaScript plugin loaded: "

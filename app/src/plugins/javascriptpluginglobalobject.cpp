@@ -17,16 +17,14 @@
 #include "javascriptpluginglobalobject.h"
 #include "logger.h"
 #include "xmlhttprequest.h"
+#include <QNetworkAccessManager>
 #include <QScriptValueIterator>
 #include <QTimerEvent>
 
-static QScriptValue newXMLHttpRequest(QScriptContext *context, QScriptEngine *engine) {
-    return engine->newQObject(new XMLHttpRequest(context->argument(0).toQObject()), QScriptEngine::ScriptOwnership);
-}
-
 JavaScriptPluginGlobalObject::JavaScriptPluginGlobalObject(QScriptEngine *engine) :
     QObject(engine),
-    m_engine(engine)
+    m_engine(engine),
+    m_nam(0)
 {
     QScriptValue oldGlobal = engine->globalObject();
     QScriptValue thisGlobal = engine->newQObject(this, QScriptEngine::QtOwnership,
@@ -44,6 +42,30 @@ JavaScriptPluginGlobalObject::JavaScriptPluginGlobalObject(QScriptEngine *engine
     }
 
     engine->setGlobalObject(thisGlobal);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newXMLHttpRequest(QScriptContext *context, QScriptEngine *engine) {
+    XMLHttpRequest *request;
+    
+    if (JavaScriptPluginGlobalObject *obj =
+        qobject_cast<JavaScriptPluginGlobalObject*>(engine->globalObject().toQObject())) {
+        request = new XMLHttpRequest(obj->networkAccessManager(), context->argument(0).toQObject());
+    }
+    else {
+        request = new XMLHttpRequest(context->argument(0).toQObject());
+    }
+    
+    return engine->newQObject(request, QScriptEngine::ScriptOwnership);
+}
+
+QNetworkAccessManager* JavaScriptPluginGlobalObject::networkAccessManager() {
+    return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
+}
+
+void JavaScriptPluginGlobalObject::setNetworkAccessManager(QNetworkAccessManager *manager) {
+    if (manager) {
+        m_nam = manager;
+    }
 }
 
 QString JavaScriptPluginGlobalObject::atob(const QString &ascii) const {

@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QNetworkRequest>
+#include <QPointer>
 #include <QScriptValue>
 
 class QNetworkAccessManager;
@@ -47,6 +48,7 @@ public:
     };
     
     explicit XMLHttpRequest(QObject *parent = 0);
+    explicit XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent = 0);
 
     int readyState() const;
 
@@ -58,7 +60,7 @@ public:
 
     QScriptValue onReadyStateChange() const;
     void setOnReadyStateChange(const QScriptValue &function);
-
+    
 public Q_SLOTS:
     void setRequestHeader(const QString &name, const QString &value);
 
@@ -76,6 +78,8 @@ private Q_SLOTS:
     void onReplyFinished();
 
 private:
+    QNetworkAccessManager* networkAccessManager();
+    
     void setReadyState(int state);
     
     void setStatus(int s);
@@ -85,7 +89,7 @@ private:
 
     void reset();
     
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
     QNetworkReply *m_reply;
 
     QNetworkRequest m_request;

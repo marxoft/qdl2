@@ -23,12 +23,26 @@
 
 XMLHttpRequest::XMLHttpRequest(QObject *parent) :
     QObject(parent),
-    m_nam(new QNetworkAccessManager(this)),
+    m_nam(0),
     m_reply(0),
     m_readyState(UNSENT),
     m_status(0),
     m_redirects(0)
 {
+}
+
+XMLHttpRequest::XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent) :
+    QObject(parent),
+    m_nam(manager),
+    m_reply(0),
+    m_readyState(UNSENT),
+    m_status(0),
+    m_redirects(0)
+{
+}
+
+QNetworkAccessManager* XMLHttpRequest::networkAccessManager() {
+    return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
 }
 
 int XMLHttpRequest::readyState() const {
@@ -142,7 +156,7 @@ void XMLHttpRequest::send(const QString &body) {
     QBuffer *buffer = new QBuffer;
     buffer->setData(body.toUtf8());
     buffer->open(QBuffer::ReadOnly);
-    m_reply = m_nam->sendCustomRequest(m_request, m_method, buffer);
+    m_reply = networkAccessManager()->sendCustomRequest(m_request, m_method, buffer);
     buffer->setParent(m_reply);
     connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
@@ -159,9 +173,9 @@ void XMLHttpRequest::abort() {
 
 void XMLHttpRequest::followRedirect(const QUrl &url) {
     Logger::log("XMLHttpRequest::followRedirect(): URL: " + url.toString());
-    reset();
     m_redirects++;
-    m_reply = m_nam->get(QNetworkRequest(url));
+    m_response = QByteArray();
+    m_reply = networkAccessManager()->get(QNetworkRequest(url));
     setReadyState(OPENED);
     connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
@@ -172,6 +186,7 @@ void XMLHttpRequest::reset() {
     setReadyState(UNSENT);
     setStatus(0);
     setStatusText(QString());
+    m_request = QNetworkRequest();
     m_response = QByteArray();
     m_responseHeaders.clear();
 }

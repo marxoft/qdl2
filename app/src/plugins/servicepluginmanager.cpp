@@ -133,11 +133,7 @@ bool ServicePluginManager::urlIsSupported(const QString &url) const {
 }
 
 QNetworkAccessManager* ServicePluginManager::networkAccessManager() {
-    if (!m_nam) {
-        m_nam = new QNetworkAccessManager(this);
-    }
-
-    return m_nam;
+    return m_nam ? m_nam :  m_nam = new QNetworkAccessManager(this);
 }
 
 int ServicePluginManager::load() {
@@ -160,6 +156,7 @@ int ServicePluginManager::load() {
                         if (config->pluginType() == "js") {
                             JavaScriptServicePlugin *js =
                             new JavaScriptServicePlugin(config->id(), config->pluginFilePath(), this);
+                            js->setNetworkAccessManager(networkAccessManager());
                             m_plugins << ServicePluginPair(config, js);
                             ++count;
                             Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id());

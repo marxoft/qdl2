@@ -93,11 +93,7 @@ RecaptchaPlugin* RecaptchaPluginManager::createPluginById(const QString &id, QOb
 }
 
 QNetworkAccessManager* RecaptchaPluginManager::networkAccessManager() {
-    if (!m_nam) {
-        m_nam = new QNetworkAccessManager(this);
-    }
-
-    return m_nam;
+    return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
 }
 
 int RecaptchaPluginManager::load() {
@@ -120,6 +116,7 @@ int RecaptchaPluginManager::load() {
                         if (config->pluginType() == "js") {
                             JavaScriptRecaptchaPlugin *js =
                             new JavaScriptRecaptchaPlugin(config->id(), config->pluginFilePath(), this);
+                            js->setNetworkAccessManager(networkAccessManager());
                             m_plugins << RecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("RecaptchaPluginManager::load(). JavaScript plugin loaded: "
