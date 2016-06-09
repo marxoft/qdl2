@@ -35,7 +35,7 @@
 #include <QSettings>
 #include <QTimer>
 
-static QRegExp CONTENT_DISPOSITION_REGEXP("(=\")(.+)(\";)");
+static QRegExp CONTENT_DISPOSITION_REGEXP("(=\")([^\"]+)(\";)");
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
