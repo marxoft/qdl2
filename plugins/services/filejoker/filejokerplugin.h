@@ -80,6 +80,7 @@ private:
     void stopWaitTimer();
 
     static QRegExp FILE_REGEXP;
+    static QRegExp WAIT_REGEXP;
     static QString LOGIN_URL;
     static QString RECAPTCHA_PLUGIN_ID;
     static QString CONFIG_FILE;

@@ -30,6 +30,7 @@
 #endif
 
 QRegExp FileJokerPlugin::FILE_REGEXP("http(s|)://fs\\d+\\.filejoker\\.net/\\w+/[^'\"]+");
+QRegExp FileJokerPlugin::WAIT_REGEXP("wait (\\d+|)( hour | hours | )(\\d+|)( minute | minutes | )(\\d+|)( second | seconds | )until the next download");
 QString FileJokerPlugin::LOGIN_URL("https://filejoker.net/login");
 QString FileJokerPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
@@ -323,33 +324,22 @@ void FileJokerPlugin::checkWaitTime() {
     if (FILE_REGEXP.indexIn(response) != -1) {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
+    else if (WAIT_REGEXP.indexIn(response) != -1) {
+        const int hours = qMax(0, WAIT_REGEXP.cap(1).toInt());
+        const int mins = qMax(0, WAIT_REGEXP.cap(3).toInt());
+        const int secs = qMax(1, WAIT_REGEXP.cap(5).toInt());
+        emit waitRequest((hours * 3600000) + (mins * 60000) + (secs * 1000), true);
+    }
     else {
-        int mins = 0;
-        int secs = 0;
+        const int secs = response.section("alert-success\">", 1, 1).section('<', 0, 0).toInt();
+        m_rand = response.section("rand\" value=\"", 1, 1).section('"', 0, 0);
+        m_recaptchaKey = response.section("google.com/recaptcha/api/challenge?k=", 1, 1).section('"', 0, 0);
         
-        if (response.contains("You have to wait")) {
-            mins = qMax(1, response.section("You have to wait ", 1, 1).section(" minutes", 0, 0).toInt());
-            secs = qMax(1, response.section(" seconds till next download", 0, 0).section(' ', 1, 1).toInt());
-            emit waitRequest((mins * 60000) + (secs * 1000), true);
-        }
-        else if ((response.contains("file is available for Premium users only"))
-                 || (response.contains("You can download files up to"))) {
-            emit error(tr("Premium account required"));
-        }
-        else if (response.contains("reached the download limit for unregistered users")) {
-            emit waitRequest(600000, true);
+        if ((secs <= 0) || (m_rand.isEmpty()) || (m_recaptchaKey.isEmpty())) {
+            emit error(tr("Unknown error"));
         }
         else {
-            secs = response.section(QRegExp("alert-success\">"), 1, 1).section('<', 0, 0).toInt();
-            m_rand = response.section("rand\" value=\"", 1, 1).section('"', 0, 0);
-            m_recaptchaKey = response.section("google.com/recaptcha/api/challenge?k=", 1, 1).section('"', 0, 0);
-            
-            if ((secs <= 0) || (m_rand.isEmpty()) || (m_recaptchaKey.isEmpty())) {
-                emit error(tr("Unknown error"));
-            }
-            else {
-                startWaitTimer(secs * 1000, SLOT(sendCaptchaRequest()));
-            }
+            startWaitTimer(secs * 1000, SLOT(sendCaptchaRequest()));
         }
     }
 
