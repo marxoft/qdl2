@@ -106,8 +106,8 @@ void ArchiveExtractor::extract(const QString &password) {
             m_process = new QProcess(this);
             connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
                     this, SLOT(onProcessFinished(int, QProcess::ExitStatus)));
-            connect(m_process, SIGNAL(finished(QProcess::ProcessError)),
-                    this, SLOT(onProcessError(int, QProcess::ProcessError)));
+            connect(m_process, SIGNAL(error(QProcess::ProcessError)),
+                    this, SLOT(onProcessError(QProcess::ProcessError)));
         }
 
         if (m_process->state() != QProcess::Running) {
