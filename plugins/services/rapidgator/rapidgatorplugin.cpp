@@ -58,6 +58,16 @@ RapidGatorPlugin::RapidGatorPlugin(QObject *parent) :
 {
 }
 
+QString RapidGatorPlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* RapidGatorPlugin::createPlugin(QObject *parent) {
     return new RapidGatorPlugin(parent);
 }
@@ -109,14 +119,14 @@ void RapidGatorPlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit urlChecked(UrlResult(reply->request().url().toString(),
+                            redirect.mid(redirect.lastIndexOf("/") + 1)));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -222,11 +232,7 @@ void RapidGatorPlugin::checkDownloadRequest() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -312,11 +318,7 @@ void RapidGatorPlugin::checkSessionId() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -392,11 +394,7 @@ void RapidGatorPlugin::checkDownloadLink() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -463,11 +461,7 @@ void RapidGatorPlugin::checkCaptcha() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -553,22 +547,8 @@ void RapidGatorPlugin::checkLogin() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
-    reply->deleteLater();
-
-    if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect, SLOT(checkLogin()));
-            return;
-        }
-    }
-
     fetchDownloadRequest(m_url);
+    reply->deleteLater();
 }
 
 void RapidGatorPlugin::startWaitTimer(int msecs, const char* slot) {

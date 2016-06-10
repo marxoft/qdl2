@@ -22,6 +22,8 @@
 #include <QRegExp>
 #include <QUrl>
 
+class QNetworkReply;
+
 class OneFichierPlugin : public ServicePlugin
 {
     Q_OBJECT
@@ -57,6 +59,8 @@ Q_SIGNALS:
     void currentOperationCanceled();
 
 private:
+    static QString getRedirect(const QNetworkReply *reply);
+    
     QNetworkAccessManager* networkAccessManager();
 
     void fetchDownloadRequest(const QUrl &url);

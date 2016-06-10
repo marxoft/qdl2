@@ -50,6 +50,16 @@ FilespacePlugin::FilespacePlugin(QObject *parent) :
 {
 }
 
+QString FilespacePlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* FilespacePlugin::createPlugin(QObject *parent) {
     return new FilespacePlugin(parent);
 }
@@ -101,14 +111,14 @@ void FilespacePlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit urlChecked(UrlResult(reply->request().url().toString(),
+                            redirect.mid(redirect.lastIndexOf("/") + 1)));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -214,11 +224,7 @@ void FilespacePlugin::checkDownloadRequest() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -289,11 +295,7 @@ void FilespacePlugin::checkWaitTime() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -386,11 +388,7 @@ void FilespacePlugin::checkCaptcha() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
@@ -422,8 +420,7 @@ void FilespacePlugin::checkCaptcha() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
-        emit downloadRequest(QNetworkRequest(url));
+        emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else if (response.contains("wrong answer")) {
         emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
@@ -482,22 +479,8 @@ void FilespacePlugin::checkLogin() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
-    reply->deleteLater();
-
-    if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect, SLOT(checkLogin()));
-            return;
-        }
-    }
-
     fetchDownloadRequest(m_url);
+    reply->deleteLater();
 }
 
 void FilespacePlugin::startWaitTimer(int msecs, const char* slot) {

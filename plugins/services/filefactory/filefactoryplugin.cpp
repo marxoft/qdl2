@@ -54,6 +54,16 @@ FileFactoryPlugin::FileFactoryPlugin(QObject *parent) :
 {
 }
 
+QString FileFactoryPlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* FileFactoryPlugin::createPlugin(QObject *parent) {
     return new FileFactoryPlugin(parent);
 }
@@ -105,18 +115,14 @@ void FileFactoryPlugin::checkUrlIsValid() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.startsWith("/")) {
-                redirect.prepend("http://www.filefactory.com");
-            }
-            
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit urlChecked(UrlResult(reply->request().url().toString(),
+                            redirect.mid(redirect.lastIndexOf("/") + 1)));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -222,21 +228,13 @@ void FileFactoryPlugin::checkDownloadRequest() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
+    const QString redirect = getRedirect(reply);
+    
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
             emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.startsWith("/")) {
-                redirect.prepend("http://www.filefactory.com");
-            }
-            
             followRedirect(redirect, SLOT(checkDownloadRequest()));
         }
         else {
@@ -310,21 +308,13 @@ void FileFactoryPlugin::checkCaptcha() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
             emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.startsWith("/")) {
-                redirect.prepend("http://www.filefactory.com");
-            }
-            
             followRedirect(redirect, SLOT(checkCaptcha()));
         }
         else {
@@ -355,7 +345,7 @@ void FileFactoryPlugin::checkCaptcha() {
 
         if (!path.isEmpty()) {
             if (path.startsWith("/")) {
-                path.prepend("http://www.filefactory.com");
+                path.prepend(reply->url().scheme() + "://" + reply->url().authority());
             }
             
             getDownloadLink(path);
@@ -391,21 +381,13 @@ void FileFactoryPlugin::checkDownloadLink() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
+    const QString redirect = getRedirect(reply);
+    
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
             emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.startsWith("/")) {
-                redirect.prepend("http://www.filefactory.com");
-            }
-            
             followRedirect(redirect, SLOT(checkDownloadLink()));
         }
         else {
@@ -497,27 +479,9 @@ void FileFactoryPlugin::checkLogin() {
         fetchDownloadRequest(m_url);
         return;
     }
-
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
-    reply->deleteLater();
-
-    if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.startsWith("/")) {
-                redirect.prepend("http://www.filefactory.com");
-            }
-            
-            followRedirect(redirect, SLOT(checkLogin()));
-            return;
-        }
-    }
-
+    
     fetchDownloadRequest(m_url);
+    reply->deleteLater();
 }
 
 void FileFactoryPlugin::startWaitTimer(int msecs, const char* slot) {

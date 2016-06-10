@@ -50,6 +50,16 @@ KeepToSharePlugin::KeepToSharePlugin(QObject *parent) :
 {
 }
 
+QString KeepToSharePlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* KeepToSharePlugin::createPlugin(QObject *parent) {
     return new KeepToSharePlugin(parent);
 }
@@ -101,19 +111,14 @@ void KeepToSharePlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {            
-            if (redirect.host().isEmpty()) {
-                redirect.setScheme("http");
-                redirect.setHost("k2s.cc");
-            }
-            
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit urlChecked(UrlResult(reply->request().url().toString(),
+                            redirect.mid(redirect.lastIndexOf("/") + 1)));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {            
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -217,32 +222,14 @@ void KeepToSharePlugin::checkDownloadRequest() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+             emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            followRedirect(url, SLOT(checkDownloadRequest()));
+            followRedirect(redirect, SLOT(checkDownloadRequest()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -267,11 +254,10 @@ void KeepToSharePlugin::checkDownloadRequest() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("k2s.cc");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -317,32 +303,14 @@ void KeepToSharePlugin::checkWaitTime() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            followRedirect(url, SLOT(checkWaitTime()));
+            followRedirect(redirect, SLOT(checkWaitTime()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -367,11 +335,10 @@ void KeepToSharePlugin::checkWaitTime() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("k2s.cc");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -435,32 +402,14 @@ void KeepToSharePlugin::checkCaptcha() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            followRedirect(url, SLOT(checkCaptcha()));
+            followRedirect(redirect, SLOT(checkCaptcha()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -485,11 +434,10 @@ void KeepToSharePlugin::checkCaptcha() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("k2s.cc");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -539,32 +487,14 @@ void KeepToSharePlugin::checkDownloadLink() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("k2s.cc");
-            }
-            
-            followRedirect(url, SLOT(checkDownloadLink()));
+            followRedirect(redirect, SLOT(checkDownloadLink()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -589,11 +519,10 @@ void KeepToSharePlugin::checkDownloadLink() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
 
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("k2s.cc");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
 
         emit downloadRequest(QNetworkRequest(url));
@@ -646,22 +575,8 @@ void KeepToSharePlugin::checkLogin() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
-    reply->deleteLater();
-
-    if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect, SLOT(checkLogin()));
-            return;
-        }
-    }
-
     fetchDownloadRequest(m_url);
+    reply->deleteLater();
 }
 
 void KeepToSharePlugin::startWaitTimer(int msecs, const char* slot) {

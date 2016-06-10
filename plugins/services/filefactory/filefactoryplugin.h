@@ -22,6 +22,7 @@
 #include <QRegExp>
 #include <QUrl>
 
+class QNetworkReply;
 class QTimer;
 
 class FileFactoryPlugin : public ServicePlugin
@@ -62,6 +63,8 @@ Q_SIGNALS:
     void currentOperationCanceled();
 
 private:
+    static QString getRedirect(const QNetworkReply *reply);
+    
     QNetworkAccessManager* networkAccessManager();
 
     void fetchDownloadRequest(const QUrl &url);

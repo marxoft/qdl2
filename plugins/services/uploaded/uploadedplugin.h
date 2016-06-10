@@ -23,6 +23,7 @@
 #include <QRegExp>
 #include <QUrl>
 
+class QNetworkReply;
 class QTimer;
 
 class UploadedPlugin : public ServicePlugin
@@ -62,6 +63,8 @@ Q_SIGNALS:
     void currentOperationCanceled();
 
 private:
+    static QString getRedirect(const QNetworkReply *reply);
+    
     QNetworkAccessManager* networkAccessManager();
 
     QNetworkRequest buildDownloadRequest(const QUrl &url) const;

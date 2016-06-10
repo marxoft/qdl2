@@ -50,6 +50,16 @@ PublishToMePlugin::PublishToMePlugin(QObject *parent) :
 {
 }
 
+QString PublishToMePlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* PublishToMePlugin::createPlugin(QObject *parent) {
     return new PublishToMePlugin(parent);
 }
@@ -101,19 +111,14 @@ void PublishToMePlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.host().isEmpty()) {
-                redirect.setScheme("http");
-                redirect.setHost("publish2.me");
-            }
-            
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit urlChecked(UrlResult(reply->request().url().toString(),
+                            redirect.mid(redirect.lastIndexOf("/") + 1)));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -214,32 +219,14 @@ void PublishToMePlugin::checkDownloadRequest() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            followRedirect(url, SLOT(checkDownloadRequest()));
+            followRedirect(redirect, SLOT(checkDownloadRequest()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -264,11 +251,10 @@ void PublishToMePlugin::checkDownloadRequest() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("publish2.me");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -311,32 +297,14 @@ void PublishToMePlugin::checkWaitTime() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            followRedirect(url, SLOT(checkWaitTime()));
+            followRedirect(redirect, SLOT(checkWaitTime()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -361,11 +329,10 @@ void PublishToMePlugin::checkWaitTime() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("publish2.me");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -417,32 +384,14 @@ void PublishToMePlugin::checkCaptcha() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            followRedirect(url, SLOT(checkCaptcha()));
+            followRedirect(redirect, SLOT(checkCaptcha()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -467,11 +416,10 @@ void PublishToMePlugin::checkCaptcha() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
+        QString url = FILE_REGEXP.cap();
         
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("publish2.me");
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
         
         emit downloadRequest(QNetworkRequest(url));
@@ -520,32 +468,14 @@ void PublishToMePlugin::checkDownloadLink() {
         return;
     }
 
-    QString redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (FILE_REGEXP.indexIn(redirect) == 0) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            emit downloadRequest(QNetworkRequest(url));
+            emit downloadRequest(QNetworkRequest(redirect));
         }
         else if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
-            
-            if (url.host().isEmpty()) {
-                url.setScheme("http");
-                url.setHost("publish2.me");
-            }
-            
-            followRedirect(url, SLOT(checkDownloadLink()));
+            followRedirect(redirect, SLOT(checkDownloadLink()));
         }
         else {
             emit error(tr("Maximum redirects reached"));
@@ -570,11 +500,10 @@ void PublishToMePlugin::checkDownloadLink() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        QUrl url(FILE_REGEXP.cap());
-
-        if (url.host().isEmpty()) {
-            url.setScheme("http");
-            url.setHost("publish2.me");
+        QString url = FILE_REGEXP.cap();
+        
+        if (url.startsWith("/")) {
+            url.prepend(reply->url().scheme() + "://" + reply->url().authority());
         }
 
         emit downloadRequest(QNetworkRequest(url));
@@ -625,22 +554,8 @@ void PublishToMePlugin::checkLogin() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
-
-    reply->deleteLater();
-
-    if (!redirect.isEmpty()) {
-        if (m_redirects < MAX_REDIRECTS) {
-            followRedirect(redirect, SLOT(checkLogin()));
-            return;
-        }
-    }
-
     fetchDownloadRequest(m_url);
+    reply->deleteLater();
 }
 
 void PublishToMePlugin::startWaitTimer(int msecs, const char* slot) {

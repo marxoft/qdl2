@@ -52,6 +52,16 @@ GoogleDrivePlugin::GoogleDrivePlugin(QObject *parent) :
 {
 }
 
+QString GoogleDrivePlugin::getRedirect(const QNetworkReply *reply) {
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
+    
+    if (redirect.startsWith("/")) {
+        redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+    }
+    
+    return redirect;
+}
+
 ServicePlugin* GoogleDrivePlugin::createPlugin(QObject *parent) {
     return new GoogleDrivePlugin(parent);
 }
@@ -101,15 +111,10 @@ void GoogleDrivePlugin::checkUrlIsValid() {
         return;
     }
 
-    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
+    const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.host().isEmpty()) {
-                redirect.setScheme(reply->url().scheme());
-                redirect.setHost(reply->url().host());
-            }
-            
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -174,15 +179,10 @@ void GoogleDrivePlugin::checkDownloadRequest() {
         return;
     }
 
-    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
+    const QString redirect = getRedirect(reply);
     
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.host().isEmpty()) {
-                redirect.setScheme(reply->url().scheme());
-                redirect.setHost(reply->url().host());
-            }
-            
             followRedirect(redirect, SLOT(checkDownloadRequest()));
         }
         else {
@@ -255,15 +255,10 @@ void GoogleDrivePlugin::checkDownloadPage() {
         return;
     }
 
-    QUrl redirect = reply->header(QNetworkRequest::LocationHeader).toString();
+    const QString redirect = getRedirect(reply);
     
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
-            if (redirect.host().isEmpty()) {
-                redirect.setScheme(reply->url().scheme());
-                redirect.setHost(reply->url().host());
-            }
-            
             followRedirect(redirect, SLOT(checkDownloadPage()));
         }
         else {

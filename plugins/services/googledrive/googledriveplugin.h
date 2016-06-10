@@ -23,6 +23,8 @@
 #include <QStringList>
 #include <QUrl>
 
+class QNetworkReply;
+
 class GoogleDrivePlugin : public ServicePlugin
 {
     Q_OBJECT
@@ -55,6 +57,8 @@ Q_SIGNALS:
     void currentOperationCanceled();
     
 private:
+    static QString getRedirect(const QNetworkReply *reply);
+    
     QNetworkAccessManager* networkAccessManager();
 
     void followRedirect(const QUrl &url, const char* slot);
