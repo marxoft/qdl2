@@ -35,7 +35,7 @@
 #include <QSettings>
 #include <QTimer>
 
-static QRegExp CONTENT_DISPOSITION_REGEXP("(=\")([^\"]+)(\";)");
+static QRegExp CONTENT_DISPOSITION_REGEXP("(filename=)([^;]+)");
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
@@ -1503,7 +1503,7 @@ void Transfer::onReplyMetaDataChanged() {
     if (bytesTransferred() == 0) {
         // Only set the filename if no data has been written
         const QString contentDisposition =
-        QString::fromUtf8(QByteArray::fromPercentEncoding(m_reply->rawHeader("Content-Disposition")));
+        QString::fromUtf8(QByteArray::fromPercentEncoding(m_reply->rawHeader("Content-Disposition"))).remove('"');
         Logger::log("Transfer::onReplyMetadataChanged(): Content-Disposition: " + contentDisposition);
         
         if ((!contentDisposition.isEmpty()) && (CONTENT_DISPOSITION_REGEXP.indexIn(contentDisposition) != -1)) {
