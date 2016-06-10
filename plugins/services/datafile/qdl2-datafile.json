@@ -1,0 +1,33 @@
+{
+    "type": "qt",
+    "name": "DataFile",
+    "icon": "qdl2-datafile.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)datafile\\.com/d/\\w+",
+    "settings": [
+        {
+            "type": "group",
+            "label": "Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use login",
+                    "key": "useLogin"
+                },
+                
+                {
+                    "type": "text",
+                    "label": "Email",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}

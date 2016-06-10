@@ -1,9 +1,12 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+    bigfile \
+    datafile \
     depfile \
     depositfiles \
     fileboom \
     filefactory \
+    filejoker \
     filespace \
     googledrive \
     imagebam \
