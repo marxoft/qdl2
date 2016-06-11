@@ -21,6 +21,7 @@ SUBDIRS = \
     rapidgator \
     sendvid \
     spankbang \
+    tezfiles \
     uploaded \
     uploadly \
     xhamster \

@@ -1,0 +1,33 @@
+{
+    "type": "qt",
+    "name": "Tezfiles",
+    "icon": "qdl2-tezfiles.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)tezfiles\\.com/file/\\w+",
+    "settings": [
+        {
+            "type": "group",
+            "label": "Account",
+            "key": "Account",
+            "settings": [
+                {
+                    "type": "boolean",
+                    "label": "Use login",
+                    "key": "useLogin"
+                },
+                
+                {
+                    "type": "text",
+                    "label": "Username",
+                    "key": "username"
+                },
+
+                {
+                    "type": "password",
+                    "label": "Password",
+                    "key": "password"
+                }
+            ]
+        }
+    ]
+}
