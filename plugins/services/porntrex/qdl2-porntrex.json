@@ -3,7 +3,7 @@
     "name": "PornTrex",
     "icon": "qdl2-porntrex.jpg",
     "version": 1,
-    "regExp": "http(s|)://www\\.porntrex\\.com/video/\\d+"
+    "regExp": "http(s|)://www\\.porntrex\\.com/video/\\d+",
     "settings": [
         {
             "type": "boolean",
