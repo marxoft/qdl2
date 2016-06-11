@@ -16,6 +16,7 @@ SUBDIRS = \
     mediafire \
     onefichier \
     pornhub \
+    porntrex \
     publishtome \
     rapidgator \
     sendvid \
