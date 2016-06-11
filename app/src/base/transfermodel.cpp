@@ -661,6 +661,7 @@ void TransferModel::addActiveTransfer(TransferItem *transfer) {
         m_activeTransfers.append(transfer);
         transfer->start();
         emit activeTransfersChanged(activeTransfers());
+        emit totalSpeedChanged(totalSpeed());
     }
 }
 
@@ -669,6 +670,7 @@ void TransferModel::removeActiveTransfer(TransferItem *transfer) {
                 + transfer->data(TransferItem::IdRole).toString()));
     m_activeTransfers.removeOne(transfer);
     emit activeTransfersChanged(activeTransfers());
+    emit totalSpeedChanged(totalSpeed());
 }
 
 void TransferModel::startNextTransfers() {
