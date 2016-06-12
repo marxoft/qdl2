@@ -24,6 +24,7 @@ SUBDIRS = \
     tezfiles \
     uploaded \
     uploadly \
+    wenoo \
     xhamster \
     xvideos \
     youtube
