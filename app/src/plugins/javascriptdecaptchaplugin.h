@@ -32,7 +32,6 @@ class JavaScriptDecaptchaPlugin : public DecaptchaPlugin
     Q_PROPERTY(QString id READ id)
 
 public:
-    explicit JavaScriptDecaptchaPlugin(QObject *parent = 0);
     explicit JavaScriptDecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent = 0);
 
     QString fileName() const;

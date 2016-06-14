@@ -32,7 +32,6 @@ class JavaScriptRecaptchaPlugin : public RecaptchaPlugin
     Q_PROPERTY(QString id READ id)
 
 public:
-    explicit JavaScriptRecaptchaPlugin(QObject *parent = 0);
     explicit JavaScriptRecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent = 0);
 
     QString fileName() const;
