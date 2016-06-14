@@ -90,14 +90,14 @@ void GenericRecaptchaPlugin::checkCaptchaImage() {
         return;
     }
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-
-    if (redirect.isEmpty()) {
-        redirect = reply->header(QNetworkRequest::LocationHeader).toString();
-    }
+    QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
 
     if (!redirect.isEmpty()) {
         if (m_redirects < MAX_REDIRECTS) {
+            if (redirect.startsWith("/")) {
+                redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
+            }
+            
             followRedirect(redirect);
         }
         else {
