@@ -21,7 +21,6 @@
 #include <QNetworkRequest>
 #include <QSettings>
 #include <QTimer>
-#include <QTime>
 #if QT_VERSION >= 0x050000
 #include <QStandardPaths>
 #else
