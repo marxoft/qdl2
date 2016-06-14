@@ -120,7 +120,7 @@ void SolveMediaRecaptchaPlugin::downloadCaptchaImage(const QString &challenge) {
 }
 
 void SolveMediaRecaptchaPlugin::onCaptchaImageDownloaded() {
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(this->sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
     if (!reply) {
         emit error(tr("Network error"));

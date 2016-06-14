@@ -113,7 +113,7 @@ void GoogleRecaptchaPlugin::downloadCaptchaImage(const QString &challenge) {
 }
 
 void GoogleRecaptchaPlugin::onCaptchaImageDownloaded() {
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(this->sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
     if (!reply) {
         emit error(tr("Network error"));
