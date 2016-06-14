@@ -35,7 +35,7 @@
 #include <QSettings>
 #include <QTimer>
 
-static QRegExp CONTENT_DISPOSITION_REGEXP("(filename=)([^;]+)");
+static QRegExp CONTENT_DISPOSITION_REGEXP("(filename=|filename\\*=UTF-8''|filename\\*= UTF-8'')([^;]+)");
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
@@ -1478,13 +1478,7 @@ void Transfer::onServiceError(const QString &errorString) {
 }
 
 void Transfer::onReplyMetaDataChanged() {
-    if (m_metadataSet) {
-        return;
-    }
-    
-    QVariant redirect = m_reply->header(QNetworkRequest::LocationHeader);
-
-    if (!redirect.isNull()) {
+    if ((m_metadataSet) || (m_reply->error() != QNetworkReply::NoError) || (!m_reply->rawHeader("Location").isEmpty())) {
         return;
     }
 
@@ -1510,17 +1504,10 @@ void Transfer::onReplyMetaDataChanged() {
             const QString fileName = CONTENT_DISPOSITION_REGEXP.cap(2);
             
             if (!fileName.isEmpty()) {
+                Logger::log("Transfer::onReplyMetadataChanged(): Found filename: " + fileName);
                 setFileName(Utils::getSanitizedFileName(fileName));
             }
         }
-    }
-
-    if (!openFile()) {
-	m_reply->deleteLater();
-	m_reply = 0;
-	setErrorString(tr("Cannot open file - %1").arg(m_file->errorString()));
-	setStatus(Failed);
-	return;
     }
     
     m_metadataSet = true;
@@ -1537,7 +1524,7 @@ void Transfer::onReplyReadyRead() {
         return;
     }
 
-    if (m_file->write(m_reply->read(bytes)) == -1) {
+    if ((!openFile()) || (m_file->write(m_reply->read(bytes)) == -1)) {
         m_reply->deleteLater();
 	m_reply = 0;
         setErrorString(tr("Cannot write to file - %1").arg(m_file->errorString()));
@@ -1572,7 +1559,7 @@ void Transfer::onReplyFinished() {
     const QNetworkReply::NetworkError error = m_reply->error();
     const QString errorString = m_reply->errorString();
 
-    if (m_reply->isOpen()) {
+    if ((m_reply->isOpen()) && (error == QNetworkReply::NoError) && (openFile())) {
         const qint64 bytes = m_reply->bytesAvailable();
         
         if ((bytes > 0) && (m_metadataSet)) {
