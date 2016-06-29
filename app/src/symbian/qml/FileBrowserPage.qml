@@ -22,7 +22,7 @@ MyPage {
     id: root
 
     property bool showFiles: false
-    property string startFolder: settings.downloadPath
+    property string startFolder
 
     signal fileChosen(string filePath)
 

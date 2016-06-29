@@ -60,7 +60,11 @@ MyPage {
                 title: qsTr("Download path")
                 subTitle: settings.downloadPath
                 visible: !inputContext.visible
-                onClicked: appWindow.pageStack.push(Qt.resolvedUrl("FileBrowserPage.qml"))
+                onClicked: {
+                    var page = appWindow.pageStack.push(Qt.resolvedUrl("FileBrowserPage.qml"),
+                    {startFolder: settings.downloadPath});
+                    page.fileChosen.connect(function (f) { settings.downloadPath = f; });
+                }
             }
             
             ValueSelector {

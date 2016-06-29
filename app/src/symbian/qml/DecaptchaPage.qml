@@ -36,7 +36,7 @@ MyPage {
         delegate: PluginDelegate {
             subItemIndicator: true
             onClicked: settings.length > 0 ? appWindow.pageStack.push(Qt.resolvedUrl("DecaptchaSettingsPage.qml"),
-            {"pluginId": id, "pluginSettings": settings, title: displayName})
+            {pluginId: id, pluginSettings: settings, title: displayName})
             : infoBanner.information(qsTr("No settings for this plugin"))
         }
     }
