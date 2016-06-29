@@ -18,6 +18,7 @@
 #define SOLVEMEDIARECAPTCHAPLUGIN_H
 
 #include "recaptchaplugin.h"
+#include <QPointer>
 
 class SolveMediaRecaptchaPlugin : public RecaptchaPlugin
 {
@@ -52,7 +53,7 @@ private:
     
     void downloadCaptchaImage(const QString &challenge);
 
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
 
     bool m_ownManager;
 

@@ -29,17 +29,17 @@
 #include <QtPlugin>
 #endif
 
-QRegExp FileBoomPlugin::FILE_REGEXP("(http(s|)://fboom\\.me|)/file/url\\.html\\?file=[^'\"]+");
-QString FileBoomPlugin::LOGIN_URL("http://fboom.me/login.html");
-QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
+const QRegExp FileBoomPlugin::FILE_REGEXP("(http(s|)://fboom\\.me|)/file/url\\.html\\?file=[^'\"]+");
+const QString FileBoomPlugin::LOGIN_URL("http://fboom.me/login.html");
+const QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
-QString FileBoomPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-fileboom");
+const QString FileBoomPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-fileboom");
 #else
-QString FileBoomPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-fileboom");
+const QString FileBoomPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-fileboom");
 #endif
-int FileBoomPlugin::MAX_REDIRECTS = 8;
+const int FileBoomPlugin::MAX_REDIRECTS = 8;
 
 FileBoomPlugin::FileBoomPlugin(QObject *parent) :
     ServicePlugin(parent),

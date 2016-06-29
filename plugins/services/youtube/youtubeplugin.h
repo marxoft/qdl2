@@ -58,11 +58,11 @@ Q_SIGNALS:
     void currentOperationCanceled();
     
 private:
-    static QString CONFIG_FILE;
-    static QString API_KEY;
-    static QString CLIENT_ID;
-    static QString CLIENT_SECRET;
-    static QStringList VIDEO_FORMATS;
+    static const QString CONFIG_FILE;
+    static const QString API_KEY;
+    static const QString CLIENT_ID;
+    static const QString CLIENT_SECRET;
+    static const QStringList VIDEO_FORMATS;
     
     QYouTube::ResourcesRequest *m_resourcesRequest;
     QYouTube::StreamsRequest *m_streamsRequest;

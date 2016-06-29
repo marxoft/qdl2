@@ -29,17 +29,17 @@
 #include <QtPlugin>
 #endif
 
-QRegExp PublishToMePlugin::FILE_REGEXP("(http(s|)://publish2\\.me|)/file/url\\.html\\?file=[^'\"]+");
-QString PublishToMePlugin::LOGIN_URL("http://publish2.me/login.html");
-QString PublishToMePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
+const QRegExp PublishToMePlugin::FILE_REGEXP("(http(s|)://publish2\\.me|)/file/url\\.html\\?file=[^'\"]+");
+const QString PublishToMePlugin::LOGIN_URL("http://publish2.me/login.html");
+const QString PublishToMePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
-QString PublishToMePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-publishtome");
+const QString PublishToMePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-publishtome");
 #else
-QString PublishToMePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-publishtome");
+const QString PublishToMePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-publishtome");
 #endif
-int PublishToMePlugin::MAX_REDIRECTS = 8;
+const int PublishToMePlugin::MAX_REDIRECTS = 8;
 
 PublishToMePlugin::PublishToMePlugin(QObject *parent) :
     ServicePlugin(parent),

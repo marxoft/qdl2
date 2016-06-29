@@ -28,18 +28,18 @@
 #include <QtPlugin>
 #endif
 
-QRegExp FileJokerPlugin::FILE_REGEXP("http(s|)://fs\\d+\\.filejoker\\.net/\\w+/[^'\"]+");
-QRegExp FileJokerPlugin::WAIT_REGEXP("wait (\\d+|)( hour | hours | )(\\d+|)( minute | minutes | )(\\d+|)( second | seconds | )until the next download");
-QString FileJokerPlugin::LOGIN_URL("https://filejoker.net/login");
-QString FileJokerPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QRegExp FileJokerPlugin::FILE_REGEXP("http(s|)://fs\\d+\\.filejoker\\.net/\\w+/[^'\"]+");
+const QRegExp FileJokerPlugin::WAIT_REGEXP("wait (\\d+|)( hour | hours | )(\\d+|)( minute | minutes | )(\\d+|)( second | seconds | )until the next download");
+const QString FileJokerPlugin::LOGIN_URL("https://filejoker.net/login");
+const QString FileJokerPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
-QString FileJokerPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                     + "/.config/qdl2/plugins/qdl2-filejoker");
+const QString FileJokerPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                           + "/.config/qdl2/plugins/qdl2-filejoker");
 #else
-QString FileJokerPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                     + "/.config/qdl2/plugins/qdl2-filejoker");
+const QString FileJokerPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                           + "/.config/qdl2/plugins/qdl2-filejoker");
 #endif
-int FileJokerPlugin::MAX_REDIRECTS = 8;
+const int FileJokerPlugin::MAX_REDIRECTS = 8;
 
 FileJokerPlugin::FileJokerPlugin(QObject *parent) :
     ServicePlugin(parent),

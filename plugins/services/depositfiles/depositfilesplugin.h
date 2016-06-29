@@ -19,6 +19,7 @@
 #define DEPOSITFILESPLUGIN_H
 
 #include "serviceplugin.h"
+#include <QPointer>
 #include <QRegExp>
 #include <QUrl>
 
@@ -76,15 +77,15 @@ private:
     void startWaitTimer(int msecs, const char* slot);
     void stopWaitTimer();
 
-    static QRegExp FILE_REGEXP;
-    static QString LOGIN_URL;
-    static QString REQUEST_URL;
-    static QString RECAPTCHA_PLUGIN_ID;
-    static QString CONFIG_FILE;
+    static const QRegExp FILE_REGEXP;
+    static const QString LOGIN_URL;
+    static const QString REQUEST_URL;
+    static const QString RECAPTCHA_PLUGIN_ID;
+    static const QString CONFIG_FILE;
     
-    static int MAX_REDIRECTS;
+    static const int MAX_REDIRECTS;
 
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
     QTimer *m_waitTimer;
     
     QUrl m_url;

@@ -26,22 +26,23 @@
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
-QRegExp DataFilePlugin::ERROR_REGEXP("(class=\"error-msg\">|class=\"error-text\" >)([^<]+)");
-QRegExp DataFilePlugin::FILE_REGEXP("http(s|)://[a-zA-Z]+\\d+\\.datafile\\.com/[^'\"]+");
-QString DataFilePlugin::AJAX_URL("http://www.datafile.com/files/ajax.html");
-QString DataFilePlugin::CHECK_URL("http://www.datafile.com/linkchecker.html");
-QString DataFilePlugin::LOGIN_URL("https://www.datafile.com/login.html");
-QString DataFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QRegExp DataFilePlugin::ERROR_REGEXP("(class=\"error-msg\">|class=\"error-text\" >)([^<]+)");
+const QRegExp DataFilePlugin::FILE_REGEXP("http(s|)://[a-zA-Z]+\\d+\\.datafile\\.com/[^'\"]+");
+const QString DataFilePlugin::AJAX_URL("http://www.datafile.com/files/ajax.html");
+const QString DataFilePlugin::CHECK_URL("http://www.datafile.com/linkchecker.html");
+const QString DataFilePlugin::LOGIN_URL("https://www.datafile.com/login.html");
+const QString DataFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
-QString DataFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-datafile");
+const QString DataFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-datafile");
 #else
-QString DataFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-datafile");
+const QString DataFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-datafile");
 #endif
-int DataFilePlugin::MAX_REDIRECTS = 8;
+const int DataFilePlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
 

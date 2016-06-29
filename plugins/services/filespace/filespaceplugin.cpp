@@ -29,17 +29,17 @@
 #include <QtPlugin>
 #endif
 
-QRegExp FilespacePlugin::FILE_REGEXP("http(s|)://[\\w-_]+\\.filespace\\.com:\\d+/[^'\"]+");
-QString FilespacePlugin::LOGIN_URL("http://filespace.com");
-QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
+const QRegExp FilespacePlugin::FILE_REGEXP("http(s|)://[\\w-_]+\\.filespace\\.com:\\d+/[^'\"]+");
+const QString FilespacePlugin::LOGIN_URL("http://filespace.com");
+const QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
-QString FilespacePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                     + "/.config/qdl2/plugins/qdl2-filespace");
+const QString FilespacePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                           + "/.config/qdl2/plugins/qdl2-filespace");
 #else
-QString FilespacePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                     + "/.config/qdl2/plugins/qdl2-filespace");
+const QString FilespacePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                           + "/.config/qdl2/plugins/qdl2-filespace");
 #endif
-int FilespacePlugin::MAX_REDIRECTS = 8;
+const int FilespacePlugin::MAX_REDIRECTS = 8;
 
 FilespacePlugin::FilespacePlugin(QObject *parent) :
     ServicePlugin(parent),

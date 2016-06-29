@@ -30,21 +30,21 @@
 #include <QtPlugin>
 #endif
 
-QRegExp RapidGatorPlugin::FILE_REGEXP("http://pr\\d+\\.rapidgator\\.net//\\?r=download/index&session_id=[^'\"]+");
-QString RapidGatorPlugin::LOGIN_URL("https://rapidgator.net/auth/login");
-QString RapidGatorPlugin::SESSION_ID_URL("http://rapidgator.net/download/AjaxStartTimer");
-QString RapidGatorPlugin::DOWNLOAD_LINK_URL("http://rapidgator.net/download/AjaxGetDownloadLink");
-QString RapidGatorPlugin::CAPTCHA_URL("http://rapidgator.net/download/captcha");
-QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
-QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
+const QRegExp RapidGatorPlugin::FILE_REGEXP("http://pr\\d+\\.rapidgator\\.net//\\?r=download/index&session_id=[^'\"]+");
+const QString RapidGatorPlugin::LOGIN_URL("https://rapidgator.net/auth/login");
+const QString RapidGatorPlugin::SESSION_ID_URL("http://rapidgator.net/download/AjaxStartTimer");
+const QString RapidGatorPlugin::DOWNLOAD_LINK_URL("http://rapidgator.net/download/AjaxGetDownloadLink");
+const QString RapidGatorPlugin::CAPTCHA_URL("http://rapidgator.net/download/captcha");
+const QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
+const QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
 #if QT_VERSION >= 0x050000
-QString RapidGatorPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                      + "/.config/qdl2/plugins/qdl2-rapidgator");
+const QString RapidGatorPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                            + "/.config/qdl2/plugins/qdl2-rapidgator");
 #else
-QString RapidGatorPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                      + "/.config/qdl2/plugins/qdl2-rapidgator");
+const QString RapidGatorPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                            + "/.config/qdl2/plugins/qdl2-rapidgator");
 #endif
-int RapidGatorPlugin::MAX_REDIRECTS = 8;
+const int RapidGatorPlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
 

@@ -19,6 +19,7 @@
 #define FILEFACTORYPLUGIN_H
 
 #include "serviceplugin.h"
+#include <QPointer>
 #include <QRegExp>
 #include <QUrl>
 
@@ -78,16 +79,16 @@ private:
     void startWaitTimer(int msecs, const char* slot);
     void stopWaitTimer();
 
-    static QRegExp FILE_REGEXP;
-    static QRegExp NOT_FOUND_REGEXP;
-    static QString LOGIN_URL;
-    static QString CAPTCHA_URL;
-    static QString RECAPTCHA_PLUGIN_ID;
-    static QString CONFIG_FILE;
+    static const QRegExp FILE_REGEXP;
+    static const QRegExp NOT_FOUND_REGEXP;
+    static const QString LOGIN_URL;
+    static const QString CAPTCHA_URL;
+    static const QString RECAPTCHA_PLUGIN_ID;
+    static const QString CONFIG_FILE;
     
-    static int MAX_REDIRECTS;
+    static const int MAX_REDIRECTS;
 
-    QNetworkAccessManager *m_nam;    
+    QPointer<QNetworkAccessManager> m_nam;    
     QTimer *m_waitTimer;
 
     QUrl m_url;

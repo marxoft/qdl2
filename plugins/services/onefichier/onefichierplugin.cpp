@@ -27,16 +27,16 @@
 #include <QtPlugin>
 #endif
 
-QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w-\\d+\\.1fichier\\.com/[^'\"]+");
-QString OneFichierPlugin::LOGIN_URL("https://1fichier.com/login.pl");
+const QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w-\\d+\\.1fichier\\.com/[^'\"]+");
+const QString OneFichierPlugin::LOGIN_URL("https://1fichier.com/login.pl");
 #if QT_VERSION >= 0x050000
-QString OneFichierPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                      + "/.config/qdl2/plugins/qdl2-onefichier");
+const QString OneFichierPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                            + "/.config/qdl2/plugins/qdl2-onefichier");
 #else
-QString OneFichierPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                      + "/.config/qdl2/plugins/qdl2-onefichier");
+const QString OneFichierPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                            + "/.config/qdl2/plugins/qdl2-onefichier");
 #endif
-int OneFichierPlugin::MAX_REDIRECTS = 8;
+const int OneFichierPlugin::MAX_REDIRECTS = 8;
 
 OneFichierPlugin::OneFichierPlugin(QObject *parent) :
     ServicePlugin(parent),

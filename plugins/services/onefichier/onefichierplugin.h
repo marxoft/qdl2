@@ -19,6 +19,7 @@
 #define ONEFICHIERPLUGIN_H
 
 #include "serviceplugin.h"
+#include <QPointer>
 #include <QRegExp>
 #include <QUrl>
 
@@ -71,13 +72,13 @@ private:
 
     void login(const QString &username, const QString &password);
 
-    static QRegExp FILE_REGEXP;
-    static QString LOGIN_URL;
-    static QString CONFIG_FILE;
+    static const QRegExp FILE_REGEXP;
+    static const QString LOGIN_URL;
+    static const QString CONFIG_FILE;
 
-    static int MAX_REDIRECTS;
+    static const int MAX_REDIRECTS;
 
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
     
     QUrl m_url;
     

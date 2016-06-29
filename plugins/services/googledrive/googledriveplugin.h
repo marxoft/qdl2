@@ -19,6 +19,7 @@
 #define GOOGLEDRIVEPLUGIN_H
 
 #include "serviceplugin.h"
+#include <QPointer>
 #include <QRegExp>
 #include <QStringList>
 #include <QUrl>
@@ -69,13 +70,13 @@ private:
     
     static QString unescape(const QString &s);
 
-    static QString CONFIG_FILE;
+    static const QString CONFIG_FILE;
 
-    static QStringList VIDEO_FORMATS;
+    static const QStringList VIDEO_FORMATS;
 
-    static int MAX_REDIRECTS;
+    static const int MAX_REDIRECTS;
 
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
 
     int m_redirects;
 

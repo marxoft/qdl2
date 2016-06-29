@@ -28,19 +28,19 @@
 #include <QtPlugin>
 #endif
 
-QRegExp UpstorePlugin::ERROR_REGEXP("<span class=\"error\">([^<]+)");
-QRegExp UpstorePlugin::FILE_REGEXP("http(s|)://\\w+\\.upsto\\.re/\\w+/[\\w\\.-]+/[^'\"]+");
-QRegExp UpstorePlugin::WAIT_REGEXP("wait (\\d+) minutes before downloading next file");
-QString UpstorePlugin::LOGIN_URL("http://upstore.net/account/login/");
-QString UpstorePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QRegExp UpstorePlugin::ERROR_REGEXP("<span class=\"error\">([^<]+)");
+const QRegExp UpstorePlugin::FILE_REGEXP("http(s|)://\\w+\\.upsto\\.re/\\w+/[\\w\\.-]+/[^'\"]+");
+const QRegExp UpstorePlugin::WAIT_REGEXP("wait (\\d+) minutes before downloading next file");
+const QString UpstorePlugin::LOGIN_URL("http://upstore.net/account/login/");
+const QString UpstorePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
-QString UpstorePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-upstore");
+const QString UpstorePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-upstore");
 #else
-QString UpstorePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-upstore");
+const QString UpstorePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-upstore");
 #endif
-int UpstorePlugin::MAX_REDIRECTS = 8;
+const int UpstorePlugin::MAX_REDIRECTS = 8;
 
 UpstorePlugin::UpstorePlugin(QObject *parent) :
     ServicePlugin(parent),

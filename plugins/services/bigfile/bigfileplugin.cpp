@@ -26,21 +26,22 @@
 #include <QStandardPaths>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
-QRegExp BigFilePlugin::ERROR_REGEXP("(class=\"icon_err\">\\s+<h1>)([^<]+)");
-QRegExp BigFilePlugin::FILE_REGEXP("http(s|)://[^w]+\\.bigfile\\.to/file/[^'\"]+");
-QString BigFilePlugin::LOGIN_URL("https://bigfile.to/login.php");
-QString BigFilePlugin::RECAPTCHA_URL("https://www.bigfile.to/checkReCaptcha.php");
-QString BigFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QRegExp BigFilePlugin::ERROR_REGEXP("(class=\"icon_err\">\\s+<h1>)([^<]+)");
+const QRegExp BigFilePlugin::FILE_REGEXP("http(s|)://[^w]+\\.bigfile\\.to/file/[^'\"]+");
+const QString BigFilePlugin::LOGIN_URL("https://bigfile.to/login.php");
+const QString BigFilePlugin::RECAPTCHA_URL("https://www.bigfile.to/checkReCaptcha.php");
+const QString BigFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
-QString BigFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-bigfile");
+const QString BigFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-bigfile");
 #else
-QString BigFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-bigfile");
+const QString BigFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-bigfile");
 #endif
-int BigFilePlugin::MAX_REDIRECTS = 8;
+const int BigFilePlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
 

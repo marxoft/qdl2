@@ -18,6 +18,7 @@
 #define DEATHBYCAPTCHAPLUGIN_H
 
 #include "decaptchaplugin.h"
+#include <QPointer>
 #include <QUrl>
 
 class DeathByCaptchaPlugin : public DecaptchaPlugin
@@ -58,11 +59,11 @@ private:
 
     void fetchCaptchaResponse(const QByteArray &imageData);
 
-    static QString CAPTCHA_URL;
-    static QString REPORT_URL;
-    static QString CONFIG_FILE;
+    static const QString CAPTCHA_URL;
+    static const QString REPORT_URL;
+    static const QString CONFIG_FILE;
 
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
 
     QByteArray m_imageData;
     

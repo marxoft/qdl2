@@ -29,20 +29,20 @@
 #include <QtPlugin>
 #endif
 
-QRegExp TezfilesPlugin::ERROR_REGEXP("(<h4 class='error'.+>)([^<]+)");
-QRegExp TezfilesPlugin::FILE_REGEXP("(http(s|)://tezfiles\\.com|)/file/url\\.html\\?file=[^'\"]+");
-QRegExp TezfilesPlugin::FILENAME_REGEXP("(<h1 style=\"margin-top: \\d+px;\">)([^<]+)");
-QRegExp TezfilesPlugin::WAITTIME_REGEXP("(<div id=\"download-wait-timer\".+>\\s+)(\\d+)(\\s+</div>)");
-QString TezfilesPlugin::LOGIN_URL("http://tezfiles.com/login.html");
-QString TezfilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
+const QRegExp TezfilesPlugin::ERROR_REGEXP("(<h4 class='error'.+>)([^<]+)");
+const QRegExp TezfilesPlugin::FILE_REGEXP("(http(s|)://tezfiles\\.com|)/file/url\\.html\\?file=[^'\"]+");
+const QRegExp TezfilesPlugin::FILENAME_REGEXP("(<h1 style=\"margin-top: \\d+px;\">)([^<]+)");
+const QRegExp TezfilesPlugin::WAITTIME_REGEXP("(<div id=\"download-wait-timer\".+>\\s+)(\\d+)(\\s+</div>)");
+const QString TezfilesPlugin::LOGIN_URL("http://tezfiles.com/login.html");
+const QString TezfilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
-QString TezfilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-tezfiles");
+const QString TezfilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-tezfiles");
 #else
-QString TezfilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-tezfiles");
+const QString TezfilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-tezfiles");
 #endif
-int TezfilesPlugin::MAX_REDIRECTS = 8;
+const int TezfilesPlugin::MAX_REDIRECTS = 8;
 
 TezfilesPlugin::TezfilesPlugin(QObject *parent) :
     ServicePlugin(parent),

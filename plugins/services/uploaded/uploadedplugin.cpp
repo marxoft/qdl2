@@ -29,21 +29,21 @@
 #include <QtPlugin>
 #endif
 
-QRegExp UploadedPlugin::FILE_REGEXP("http(s|)://([-\\w]+|)stor\\d+\\.uploaded\\.net/dl/[-\\w]+");
-QString UploadedPlugin::LOGIN_URL("http://uploaded.net/io/login");
-QString UploadedPlugin::BASE_FILE_URL("http://uploaded.net/file/");
-QString UploadedPlugin::NOT_FOUND_URL("http://uploaded.net/404");
-QString UploadedPlugin::CAPTCHA_URL("http://uploaded.net/io/ticket/captcha/");
-QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
+const QRegExp UploadedPlugin::FILE_REGEXP("http(s|)://([-\\w]+|)stor\\d+\\.uploaded\\.net/dl/[-\\w]+");
+const QString UploadedPlugin::LOGIN_URL("http://uploaded.net/io/login");
+const QString UploadedPlugin::BASE_FILE_URL("http://uploaded.net/file/");
+const QString UploadedPlugin::NOT_FOUND_URL("http://uploaded.net/404");
+const QString UploadedPlugin::CAPTCHA_URL("http://uploaded.net/io/ticket/captcha/");
+const QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
 #if QT_VERSION >= 0x050000
-QString UploadedPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-uploaded");
+const QString UploadedPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-uploaded");
 #else
-QString UploadedPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                    + "/.config/qdl2/plugins/qdl2-uploaded");
+const QString UploadedPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                          + "/.config/qdl2/plugins/qdl2-uploaded");
 #endif
-int UploadedPlugin::MAX_REDIRECTS = 8;
+const int UploadedPlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
 

@@ -31,14 +31,14 @@
 #include <QtPlugin>
 #endif
 
-QString DeathByCaptchaPlugin::CAPTCHA_URL("http://api.dbcapi.me/api/captcha");
-QString DeathByCaptchaPlugin::REPORT_URL("http://api.dbcapi.me/api/captcha/%1/report");
+const QString DeathByCaptchaPlugin::CAPTCHA_URL("http://api.dbcapi.me/api/captcha");
+const QString DeathByCaptchaPlugin::REPORT_URL("http://api.dbcapi.me/api/captcha/%1/report");
 #if QT_VERSION >= 0x050000
-QString DeathByCaptchaPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
+const QString DeathByCaptchaPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                                + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
 #else
-QString DeathByCaptchaPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
+const QString DeathByCaptchaPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                                + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
 #endif
 
 using namespace QtJson;

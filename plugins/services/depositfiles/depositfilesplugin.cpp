@@ -30,19 +30,19 @@
 #include <QtPlugin>
 #endif
 
-QRegExp DepositFilesPlugin::FILE_REGEXP("http(s|)://fileshare\\d+\\.(depositfiles|dfiles)\\.\\w+/[^'\"]+");
-QString DepositFilesPlugin::LOGIN_URL("https://depositfiles.com/api/user/login");
-QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php");
-QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
+const QRegExp DepositFilesPlugin::FILE_REGEXP("http(s|)://fileshare\\d+\\.(depositfiles|dfiles)\\.\\w+/[^'\"]+");
+const QString DepositFilesPlugin::LOGIN_URL("https://depositfiles.com/api/user/login");
+const QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php");
+const QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 #if QT_VERSION >= 0x050000
-QString DepositFilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                        + "/.config/qdl2/plugins/qdl2-depositfiles");
+const QString DepositFilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                              + "/.config/qdl2/plugins/qdl2-depositfiles");
 #else
-QString DepositFilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                        + "/.config/qdl2/plugins/qdl2-depositfiles");
+const QString DepositFilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                              + "/.config/qdl2/plugins/qdl2-depositfiles");
 #endif
 
-int DepositFilesPlugin::MAX_REDIRECTS = 8;
+const int DepositFilesPlugin::MAX_REDIRECTS = 8;
 
 DepositFilesPlugin::DepositFilesPlugin(QObject *parent) :
     ServicePlugin(parent),

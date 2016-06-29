@@ -18,6 +18,7 @@
 #define GENERICRECAPTCHAPLUGIN_H
 
 #include "recaptchaplugin.h"
+#include <QPointer>
 
 class GenericRecaptchaPlugin : public RecaptchaPlugin
 {
@@ -51,9 +52,9 @@ private:
 
     void followRedirect(const QUrl &url);
 
-    static int MAX_REDIRECTS;
+    static const int MAX_REDIRECTS;
     
-    QNetworkAccessManager *m_nam;
+    QPointer<QNetworkAccessManager> m_nam;
 
     QString m_url;
 

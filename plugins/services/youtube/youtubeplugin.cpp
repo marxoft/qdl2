@@ -29,17 +29,17 @@
 #endif
 
 #if QT_VERSION >= 0x050000
-QString YouTubePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-youtube");
+const QString YouTubePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-youtube");
 #else
-QString YouTubePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                   + "/.config/qdl2/plugins/qdl2-youtube");
+const QString YouTubePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                         + "/.config/qdl2/plugins/qdl2-youtube");
 #endif
-QString YouTubePlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
-QString YouTubePlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
-QString YouTubePlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
-QStringList YouTubePlugin::VIDEO_FORMATS = QStringList() << "37" << "46" << "22" << "45" << "44" << "35" << "18"
-                                                         << "43" << "34" << "36" << "17";
+const QString YouTubePlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
+const QString YouTubePlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
+const QString YouTubePlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
+const QStringList YouTubePlugin::VIDEO_FORMATS = QStringList() << "37" << "46" << "22" << "45" << "44" << "35" << "18"
+                                                               << "43" << "34" << "36" << "17";
 
 YouTubePlugin::YouTubePlugin(QObject *parent) :
     ServicePlugin(parent),

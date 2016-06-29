@@ -31,19 +31,19 @@
 
 using namespace QtJson;
 
-QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/get/\\w/[^'\"]+");
-QRegExp FileFactoryPlugin::NOT_FOUND_REGEXP("file is no longer available|file has been deleted");
-QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
-QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
-QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/get/\\w/[^'\"]+");
+const QRegExp FileFactoryPlugin::NOT_FOUND_REGEXP("file is no longer available|file has been deleted");
+const QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
+const QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
+const QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 #if QT_VERSION >= 0x050000
-QString FileFactoryPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-filefactory");
+const QString FileFactoryPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-filefactory");
 #else
-QString FileFactoryPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-filefactory");
+const QString FileFactoryPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-filefactory");
 #endif
-int FileFactoryPlugin::MAX_REDIRECTS = 8;
+const int FileFactoryPlugin::MAX_REDIRECTS = 8;
 
 FileFactoryPlugin::FileFactoryPlugin(QObject *parent) :
     ServicePlugin(parent),

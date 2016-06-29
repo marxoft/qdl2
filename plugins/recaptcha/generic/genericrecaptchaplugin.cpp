@@ -23,7 +23,7 @@
 #include <QtPlugin>
 #endif
 
-int GenericRecaptchaPlugin::MAX_REDIRECTS = 8;
+const int GenericRecaptchaPlugin::MAX_REDIRECTS = 8;
 
 GenericRecaptchaPlugin::GenericRecaptchaPlugin(QObject *parent) :
     RecaptchaPlugin(parent),

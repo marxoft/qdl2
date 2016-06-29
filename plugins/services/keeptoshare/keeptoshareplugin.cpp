@@ -29,17 +29,17 @@
 #include <QtPlugin>
 #endif
 
-QRegExp KeepToSharePlugin::FILE_REGEXP("(http://(keep2s(hare|)|k2s)\\.cc|)/file/url\\.html[^'\"]+");
-QString KeepToSharePlugin::LOGIN_URL("http://keep2share.cc/login.html");
-QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
+const QRegExp KeepToSharePlugin::FILE_REGEXP("(http://(keep2s(hare|)|k2s)\\.cc|)/file/url\\.html[^'\"]+");
+const QString KeepToSharePlugin::LOGIN_URL("http://keep2share.cc/login.html");
+const QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
-QString KeepToSharePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-keeptoshare");
+const QString KeepToSharePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-keeptoshare");
 #else
-QString KeepToSharePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-keeptoshare");
+const QString KeepToSharePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
+                                             + "/.config/qdl2/plugins/qdl2-keeptoshare");
 #endif
-int KeepToSharePlugin::MAX_REDIRECTS = 8;
+const int KeepToSharePlugin::MAX_REDIRECTS = 8;
 
 KeepToSharePlugin::KeepToSharePlugin(QObject *parent) :
     ServicePlugin(parent),
