@@ -68,7 +68,7 @@ QString Utils::formatSecs(qint64 secs) {
 
 bool Utils::isArchive(const QString &fileName) {
     const QString suffix = fileName.mid(fileName.lastIndexOf(".") + 1).toLower();
-    return (suffix == "bz") || (suffix == "gz") || (suffix == "rar") || (suffix == "zip");
+    return (suffix == "rar") || (suffix == "zip") || (suffix == "gz") || (suffix == "bz") || (suffix == "7z");
 }
 
 bool Utils::isSplitArchive(const QString &fileName) {

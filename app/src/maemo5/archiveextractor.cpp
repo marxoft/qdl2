@@ -40,7 +40,7 @@ void ArchiveExtractor::start(const Archive &archive) {
     }
 
     m_archive = archive;
-    extract(m_archive.passwords.isEmpty() ? QString() : m_archive.passwords.takeFirst());
+    extract();
 }
 
 void ArchiveExtractor::start(const QStringList &fileNames, const QString &outputDirectory, bool createSubdirectory,
@@ -56,7 +56,7 @@ void ArchiveExtractor::start(const QStringList &fileNames, const QString &output
     m_archive.createSubdirectory = createSubdirectory;
     m_archive.deleteWhenExtracted = deleteWhenExtracted;
     m_archive.passwords = passwords;
-    extract(m_archive.passwords.isEmpty() ? QString() : m_archive.passwords.takeFirst());
+    extract();
 }
 
 void ArchiveExtractor::extract(const QString &password) {
@@ -95,6 +95,23 @@ void ArchiveExtractor::extract(const QString &password) {
                   .arg(fileName)
                   .arg(m_archive.outputDirectory)
                   .arg(m_archive.createSubdirectory ? subFolder : "");
+    }
+    else if (fileSuffix == "bz") {
+        command = QString("untar xjf \"%1\" -C \"%2%3\"")
+                  .arg(fileName)
+                  .arg(m_archive.outputDirectory)
+                  .arg(m_archive.createSubdirectory ? subFolder : "");
+    }
+    else if (fileSuffix == "7z") {
+        command = QString("7za x");
+
+        if (!password.isEmpty()) {
+            command.append(" -p" + password);
+        }
+
+        command.append(QString(" -o\"%1%2\" \"%3\"").arg(m_archive.outputDirectory)
+                                                    .arg(m_archive.createSubdirectory ? subFolder : "")
+                                                    .arg(fileName));
     }
 
     if (command.isEmpty()) {

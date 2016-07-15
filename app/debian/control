@@ -8,7 +8,7 @@ Homepage: http://marxoft.co.uk/projects/qdl
 
 Package: qdl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, unrar, unzip, tar
+Depends: ${shlibs:Depends}, ${misc:Depends}, p7zip-full, tar, unrar, unzip
 Description: Plugin-based download manager
  QDL is a user-friendly, plugin-based download manager that 
  supports file downloads and captcha completion.
