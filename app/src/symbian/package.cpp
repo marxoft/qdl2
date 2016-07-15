@@ -240,7 +240,7 @@ int Package::progress() const {
     
     int completed = 0;
 
-    foreach (TransferItem *child, m_childItems) {
+    foreach (const TransferItem *child, m_childItems) {
         if (child->data(StatusRole) == Completed) {
             completed++;
         }
@@ -260,7 +260,7 @@ QString Package::progressString() const {
 
     int completed = 0;
 
-    foreach (TransferItem *child, m_childItems) {
+    foreach (const TransferItem *child, m_childItems) {
         if (child->data(StatusRole) == Completed) {
             completed++;
         }
@@ -308,6 +308,21 @@ QString Package::errorString() const {
 
 void Package::setErrorString(const QString &e) {
     m_errorString = e;
+}
+
+bool Package::queue() {
+    if (!canStart()) {
+        return false;
+    }
+
+    foreach (const TransferItem *child, m_childItems) {
+        if (child->data(StatusRole) != Completed) {
+            return TransferItem::queue();
+        }
+    }
+
+    processCompletedItems();
+    return true;
 }
 
 bool Package::start() {
@@ -400,7 +415,7 @@ void Package::childItemFinished(TransferItem *item) {
     else if ((status == Canceled) || (status == CanceledAndDeleted)) {
         Logger::log("Package::childItemFinished(): Child item canceled.");
         
-        foreach (TransferItem *child, m_childItems) {
+        foreach (const TransferItem *child, m_childItems) {
             switch (child->data(StatusRole).toInt()) {
             case Canceled:
             case CanceledAndDeleted:
@@ -492,7 +507,7 @@ bool Package::moveFiles() {
 void Package::cleanup() {
     QDir dir;
     
-    foreach (TransferItem *child, m_childItems) {
+    foreach (const TransferItem *child, m_childItems) {
         dir.setPath(child->data(DownloadPathRole).toString());
         
         if (dir.rmdir(dir.path())) {
@@ -509,7 +524,7 @@ void Package::getCustomCommands() {
     const QString defaultCommand = Settings::customCommand();
     const bool defaultEnabled = (!defaultCommand.isEmpty()) && (Settings::customCommandEnabled());
 
-    foreach (TransferItem *child, m_childItems) {
+    foreach (const TransferItem *child, m_childItems) {
         QString command = child->data(CustomCommandRole).toString();        
 
         if (!command.isEmpty()) {

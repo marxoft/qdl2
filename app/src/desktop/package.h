@@ -93,6 +93,7 @@ public:
     QString errorString() const;
     
 public Q_SLOTS:
+    virtual bool queue();
     virtual bool start();
     virtual bool cancel(bool deleteFiles = false);
 
