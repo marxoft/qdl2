@@ -3,7 +3,7 @@
     "name": "Filefactory",
     "icon": "qdl2-filefactory.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|stream)/\\w+",
+    "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|stream|trafficshare)/\\w+",
     "settings": [
         {
             "type": "group",
