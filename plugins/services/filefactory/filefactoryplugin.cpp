@@ -32,7 +32,9 @@
 using namespace QtJson;
 
 const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/get/\\w/[^'\"]+");
+const QRegExp FileFactoryPlugin::FOLDER_LINK_REGEXP("<a href=\"(http(s|)://www\\.filefactory\\.com/file/[^\"]+)\">([^<]+)");
 const QRegExp FileFactoryPlugin::NOT_FOUND_REGEXP("file is no longer available|file has been deleted");
+const QRegExp FileFactoryPlugin::WAIT_REGEXP("Please try again in <span>((\\d+)( hour, | hours, )|)((\\d+)( min, | mins, )|)((\\d+)( secs))");
 const QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
 const QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
 const QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
@@ -49,6 +51,7 @@ FileFactoryPlugin::FileFactoryPlugin(QObject *parent) :
     ServicePlugin(parent),
     m_nam(0),
     m_waitTimer(0),
+    m_passwordSlot("checkUrl"),
     m_redirects(0),
     m_ownManager(false)
 {
@@ -100,9 +103,8 @@ bool FileFactoryPlugin::cancelCurrentOperation() {
 
 void FileFactoryPlugin::checkUrl(const QString &url) {
     m_redirects = 0;
-    QNetworkRequest request(QUrl::fromUserInput(url));
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    m_passwordSlot.clear();
+    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(QUrl::fromUserInput(url)));
     connect(reply, SIGNAL(finished()), this, SLOT(checkUrlIsValid()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -150,6 +152,43 @@ void FileFactoryPlugin::checkUrlIsValid() {
     if (response.contains(NOT_FOUND_REGEXP)) {
         emit error(tr("File not found"));
     }
+    else if (response.contains("Password Protected Folder")) {
+        // Link is password protected, so request password
+        m_url = reply->url();
+        m_passwordSlot = SLOT(checkUrl());
+        QVariantList settings;
+        QVariantMap password;
+        password["type"] = "password";
+        password["label"] = "Password";
+        password["key"] = "password";
+        settings << password;
+        emit settingsRequest(tr("Enter folder password"), settings, "submitFolderPassword");
+    }
+    else if (response.contains("<table id=\"folder_files\"")) {
+        // Get file links from folder
+        UrlResultList list;
+        const QString table = response.section("<table id=\"folder_files\"", 1, 1).section("</table>", 0, 0);
+        int pos = 0;
+        
+        while ((pos = FOLDER_LINK_REGEXP.indexIn(table, pos)) != -1) {
+            const QString link = FOLDER_LINK_REGEXP.cap(1);
+            const QString fileName = FOLDER_LINK_REGEXP.cap(3);
+            
+            if ((!link.isEmpty()) && (!fileName.isEmpty())) {
+                list << UrlResult(link, fileName);
+            }
+            
+            pos += FOLDER_LINK_REGEXP.matchedLength();
+        }
+        
+        if (!list.isEmpty()) {
+            const QString &packageName = list.first().fileName;
+            emit urlChecked(list, packageName.left(packageName.lastIndexOf(".")));
+        }
+        else {
+            emit error(tr("No files found"));
+        }
+    }
     else {
         const QString fileName = response.section("file_name", 1, 1).section("<h2>", 1, 1).section('<', 0, 0);
         
@@ -166,6 +205,7 @@ void FileFactoryPlugin::checkUrlIsValid() {
 
 void FileFactoryPlugin::getDownloadRequest(const QString &url) {
     m_redirects = 0;
+    m_passwordSlot.clear();
     m_url = QUrl::fromUserInput(url);
     QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
@@ -204,18 +244,14 @@ void FileFactoryPlugin::getDownloadRequest(const QString &url) {
 
 void FileFactoryPlugin::fetchDownloadRequest(const QUrl &url) {
     m_redirects = 0;
-    QNetworkRequest request(url);
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
 void FileFactoryPlugin::followRedirect(const QUrl &url, const char* slot) {
     m_redirects++;
-    QNetworkRequest request(url);
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, slot);
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -260,18 +296,36 @@ void FileFactoryPlugin::checkDownloadRequest() {
     const QString response = QString::fromUtf8(reply->readAll());
     
     if (FILE_REGEXP.indexIn(response) != -1) {
-        const int secs = response.section("data-delay=\"", 1, 1).section('"', 0, 0).toInt();
-
-        if (secs > 0) {
-            m_url = QUrl(FILE_REGEXP.cap());
-            startWaitTimer(secs * 1000, SLOT(sendDownloadRequest()));
+        if (response.contains("Download with FileFactory TrafficShare")) {
+            // No waiting required, so request download
+            emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
         }
         else {
-            emit error(tr("Unknown error"));
+            const int secs = response.section("data-delay=\"", 1, 1).section('"', 0, 0).toInt();
+            
+            if (secs > 0) {
+                m_url = QUrl(FILE_REGEXP.cap());
+                startWaitTimer(secs * 1000, SLOT(getWaitTime()));
+            }
+            else {
+                emit error(tr("Unknown error"));
+            }
         }
     }
     else if (response.contains(NOT_FOUND_REGEXP)) {
         emit error(tr("File not found"));
+    }
+    else if (response.contains("Password Protected Folder")) {
+        // Link is password protected, so request password
+        m_url = reply->url();
+        m_passwordSlot = SLOT(checkDownloadRequest());
+        QVariantList settings;
+        QVariantMap password;
+        password["type"] = "password";
+        password["label"] = "Password";
+        password["key"] = "password";
+        settings << password;
+        emit settingsRequest(tr("Enter folder password"), settings, "submitFolderPassword");
     }
     else {
         m_check = response.section("check: '", 1, 1).section('\'', 0, 0);
@@ -296,7 +350,7 @@ void FileFactoryPlugin::submitCaptchaResponse(const QString &challenge, const QS
     request.setRawHeader("Accept", "application/json");
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QNetworkReply *reply = networkAccessManager()->post(request, data.toUtf8());
-    connect(reply, SIGNAL(finished()), this, SLOT(onCaptchaSubmitted()));
+    connect(reply, SIGNAL(finished()), this, SLOT(checkCaptcha()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
@@ -366,9 +420,7 @@ void FileFactoryPlugin::checkCaptcha() {
 
 void FileFactoryPlugin::getDownloadLink(const QUrl &url) {
     m_redirects = 0;
-    QNetworkRequest request(url);
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadLink()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -417,7 +469,7 @@ void FileFactoryPlugin::checkDownloadLink() {
 
         if (secs > 0) {
             m_url = QUrl(FILE_REGEXP.cap());
-            startWaitTimer(secs * 1000, SLOT(sendDownloadRequest()));
+            startWaitTimer(secs * 1000, SLOT(getWaitTime()));
         }
         else {
             emit error(tr("Unknown error"));
@@ -433,12 +485,90 @@ void FileFactoryPlugin::checkDownloadLink() {
     reply->deleteLater();
 }
 
-void FileFactoryPlugin::sendDownloadRequest() {
-    if (m_url.isEmpty()) {
-        emit error(tr("Unknown error"));
+void FileFactoryPlugin::getWaitTime() {
+    m_redirects = 0;
+    QNetworkReply *reply = networkAccessManager()->head(QNetworkRequest(m_url));
+    connect(reply, SIGNAL(finished()), this, SLOT(checkWaitTime()));
+    connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
+}
+
+void FileFactoryPlugin::checkWaitTime() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+
+    if (!reply) {
+        emit error(tr("Network error"));
+        return;
+    }
+
+    const QString redirect = getRedirect(reply);
+        
+    if (!redirect.isEmpty()) {
+        if (FILE_REGEXP.indexIn(redirect) == 0) {
+            emit downloadRequest(QNetworkRequest(redirect));
+        }
+        else if (m_redirects < MAX_REDIRECTS) {
+            followRedirect(redirect, SLOT(checkWaitTime()));
+        }
+        else {
+            emit error(tr("Maximum redirects reached"));
+        }
+
+        reply->deleteLater();
+        return;
+    }
+
+    switch (reply->error()) {
+    case QNetworkReply::NoError:
+        break;
+    case QNetworkReply::OperationCanceledError:
+        reply->deleteLater();
+        return;
+    default:
+        emit error(reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString());
+        reply->deleteLater();
+        return;
+    }
+    
+    const QUrl url = reply->url();
+    
+    if (FILE_REGEXP.indexIn(url.toString()) == 0) {
+        emit downloadRequest(QNetworkRequest(url));
     }
     else {
-        emit downloadRequest(QNetworkRequest(m_url));
+        const QString response = QString::fromUtf8(reply->readAll());
+        
+        if (WAIT_REGEXP.indexIn(response) != -1) {
+            const int hours = qMax(0, WAIT_REGEXP.cap(2).toInt());
+            const int mins = qMax(0, WAIT_REGEXP.cap(5).toInt());
+            const int secs = qMax(1, WAIT_REGEXP.cap(8).toInt());
+            emit waitRequest((hours * 3600000) + (mins * 60000) + (secs * 1000), true);
+        }
+        else {
+            emit error(tr("Unknown error"));
+        }
+    }
+
+    reply->deleteLater();
+}
+
+void FileFactoryPlugin::submitFolderPassword(const QVariantMap &password) {
+    if ((m_url.isEmpty()) || (m_passwordSlot.isEmpty())) {
+        emit error(tr("Cannot submit folder password"));
+        return;
+    }
+    
+    const QByteArray p = password.value("password").toString().toUtf8();
+    
+    if (p.isEmpty()) {
+        emit error(tr("Invalid password specified"));
+    }
+    else {
+        m_redirects = 0;
+        QNetworkRequest request(m_url);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        QNetworkReply *reply = networkAccessManager()->post(request, "Submit=Continue&password=" + p);
+        connect(reply, SIGNAL(finished()), this, m_passwordSlot.constData());
+        connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
     }
 }
 

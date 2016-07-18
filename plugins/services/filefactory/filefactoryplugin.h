@@ -50,6 +50,7 @@ public Q_SLOTS:
     virtual void getDownloadRequest(const QString &url);
     
     void submitCaptchaResponse(const QString &challenge, const QString &response);
+    void submitFolderPassword(const QVariantMap &password);
     void submitLogin(const QVariantMap &credentials);
 
 private Q_SLOTS:
@@ -58,7 +59,9 @@ private Q_SLOTS:
     void checkDownloadRequest();
     void checkCaptcha();
     void checkDownloadLink();
-    void sendDownloadRequest();
+    
+    void getWaitTime();
+    void checkWaitTime();
 
 Q_SIGNALS:
     void currentOperationCanceled();
@@ -80,7 +83,10 @@ private:
     void stopWaitTimer();
 
     static const QRegExp FILE_REGEXP;
+    static const QRegExp FOLDER_LINK_REGEXP;
     static const QRegExp NOT_FOUND_REGEXP;
+    static const QRegExp WAIT_REGEXP;
+    
     static const QString LOGIN_URL;
     static const QString CAPTCHA_URL;
     static const QString RECAPTCHA_PLUGIN_ID;
@@ -94,6 +100,7 @@ private:
     QUrl m_url;
     QString m_check;
     QString m_recaptchaKey;
+    QByteArray m_passwordSlot;
     
     int m_redirects;
 
