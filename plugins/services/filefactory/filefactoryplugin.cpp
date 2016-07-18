@@ -33,8 +33,11 @@ using namespace QtJson;
 
 const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/get/\\w/[^'\"]+");
 const QRegExp FileFactoryPlugin::FOLDER_LINK_REGEXP("<a href=\"(http(s|)://www\\.filefactory\\.com/file/[^\"]+)\">([^<]+)");
-const QRegExp FileFactoryPlugin::NOT_FOUND_REGEXP("file is no longer available|file has been deleted");
-const QRegExp FileFactoryPlugin::WAIT_REGEXP("Please try again in <span>((\\d+)( hour, | hours, )|)((\\d+)( min, | mins, )|)((\\d+)( secs))");
+const QRegExp FileFactoryPlugin::NOT_FOUND_ERROR("file is no longer available|file has been deleted");
+const QRegExp FileFactoryPlugin::WAIT_ERROR("Please try again in <span>((\\d+)( hour, | hours, )|)((\\d+)( min, | mins, )|)((\\d+)( secs))");
+
+const QString FileFactoryPlugin::LIMIT_EXCEEDED_ERROR("exceeded the hourly limit for free users");
+const QString FileFactoryPlugin::PASSWORD_PROTECTED_ERROR("Password Protected Folder");
 const QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
 const QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
 const QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
@@ -149,13 +152,13 @@ void FileFactoryPlugin::checkUrlIsValid() {
 
     const QString response = QString::fromUtf8(reply->readAll());
 
-    if (response.contains(NOT_FOUND_REGEXP)) {
+    if (response.contains(NOT_FOUND_ERROR)) {
         emit error(tr("File not found"));
     }
-    else if (response.contains("Password Protected Folder")) {
+    else if (response.contains(PASSWORD_PROTECTED_ERROR)) {
         // Link is password protected, so request password
         m_url = reply->url();
-        m_passwordSlot = SLOT(checkUrl());
+        m_passwordSlot = SLOT(checkUrlIsValid());
         QVariantList settings;
         QVariantMap password;
         password["type"] = "password";
@@ -312,10 +315,10 @@ void FileFactoryPlugin::checkDownloadRequest() {
             }
         }
     }
-    else if (response.contains(NOT_FOUND_REGEXP)) {
+    else if (response.contains(NOT_FOUND_ERROR)) {
         emit error(tr("File not found"));
     }
-    else if (response.contains("Password Protected Folder")) {
+    else if (response.contains(PASSWORD_PROTECTED_ERROR)) {
         // Link is password protected, so request password
         m_url = reply->url();
         m_passwordSlot = SLOT(checkDownloadRequest());
@@ -475,7 +478,7 @@ void FileFactoryPlugin::checkDownloadLink() {
             emit error(tr("Unknown error"));
         }
     }
-    else if (response.contains(QRegExp("file is no longer available|file has been deleted"))) {
+    else if (response.contains(NOT_FOUND_ERROR)) {
         emit error(tr("File not found"));
     }
     else {
@@ -537,11 +540,14 @@ void FileFactoryPlugin::checkWaitTime() {
     else {
         const QString response = QString::fromUtf8(reply->readAll());
         
-        if (WAIT_REGEXP.indexIn(response) != -1) {
-            const int hours = qMax(0, WAIT_REGEXP.cap(2).toInt());
-            const int mins = qMax(0, WAIT_REGEXP.cap(5).toInt());
-            const int secs = qMax(1, WAIT_REGEXP.cap(8).toInt());
+        if (WAIT_ERROR.indexIn(response) != -1) {
+            const int hours = qMax(0, WAIT_ERROR.cap(2).toInt());
+            const int mins = qMax(0, WAIT_ERROR.cap(5).toInt());
+            const int secs = qMax(1, WAIT_ERROR.cap(8).toInt());
             emit waitRequest((hours * 3600000) + (mins * 60000) + (secs * 1000), true);
+        }
+        else if (response.contains(LIMIT_EXCEEDED_ERROR)) {
+            emit waitRequest(600000, true);
         }
         else {
             emit error(tr("Unknown error"));
