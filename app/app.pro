@@ -177,7 +177,7 @@ maemo5 {
     TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
     TARGET.EPOCSTACKSIZE = 0x14000
     
-    VERSION = 2.1.1
+    VERSION = 2.2.0
     ICON = desktop/symbian/qdl2.svg
     
     MMP_RULES += "DEBUGGABLE_UDEBONLY"
