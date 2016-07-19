@@ -2,7 +2,7 @@
     "type": "qt",
     "name": "Filefactory",
     "icon": "qdl2-filefactory.jpg",
-    "version": 1,
+    "version": 2,
     "regExp": "http(s|)://(www\\.|)filefactory\\.com/(file|share|stream|trafficshare)/\\w+",
     "settings": [
         {
