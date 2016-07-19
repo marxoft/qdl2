@@ -24,7 +24,7 @@
 bool UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
     
-    if ((parts.isEmpty()) || (parts.size() > 2) || (parts.first() != "urlcheck")) {
+    if ((parts.isEmpty()) || (parts.size() > 2) || ((parts.first() != "urlcheck") && (parts.first() != "urlchecksettings"))) {
         return false;
     }
 
@@ -34,19 +34,30 @@ bool UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
             return true;
         }
 
-        if (request->method() == QHttpRequest::HTTP_POST) {
+        if (request->method() == QHttpRequest::HTTP_POST) {                
             const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-            const QStringList urls = properties.value("urls").toStringList();
             
-            if (urls.isEmpty()) {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            if (parts.first() == "urlchecksettings") {
+                if (Qdl::submitUrlCheckSettingsResponse(properties)) {
+                    writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getUrlChecks()));
+                }
+                else {
+                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                }
             }
             else {
-                Qdl::addUrlChecks(urls, properties.value("category").toString());
-                writeResponse(response, QHttpResponse::STATUS_CREATED);
+                const QStringList urls = properties.value("urls").toStringList();
+                
+                if (urls.isEmpty()) {
+                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                }
+                else {
+                    Qdl::addUrlChecks(urls, properties.value("category").toString());
+                    writeResponse(response, QHttpResponse::STATUS_CREATED);
+                }
+                
+                return true;
             }
-
-            return true;
         }
 
         if (request->method() == QHttpRequest::HTTP_DELETE) {

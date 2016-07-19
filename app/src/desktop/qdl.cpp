@@ -603,6 +603,10 @@ QVariantMap Qdl::getUrlChecks() {
     QVariantMap map;
     map["count"] = UrlCheckModel::instance()->rowCount();
     map["progress"] = UrlCheckModel::instance()->progress();
+    map["requestedSettings"] = UrlCheckModel::instance()->requestedSettings();
+    map["requestedSettingsTimeout"] = UrlCheckModel::instance()->requestedSettingsTimeout();
+    map["requestedSettingsTimeoutString"] = UrlCheckModel::instance()->requestedSettingsTimeoutString();
+    map["requestedSettingsTitle"] = UrlCheckModel::instance()->requestedSettingsTitle();
     map["status"] = UrlCheckModel::instance()->status();
     map["statusString"] = UrlCheckModel::instance()->statusString();
     
@@ -634,6 +638,10 @@ bool Qdl::removeUrlCheck(const QString &url) {
     }
 
     return UrlCheckModel::instance()->removeRow(index.row());
+}
+
+bool Qdl::submitUrlCheckSettingsResponse(const QVariantMap &settings) {
+    return UrlCheckModel::instance()->submitSettingsResponse(settings);
 }
 
 QVariantMap Qdl::getUrlRetrievals() {
