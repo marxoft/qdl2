@@ -1,3 +1,9 @@
+qdl-plugins-filefactory (0.3.0) unstable; urgency=low
+
+  * Add support for folders and password-protected links.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 19 Jul 2016 20:49:16 +0000
+
 qdl-plugins-filefactory (0.2.1) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.
