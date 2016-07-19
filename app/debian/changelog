@@ -1,3 +1,10 @@
+qdl (2.2.0) unstable; urgency=low
+
+  * Add support for .7z archives.
+  * Add support for plugin settings requests when performing URL checks.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 19 Jul 2016 20:53:25 +0000
+
 qdl (2.1.1) unstable; urgency=low
 
   * Enable sharing of QNetworkAccessManager instances for JavaScript plugins.
