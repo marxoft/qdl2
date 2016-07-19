@@ -15,14 +15,19 @@
  */
 
 #include "urlcheckmodel.h"
+#include "definitions.h"
 #include "logger.h"
 #include "servicepluginmanager.h"
 #include "transfermodel.h"
+#include "utils.h"
+#include <QTimer>
 
 UrlCheckModel* UrlCheckModel::self = 0;
 
 UrlCheckModel::UrlCheckModel() :
     QAbstractListModel(),
+    m_timer(0),
+    m_requestedSettingsTimeout(0),
     m_status(Idle),
     m_index(-1)
 {
@@ -47,6 +52,72 @@ int UrlCheckModel::progress() const {
     return (!m_items.isEmpty()) && (m_index > 0) ? m_index * 100 / m_items.size() : 0;
 }
 
+QVariantList UrlCheckModel::requestedSettings() const {
+    return m_requestedSettings;
+}
+
+void UrlCheckModel::setRequestedSettings(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+    m_requestedSettingsTitle = title;
+    m_requestedSettings = settings;
+    m_requestedSettingsCallback = callback;
+}
+
+void UrlCheckModel::clearRequestedSettings() {
+    if (!m_requestedSettings.isEmpty()) {
+        m_requestedSettingsTitle.clear();
+        m_requestedSettings.clear();
+        m_requestedSettingsCallback.clear();
+        m_requestedSettingsTimeout = 0;
+    }
+}
+
+int UrlCheckModel::requestedSettingsTimeout() const {
+    return m_requestedSettingsTimeout;
+}
+
+QString UrlCheckModel::requestedSettingsTimeoutString() const {
+    return Utils::formatMSecs(requestedSettingsTimeout());
+}
+
+QString UrlCheckModel::requestedSettingsTitle() const {
+    return m_requestedSettingsTitle;
+}
+
+void UrlCheckModel::startRequestedSettingsTimer() {
+    if (!m_timer) {
+        m_timer = new QTimer(this);
+        m_timer->setInterval(1000);
+        connect(m_timer, SIGNAL(timeout()), this, SLOT(updateRequestedSettingsTimeout()));
+    }
+    
+    m_requestedSettingsTimeout = CAPTCHA_TIMEOUT;
+    m_timer->start();
+}
+
+void UrlCheckModel::stopRequestedSettingsTimer() {
+    if (m_timer) {
+        m_timer->stop();
+    }
+}
+
+void UrlCheckModel::updateRequestedSettingsTimeout() {
+    switch (status()) {
+    case AwaitingSettingsResponse:
+        m_requestedSettingsTimeout -= m_timer->interval();
+        emit requestedSettingsTimeoutChanged(m_requestedSettingsTimeout);
+        
+        if (m_requestedSettingsTimeout <= 0) {
+            stopRequestedSettingsTimer();
+            submitSettingsResponse(QVariantMap());
+        }
+        
+        break;
+    default:
+        stopRequestedSettingsTimer();
+        break;
+    }
+}
+
 UrlCheckModel::Status UrlCheckModel::status() const {
     return m_status;
 }
@@ -55,9 +126,15 @@ void UrlCheckModel::setStatus(UrlCheckModel::Status s) {
     if (s != status()) {
         m_status = s;
         emit statusChanged(s);
-
-        if (s != Active) {
+        
+        switch (s) {
+        case Idle:
+        case Completed:
+        case Canceled:
             m_index = -1;
+            break;
+        default:
+            break;
         }
     }
 }
@@ -65,6 +142,7 @@ void UrlCheckModel::setStatus(UrlCheckModel::Status s) {
 QString UrlCheckModel::statusString() const {
     switch (status()) {
     case Active:
+    case AwaitingSettingsResponse:
         return tr("Checking URLs");
     case Completed:
         return tr("Completed");
@@ -217,6 +295,30 @@ void UrlCheckModel::clear() {
     }
 }
 
+bool UrlCheckModel::submitSettingsResponse(const QVariantMap &settings) {
+    if (status() == AwaitingSettingsResponse) {        
+        if (ServicePlugin *plugin = getCurrentPlugin()) {            
+            if (QMetaObject::invokeMethod(plugin, m_requestedSettingsCallback, Q_ARG(QVariantMap, settings))) {
+                Logger::log("UrlCheckModel::submitSettingsResponse(): Callback successful: " + m_requestedSettingsCallback);
+                stopRequestedSettingsTimer();
+                clearRequestedSettings();
+                setStatus(Active);
+                return true;
+            }
+            
+            Logger::log("UrlCheckModel::submitSettingsResponse(): Error calling callback: " + m_requestedSettingsCallback);
+        }
+        else {
+            Logger::log("UrlCheckModel::submitSettingsResponse(): No plugin acquired");
+        }
+    }
+    else {
+        Logger::log("UrlCheckModel::submitSettingsResponse(): Not awaiting settings response");
+    }
+    
+    return false;
+}
+
 ServicePlugin* UrlCheckModel::getCurrentPlugin() const {
     return ServicePluginManager::instance()->getPluginByUrl(data(index(m_index, 0), UrlRole).toString());
 }
@@ -239,6 +341,8 @@ void UrlCheckModel::next() {
         connect(plugin, SIGNAL(urlChecked(UrlResult)), this, SLOT(onUrlChecked(UrlResult)));
         connect(plugin, SIGNAL(urlChecked(UrlResultList, QString)), this, SLOT(onUrlChecked(UrlResultList, QString)));
         connect(plugin, SIGNAL(error(QString)), this, SLOT(onUrlCheckError(QString)));
+        connect(plugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
+                this, SLOT(onUrlCheckSettingsRequest(QString, QVariantList, QByteArray)));
         plugin->checkUrl(url);
         return;
     }
@@ -303,4 +407,12 @@ void UrlCheckModel::onUrlCheckError(const QString &errorString) {
     const QModelIndex idx = index(m_index, 1);
     emit dataChanged(idx, idx);
     next();
+}
+
+void UrlCheckModel::onUrlCheckSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+    Logger::log("UrlCheckModel::onUrlCheckSettingsRequest()");
+    setRequestedSettings(title, settings, callback);
+    startRequestedSettingsTimer();
+    setStatus(AwaitingSettingsResponse);
+    emit settingsRequest(title, settings);
 }

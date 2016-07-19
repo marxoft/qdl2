@@ -21,8 +21,11 @@ import Qdl 2.0
 MyPage {
     id: root
     
-    property QtObject transfer
+    property alias pluginSettings: repeater.model
     property variant response: ({})
+    
+    signal accepted
+    signal rejected
     
     function setValue(key, value) {
         var r = response;
@@ -30,18 +33,23 @@ MyPage {
         response = r;
     }
     
+    function startTimer(timeout) {
+        timer.timeRemaining = timeout;
+        timer.restart();
+    }
+    
     title: qsTr("Enter settings")
     tools: ToolBarLayout {
         BackToolButton {
-            onClicked: transfer.submitSettingsResponse(null)
+            onClicked: root.rejected()
         }
 
         MyToolButton {
             iconSource: "images/yes.png"
             toolTip: qsTr("Done")
             onClicked: {
-                transfer.submitSettingsResponse(response);
                 appWindow.pageStack.pop();
+                root.accepted();
             }
         }
     }
@@ -331,21 +339,9 @@ MyPage {
             timeRemaining -= interval;
             
             if (timeRemaining <= 0) {
-                transfer.submitSettingsResponse(null);
+                appWindow.pageStack.pop();
+                root.rejected();
             }
-        }
-    }
-
-    Connections {
-        target: transfer
-        onFinished: appWindow.pageStack.pop()
-    }
-
-    onTransferChanged: {
-        if (transfer) {
-            repeater.model = transfer.requestedSettings;
-            timer.timeRemaining = CAPTCHA_TIMEOUT;
-            timer.restart();
         }
     }
 }

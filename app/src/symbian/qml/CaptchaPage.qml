@@ -16,17 +16,25 @@
 
 import QtQuick 1.1
 import com.nokia.symbian 1.1
-import Qdl 2.0
 
 MyPage {
     id: root
     
-    property QtObject transfer
+    property alias image: image.source
+    property alias response: responseEdit.text
+    
+    signal accepted
+    signal rejected
+    
+    function startTimer(timeout) {
+        timer.timeRemaining = timeout;
+        timer.restart();
+    }
     
     title: qsTr("Enter captcha")
     tools: ToolBarLayout {
         BackToolButton {
-            onClicked: transfer.submitCaptchaResponse("")
+            onClicked: root.rejected()
         }
 
         MyToolButton {
@@ -34,8 +42,8 @@ MyPage {
             toolTip: qsTr("Done")
             enabled: responseEdit.text != ""
             onClicked: {
-                transfer.submitCaptchaResponse(responseEdit.text);
                 appWindow.pageStack.pop();
+                root.accepted();
             }
         }
     }
@@ -76,8 +84,8 @@ MyPage {
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 onAccepted: {
                     closeSoftwareInputPanel();
-                    transfer.submitCaptchaResponse(responseEdit.text);
                     appWindow.pageStack.pop();
+                    root.accepted();
                 }
             }
         }
@@ -98,22 +106,9 @@ MyPage {
             timeRemaining -= interval;
             
             if (timeRemaining <= 0) {
-                transfer.submitCaptchaResponse("");
                 appWindow.pageStack.pop();
+                root.rejected();
             }
-        }
-    }
-
-    Connections {
-        target: transfer
-        onFinished: appWindow.pageStack.pop()
-    }
-
-    onTransferChanged: {
-        if (transfer) {
-            image.source = "data:image/jpeg;base64," + transfer.captchaImage;
-            timer.timeRemaining = CAPTCHA_TIMEOUT;
-            timer.restart();
         }
     }
 }

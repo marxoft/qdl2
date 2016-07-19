@@ -20,9 +20,9 @@
 
 #include "urlresult.h"
 #include <QAbstractListModel>
-#include <QStringList>
 
 class ServicePlugin;
+class QTimer;
 
 struct UrlCheck
 {
@@ -52,6 +52,10 @@ class UrlCheckModel : public QAbstractListModel
     
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(QVariantList requestedSettings READ requestedSettings NOTIFY statusChanged)
+    Q_PROPERTY(int requestedSettingsTimeout READ requestedSettingsTimeout NOTIFY requestedSettingsTimeoutChanged)
+    Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString NOTIFY requestedSettingsTimeoutChanged)
+    Q_PROPERTY(QString requestedSettingsTitle READ requestedSettingsTitle NOTIFY statusChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
 
@@ -68,6 +72,7 @@ public:
     enum Status {
         Idle = 0,
         Active,
+        AwaitingSettingsResponse,
         Completed,
         Canceled
     };
@@ -77,6 +82,11 @@ public:
     static UrlCheckModel* instance();
 
     int progress() const;
+    
+    QVariantList requestedSettings() const;
+    int requestedSettingsTimeout() const;
+    QString requestedSettingsTimeoutString() const;
+    QString requestedSettingsTitle() const;
 
     Status status() const;
     QString statusString() const;
@@ -108,19 +118,32 @@ public Q_SLOTS:
     bool remove(int row);
     void cancel();
     void clear();
+    
+    bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
+    void updateRequestedSettingsTimeout();
+    
     void onUrlChecked(const UrlResult &result);
     void onUrlChecked(const UrlResultList &results, const QString &packageName);
     void onUrlCheckError(const QString &errorString);
+    void onUrlCheckSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
     
 Q_SIGNALS:
     void countChanged(int count);
     void progressChanged(int progress);
+    void requestedSettingsTimeoutChanged(int timeout);
+    void settingsRequest(const QString &title, const QVariantList &settings);
     void statusChanged(UrlCheckModel::Status status);
     
 private:
     UrlCheckModel();
+    
+    void setRequestedSettings(const QString &title, const QVariantList &settings, const QByteArray &callback);
+    void clearRequestedSettings();
+    
+    void startRequestedSettingsTimer();
+    void stopRequestedSettingsTimer();
 
     void setStatus(Status s);
 
@@ -129,10 +152,17 @@ private:
     void next();
 
     static UrlCheckModel *self;
-    
+        
     QList<UrlCheck> m_items;
     
     QHash<int, QByteArray> m_roles;
+    
+    QTimer *m_timer;
+    
+    QString m_requestedSettingsTitle;
+    QVariantList m_requestedSettings;
+    QByteArray m_requestedSettingsCallback;
+    int m_requestedSettingsTimeout;
 
     Status m_status;
 

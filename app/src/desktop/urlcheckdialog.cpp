@@ -15,6 +15,7 @@
  */
 
 #include "urlcheckdialog.h"
+#include "pluginsettingsdialog.h"
 #include <QDialogButtonBox>
 #include <QHeaderView>
 #include <QLabel>
@@ -60,6 +61,8 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     m_layout->addWidget(m_buttonBox);
 
     connect(UrlCheckModel::instance(), SIGNAL(progressChanged(int)), m_progressBar, SLOT(setValue(int)));
+    connect(UrlCheckModel::instance(), SIGNAL(settingsRequest(QString, QVariantList)),
+            this, SLOT(showPluginSettingsDialog(QString, QVariantList)));
     connect(UrlCheckModel::instance(), SIGNAL(statusChanged(UrlCheckModel::Status)),
             this, SLOT(onStatusChanged(UrlCheckModel::Status)));
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
@@ -101,6 +104,24 @@ void UrlCheckDialog::showContextMenu(const QPoint &pos) {
 
     if (menu.exec(m_view->mapToGlobal(pos))) {
         UrlCheckModel::instance()->remove(m_view->currentIndex().row());
+    }
+}
+
+void UrlCheckDialog::showPluginSettingsDialog(const QString &title, const QVariantList &settings) {
+    PluginSettingsDialog dialog(settings, this);
+    dialog.setWindowTitle(title);
+    dialog.setTimeout(UrlCheckModel::instance()->requestedSettingsTimeout());
+    connect(UrlCheckModel::instance(), SIGNAL(statusChanged(UrlCheckModel::Status)), &dialog, SLOT(close()));
+    
+    switch (dialog.exec()) {
+    case QDialog::Accepted:
+        UrlCheckModel::instance()->submitSettingsResponse(dialog.settings());
+        break;
+    case QDialog::Rejected:
+        UrlCheckModel::instance()->submitSettingsResponse(QVariantMap());
+        break;
+    default:
+        break;
     }
 }
 

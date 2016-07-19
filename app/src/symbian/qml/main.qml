@@ -39,7 +39,29 @@ AppWindow {
 
     Connections {
         target: transferModel
-        onCaptchaRequest: pageStack.push(Qt.resolvedUrl("CaptchaPage.qml"), {transfer: transfer})
-        onSettingsRequest: pageStack.push(Qt.resolvedUrl("SettingsRequestPage.qml"), {transfer: transfer})
+        onCaptchaRequest: {
+            var page = pageStack.push(Qt.resolvedUrl("CaptchaPage.qml"), {image: "data:image/jpeg;base64," + transfer.captchaImage});
+            page.startTimer(transfer.captchaTimeout);
+            page.accepted.connect(function () { transfer.submitCaptchaResponse(page.response); });
+            page.rejected.connect(function () { transfer.submitCaptchaResponse(""); });
+        }
+        onSettingsRequest: {
+            var page = pageStack.push(Qt.resolvedUrl("SettingsRequestPage.qml"),
+            {title: transfer.requestedSettingsTitle, pluginSettings: transfer.requestedSettings});
+            page.startTimer(transfer.requestedSettingsTimeout);
+            page.accepted.connect(function () { transfer.submitSettingsResponse(page.response); });
+            page.rejected.connect(function () { transfer.submitSettingsResponse(null); });
+        }
+    }
+    
+    Connections {
+        target: urlCheckModel
+        onSettingsRequest: {
+            var page = pageStack.push(Qt.resolvedUrl("SettingsRequestPage.qml"),
+            {title: urlCheckModel.requestedSettingsTitle, pluginSettings: urlCheckModel.requestedSettings});
+            page.startTimer(urlCheckModel.requestedSettingsTimeout);
+            page.accepted.connect(function () { urlCheckModel.submitSettingsResponse(page.response); });
+            page.rejected.connect(function () { urlCheckModel.submitSettingsResponse(null); });
+        }
     }
 }

@@ -45,6 +45,8 @@ public Q_SLOTS:
 private Q_SLOTS:
     void showContextMenu(const QPoint &pos);
     
+    void showPluginSettingsDialog(const QString &title, const QVariantList &settings);
+    
     void onStatusChanged(UrlCheckModel::Status status);
     
 private:

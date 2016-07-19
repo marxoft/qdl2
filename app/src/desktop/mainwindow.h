@@ -76,7 +76,7 @@ private Q_SLOTS:
     
     void showCaptchaDialog(TransferItem *transfer);
     void showPluginSettingsDialog(TransferItem *transfer);
-
+    
     void loadPlugins();
 
     void onActiveTransfersChanged(int active);
