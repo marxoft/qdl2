@@ -68,7 +68,7 @@ void ArchiveExtractor::extract(const QString &password) {
     subFolder = subFolder.left(subFolder.lastIndexOf('.'));
 
     if (fileSuffix == "rar") {
-        command = "unrar x -or -p-";
+        command = QString("unrar x -or -p-");
 
         if (m_archive.createSubdirectory) {
             command.append(" -ad");
@@ -103,10 +103,14 @@ void ArchiveExtractor::extract(const QString &password) {
                   .arg(m_archive.createSubdirectory ? subFolder : "");
     }
     else if (fileSuffix == "7z") {
-        command = QString("7za x");
-
+        command = QString("7za x -p");
+        
         if (!password.isEmpty()) {
-            command.append(" -p" + password);
+            command.append(password);
+        }
+        else {
+            // Avoid password prompt
+            command.append(" ");
         }
 
         command.append(QString(" -o\"%1%2\" \"%3\"").arg(m_archive.outputDirectory)
