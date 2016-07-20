@@ -15,6 +15,7 @@
  */
 
 var VIDEO_FORMATS = ["1080p", "720p", "480p", "240p"];
+var USER_AGENT = "Wget/1.13.4 (linux-gnu)";
 
 var request = null;
 
@@ -40,6 +41,7 @@ function checkUrl(url) {
     }
 
     request.open("GET", url);
+    request.setRequestHeader("User-Agent", USER_AGENT);
     request.send();
 }
 
@@ -104,6 +106,7 @@ function getDownloadRequest(url) {
     }
 
     request.open("GET", url);
+    request.setRequestHeader("User-Agent", USER_AGENT);
     request.send();
 }
 
