@@ -95,6 +95,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     Utils utils;
     
     registerTypes();
+    Settings::setNetworkProxy();
     
     QDeclarativeView view;
     QDeclarativeContext *context = view.rootContext();
