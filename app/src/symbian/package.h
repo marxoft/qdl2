@@ -18,22 +18,9 @@
 #define PACKAGE_H
 
 #include "transferitem.h"
+#include <QStringList>
 
 class QProcess;
-
-struct Command
-{
-    Command(const QString &dir, const QString &com) :
-        workingDirectory(dir),
-        command(com)
-    {
-    }
-
-    QString workingDirectory;
-    QString command;
-};
-
-typedef QList<Command> CommandList;
 
 class Package : public TransferItem
 {
@@ -116,7 +103,7 @@ private:
     bool moveFiles();
 
     void getCustomCommands();
-    void executeCustomCommand(const Command &command);
+    void executeCustomCommand(const QString &command);
     
     void cleanup();
 
@@ -134,7 +121,7 @@ private:
 
     Status m_status;
 
-    CommandList m_commands;
+    QStringList m_commands;
 };
 
 #endif // PACKAGE_H

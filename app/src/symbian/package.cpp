@@ -528,39 +528,29 @@ void Package::getCustomCommands() {
         QString command = child->data(CustomCommandRole).toString();        
 
         if (!command.isEmpty()) {
-            const QString workingDirectory = child->data(DownloadPathRole).toString();
-            command.replace("%f", child->data(FileNameRole).toString());
-            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
-                               .arg(workingDirectory).arg(command));
-            m_commands << Command(workingDirectory, command);
+            command.replace("%f", child->data(FilePathRole).toString());
+            Logger::log("Package::getCustomCommands(): Adding custom command: " + command);
+            m_commands << command;
         }
         
         if ((defaultEnabled) && ((command.isEmpty()) || (!child->data(CustomCommandOverrideEnabledRole).toBool()))) {
-            const QString workingDirectory = child->data(DownloadPathRole).toString();
             command = defaultCommand;
-            command.replace("%f", child->data(FileNameRole).toString());
-            Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
-                               .arg(workingDirectory).arg(command));
-            m_commands << Command(workingDirectory, command);
+            command.replace("%f", child->data(FilePathRole).toString());
+            Logger::log("Package::getCustomCommands(): Adding custom command: " + command);
+            m_commands << command;
         }
     }
 }
 
-void Package::executeCustomCommand(const Command &command) {
+void Package::executeCustomCommand(const QString &command) {
     if (!m_process) {
         m_process = new QProcess(this);
         connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(onCustomCommandFinished(int)));
         connect(m_process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onCustomCommandError()));
     }
 
-    Logger::log(QString("Package::executeCustomCommand(): Working directory: %1, Command: %2")
-                       .arg(command.workingDirectory).arg(command.command));
-    
-    if (QDir(command.workingDirectory).exists()) {
-        m_process->setWorkingDirectory(command.workingDirectory);
-    }
-    
-    m_process->start(command.command);
+    Logger::log("Package::executeCustomCommand(): Command: " + command);
+    m_process->start(command);
 }
 
 void Package::onCustomCommandFinished(int exitCode) {
