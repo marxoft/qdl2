@@ -40,17 +40,19 @@ AppWindow {
     Connections {
         target: transferModel
         onCaptchaRequest: {
-            var page = pageStack.push(Qt.resolvedUrl("CaptchaPage.qml"), {image: "data:image/jpeg;base64," + transfer.captchaImage});
-            page.startTimer(transfer.captchaTimeout);
-            page.accepted.connect(function () { transfer.submitCaptchaResponse(page.response); });
-            page.rejected.connect(function () { transfer.submitCaptchaResponse(""); });
+            var t = transfer;
+            var page = pageStack.push(Qt.resolvedUrl("CaptchaPage.qml"), {image: "data:image/jpeg;base64," + t.captchaImage});
+            page.startTimer(t.captchaTimeout);
+            page.accepted.connect(function () { t.submitCaptchaResponse(page.response); });
+            page.rejected.connect(function () { t.submitCaptchaResponse(""); });
         }
         onSettingsRequest: {
+            var t = transfer;
             var page = pageStack.push(Qt.resolvedUrl("SettingsRequestPage.qml"),
-            {title: transfer.requestedSettingsTitle, pluginSettings: transfer.requestedSettings});
-            page.startTimer(transfer.requestedSettingsTimeout);
-            page.accepted.connect(function () { transfer.submitSettingsResponse(page.response); });
-            page.rejected.connect(function () { transfer.submitSettingsResponse(null); });
+            {title: t.requestedSettingsTitle, pluginSettings: t.requestedSettings});
+            page.startTimer(t.requestedSettingsTimeout);
+            page.accepted.connect(function () { t.submitSettingsResponse(page.response); });
+            page.rejected.connect(function () { t.submitSettingsResponse(null); });
         }
     }
     
