@@ -57,6 +57,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<UrlCheckModel> checker(UrlCheckModel::instance());
     QScopedPointer<UrlRetrievalModel> retriever(UrlRetrievalModel::instance());
 
+    Settings::setNetworkProxy();
+
     clipboard.data()->setEnabled(Settings::clipboardMonitorEnabled());
 
     decaptchaManager.data()->load();

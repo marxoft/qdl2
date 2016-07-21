@@ -54,6 +54,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<UrlCheckModel> checker(UrlCheckModel::instance());
     QScopedPointer<UrlRetrievalModel> retriever(UrlRetrievalModel::instance());
     QScopedPointer<WebServer> server(WebServer::instance());
+
+    Settings::setNetworkProxy();
     
     clipboard.data()->setEnabled(Settings::clipboardMonitorEnabled());
     server.data()->setPort(Settings::webInterfacePort());

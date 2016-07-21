@@ -16,6 +16,7 @@
 
 #include "settings.h"
 #include "definitions.h"
+#include <QNetworkProxy>
 #include <QSettings>
 
 static QVariant value(const QString &property, const QVariant &defaultValue = QVariant()) {
@@ -352,6 +353,23 @@ void Settings::setNetworkProxyPassword(const QString &password) {
             emit self->networkProxyPasswordChanged(password);
         }
     }
+}
+
+void Settings::setNetworkProxy() {
+    QNetworkProxy proxy;
+
+    if (networkProxyEnabled()) {
+        proxy.setHostName(networkProxyHost());
+        proxy.setPort(networkProxyPort());
+        proxy.setType(QNetworkProxy::ProxyType(networkProxyType()));
+
+        if (networkProxyAuthenticationEnabled()) {
+            proxy.setUser(networkProxyUsername());
+            proxy.setPassword(networkProxyPassword());
+        }
+    }
+
+    QNetworkProxy::setApplicationProxy(proxy);
 }
 
 bool Settings::webInterfaceEnabled() {

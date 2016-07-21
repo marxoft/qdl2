@@ -131,6 +131,7 @@ public Q_SLOTS:
     static void setNetworkProxyAuthenticationEnabled(bool enabled);
     static void setNetworkProxyUsername(const QString &username);
     static void setNetworkProxyPassword(const QString &password);
+    static void setNetworkProxy();
     
     static void setTransferViewHeaderState(const QByteArray &state);
 

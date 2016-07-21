@@ -65,34 +65,12 @@ void NetworkSettingsTab::restore() {
 }
 
 void NetworkSettingsTab::save() {
-    const bool enabled = m_proxyCheckBox->isChecked();
-    const bool authEnabled = m_authCheckBox->isChecked();
-    const int type = m_proxyTypeSelector->itemData(m_proxyTypeSelector->currentIndex()).toInt();
-    const QString host = m_hostEdit->text();
-    const QString username = m_usernameEdit->text();
-    const QString password = m_passwordEdit->text();
-    const int port = m_portSpinBox->value();
-    
-    Settings::setNetworkProxyEnabled(enabled);
-    Settings::setNetworkProxyAuthenticationEnabled(authEnabled);
-    Settings::setNetworkProxyType(type);
-    Settings::setNetworkProxyHost(host);
-    Settings::setNetworkProxyUsername(username);
-    Settings::setNetworkProxyPassword(password);
-    Settings::setNetworkProxyPort(port);
-
-    QNetworkProxy proxy;
-
-    if (m_proxyCheckBox->isChecked()) {
-        proxy.setHostName(host);
-        proxy.setPort(port);
-        proxy.setType(QNetworkProxy::ProxyType(type));
-
-        if (authEnabled) {
-            proxy.setUser(username);
-            proxy.setPassword(password);
-        }
-    }
-
-    QNetworkProxy::setApplicationProxy(proxy);
+    Settings::setNetworkProxyEnabled(m_proxyCheckBox->isChecked());
+    Settings::setNetworkProxyAuthenticationEnabled(m_authCheckBox->isChecked());
+    Settings::setNetworkProxyType(m_proxyTypeSelector->itemData(m_proxyTypeSelector->currentIndex()).toInt());
+    Settings::setNetworkProxyHost(m_hostEdit->text());
+    Settings::setNetworkProxyUsername(m_usernameEdit->text());
+    Settings::setNetworkProxyPassword(m_passwordEdit->text());
+    Settings::setNetworkProxyPort(m_portSpinBox->value());
+    Settings::setNetworkProxy();
 }
