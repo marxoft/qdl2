@@ -31,7 +31,7 @@
 
 using namespace QtJson;
 
-const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w\\d+\\.filefactory\\.com/get/\\w/[^'\"]+");
+const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w+\\.filefactory\\.com/get/\\w/[^'\"]+");
 const QRegExp FileFactoryPlugin::FOLDER_LINK_REGEXP("<a href=\"(http(s|)://www\\.filefactory\\.com/file/[^\"]+)\">([^<]+)");
 const QRegExp FileFactoryPlugin::NOT_FOUND_ERROR("file is no longer available|file has been deleted");
 const QRegExp FileFactoryPlugin::WAIT_ERROR("Please try again in <span>((\\d+)( hour, | hours, )|)((\\d+)( min, | mins, )|)((\\d+)( secs))");
