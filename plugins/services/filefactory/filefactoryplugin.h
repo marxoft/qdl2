@@ -84,8 +84,8 @@ private:
 
     static const QRegExp FILE_REGEXP;
     static const QRegExp FOLDER_LINK_REGEXP;
-    static const QRegExp NOT_FOUND_ERROR;
     static const QRegExp WAIT_ERROR;
+    static const QRegExp OTHER_ERROR;
     
     static const QString LIMIT_EXCEEDED_ERROR;
     static const QString PASSWORD_PROTECTED_ERROR;

@@ -33,9 +33,8 @@ using namespace QtJson;
 
 const QRegExp FileFactoryPlugin::FILE_REGEXP("http(s|)://\\w+\\.filefactory\\.com/get/\\w/[^'\"]+");
 const QRegExp FileFactoryPlugin::FOLDER_LINK_REGEXP("<a href=\"(http(s|)://www\\.filefactory\\.com/file/[^\"]+)\">([^<]+)");
-const QRegExp FileFactoryPlugin::NOT_FOUND_ERROR("file is no longer available|file has been deleted");
 const QRegExp FileFactoryPlugin::WAIT_ERROR("Please try again in <span>((\\d+)( hour, | hours, )|)((\\d+)( min, | mins, )|)((\\d+)( secs))");
-
+const QRegExp FileFactoryPlugin::OTHER_ERROR("class=\"alert alert-danger\">\\s+<h2>[\\w\\s]+</h2>\\s+<p>([^\\.<]+)");
 const QString FileFactoryPlugin::LIMIT_EXCEEDED_ERROR("exceeded the hourly limit for free users");
 const QString FileFactoryPlugin::PASSWORD_PROTECTED_ERROR("Password Protected Folder");
 const QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
@@ -151,23 +150,8 @@ void FileFactoryPlugin::checkUrlIsValid() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
-
-    if (response.contains(NOT_FOUND_ERROR)) {
-        emit error(tr("File not found"));
-    }
-    else if (response.contains(PASSWORD_PROTECTED_ERROR)) {
-        // Link is password protected, so request password
-        m_url = reply->url();
-        m_passwordSlot = SLOT(checkUrlIsValid());
-        QVariantList settings;
-        QVariantMap password;
-        password["type"] = "password";
-        password["label"] = "Password";
-        password["key"] = "password";
-        settings << password;
-        emit settingsRequest(tr("Enter folder password"), settings, "submitFolderPassword");
-    }
-    else if (response.contains("<table id=\"folder_files\"")) {
+    
+    if (response.contains("<table id=\"folder_files\"")) {
         // Get file links from folder
         UrlResultList list;
         const QString table = response.section("<table id=\"folder_files\"", 1, 1).section("</table>", 0, 0);
@@ -196,7 +180,24 @@ void FileFactoryPlugin::checkUrlIsValid() {
         const QString fileName = response.section("file_name", 1, 1).section("<h2>", 1, 1).section('<', 0, 0);
         
         if (fileName.isEmpty()) {
-            emit error(tr("File not found"));
+            if (response.contains(PASSWORD_PROTECTED_ERROR)) {
+                // Link is password protected, so request password
+                m_url = reply->url();
+                m_passwordSlot = SLOT(checkUrlIsValid());
+                QVariantList settings;
+                QVariantMap password;
+                password["type"] = "password";
+                password["label"] = "Password";
+                password["key"] = "password";
+                settings << password;
+                emit settingsRequest(tr("Enter folder password"), settings, "submitFolderPassword");
+            }
+            else if (OTHER_ERROR.indexIn(response) != -1) {
+                emit error(OTHER_ERROR.cap(1).trimmed());
+            }
+            else {
+                emit error(tr("File not found"));
+            }
         }
         else {
             emit urlChecked(UrlResult(reply->request().url().toString(), fileName));
@@ -315,9 +316,6 @@ void FileFactoryPlugin::checkDownloadRequest() {
             }
         }
     }
-    else if (response.contains(NOT_FOUND_ERROR)) {
-        emit error(tr("File not found"));
-    }
     else if (response.contains(PASSWORD_PROTECTED_ERROR)) {
         // Link is password protected, so request password
         m_url = reply->url();
@@ -329,6 +327,9 @@ void FileFactoryPlugin::checkDownloadRequest() {
         password["key"] = "password";
         settings << password;
         emit settingsRequest(tr("Enter folder password"), settings, "submitFolderPassword");
+    }
+    else if (OTHER_ERROR.indexIn(response) != -1) {
+        emit error(OTHER_ERROR.cap(1).trimmed());
     }
     else {
         m_check = response.section("check: '", 1, 1).section('\'', 0, 0);
@@ -478,8 +479,8 @@ void FileFactoryPlugin::checkDownloadLink() {
             emit error(tr("Unknown error"));
         }
     }
-    else if (response.contains(NOT_FOUND_ERROR)) {
-        emit error(tr("File not found"));
+    else if (OTHER_ERROR.indexIn(response) != -1) {
+        emit error(OTHER_ERROR.cap(1).trimmed());
     }
     else {
         emit error(tr("Unknown error"));
@@ -548,6 +549,9 @@ void FileFactoryPlugin::checkWaitTime() {
         }
         else if (response.contains(LIMIT_EXCEEDED_ERROR)) {
             emit waitRequest(600000, true);
+        }
+        else if (OTHER_ERROR.indexIn(response) != -1) {
+            emit error(OTHER_ERROR.cap(1).trimmed());
         }
         else {
             emit error(tr("Unknown error"));
