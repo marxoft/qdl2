@@ -135,7 +135,7 @@ private:
 
     static TransferModel *self;
 
-    static QString MIME_TYPE;
+    static const QString MIME_TYPE;
 
     TransferItem *m_packages;
 

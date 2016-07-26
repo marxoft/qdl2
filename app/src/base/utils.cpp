@@ -72,13 +72,17 @@ bool Utils::isArchive(const QString &fileName) {
 }
 
 bool Utils::isSplitArchive(const QString &fileName) {
-    return fileName.indexOf(QRegExp("\\.part\\d+\\.(rar|zip)$", Qt::CaseInsensitive)) != -1;
+    return fileName.contains(QRegExp("\\.part\\d+\\.(rar|zip)$", Qt::CaseInsensitive));
 }
 
 bool Utils::belongsToArchive(const QString &fileName, const QString &archiveFileName) {
-    return fileName.indexOf(QRegExp(QString("%1\\.part\\d+\\.%2")
-                           .arg(archiveFileName.left(archiveFileName.lastIndexOf(".part")))
-                           .arg(archiveFileName.mid(archiveFileName.lastIndexOf(".") + 1)))) == 0;
+    if (fileName == archiveFileName) {
+        return false;
+    }
+    
+    const int part = fileName.lastIndexOf(".part");
+    const int ext = fileName.lastIndexOf(".") + 1;
+    return (fileName.left(part) == archiveFileName.left(part)) && (fileName.mid(ext) == archiveFileName.mid(ext));
 }
 
 QString Utils::getSanitizedFileName(const QString &fileName) {

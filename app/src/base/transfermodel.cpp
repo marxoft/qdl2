@@ -30,7 +30,7 @@
 
 TransferModel* TransferModel::self = 0;
 
-QString TransferModel::MIME_TYPE("application/x-qdl2transfermodeldatalist");
+const QString TransferModel::MIME_TYPE("application/x-qdl2transfermodeldatalist");
 
 TransferModel::TransferModel() :
     QAbstractItemModel(),
@@ -639,11 +639,13 @@ TransferItem* TransferModel::findPackage(const QString &fileName) const {
         return 0;
     }
     
+    const QString name = fileName.left(fileName.lastIndexOf(".part"));
+    const QString suffix = fileName.mid(fileName.lastIndexOf(".") + 1);
+    
     for (int i = 0; i < m_packages->rowCount(); i++) {
         if (TransferItem *package = m_packages->childItem(i)) {
-            if (fileName.indexOf(QRegExp(QString("%1\\.part\\d+\\.%2")
-                                .arg(package->data(TransferItem::NameRole).toString())
-                                .arg(package->data(TransferItem::SuffixRole).toString()))) == 0) {
+            if ((package->data(TransferItem::NameRole).toString() == name)
+                && (package->data(TransferItem::SuffixRole).toString() == suffix)) {
                 Logger::log("TransferModel::findPackage(). Found package for " + fileName);
                 return package;
             }
