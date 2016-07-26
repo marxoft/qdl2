@@ -1,0 +1,33 @@
+{
+    "type": "qt",
+    "name": "VBOX7",
+    "icon": "qdl2-vbox7.jpg",
+    "version": 1,
+    "regExp": "http://vbox7\\.com/play:\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Default video format",
+            "key": "videoFormat",
+            "value": "hd",
+            "options": [
+                {
+                    "label": "720P",
+                    "value": "hd"
+                },
+
+                {
+                    "label": "480P",
+                    "value": "ld"
+                }
+            ]
+        }
+    ]
+}
