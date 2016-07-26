@@ -35,7 +35,7 @@ symbian {
     stub.sources = "$$TARGET".qtplugin
     stub.path = !:/qdl2/plugins/services
 
-    DEPLOYMENT.display_name = QDL Plugins Google Drive
+    DEPLOYMENT.display_name = QDL Plugins VBOX7
     DEPLOYMENT += \
         vbox7_deployment \
         config \
