@@ -36,6 +36,8 @@ const QString Vbox7Plugin::CONFIG_FILE(QDesktopServices::storageLocation(QDeskto
 #endif
 const QString Vbox7Plugin::BASE_URL("http://vbox7.com");
 
+const QByteArray Vbox7Plugin::USER_AGENT("Wget/1.13.4 (linux-gnu)");
+
 const QRegExp Vbox7Plugin::NO_JS_ERROR("/show:missjavascript\\?[^']+");
 
 const int Vbox7Plugin::MAX_REDIRECTS = 8;
@@ -84,7 +86,9 @@ bool Vbox7Plugin::cancelCurrentOperation() {
 void Vbox7Plugin::checkUrl(const QString &url) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url).toString();
-    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(m_url));
+    QNetworkRequest request(m_url);
+    request.setRawHeader("User-Agent", USER_AGENT);
+    QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkUrlIsValid()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -152,7 +156,9 @@ void Vbox7Plugin::checkUrlIsValid() {
 void Vbox7Plugin::getDownloadRequest(const QString &url) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url).toString();
-    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(m_url));
+    QNetworkRequest request(m_url);
+    request.setRawHeader("User-Agent", USER_AGENT);
+    QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -294,7 +300,11 @@ QString Vbox7Plugin::getRedirect(const QString &response, const QString &url) {
 
 void Vbox7Plugin::followRedirect(const QString &url, const char *slot) {
     m_redirects++;
-    QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", USER_AGENT);
+    QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, slot);
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
+
+Q_EXPORT_PLUGIN2(qdl2-vbox7, Vbox7Plugin)

@@ -66,6 +66,8 @@ private:
 
     static const QString CONFIG_FILE;
     static const QString BASE_URL;
+
+    static const QByteArray USER_AGENT;
     
     static const QRegExp NO_JS_ERROR;
     
