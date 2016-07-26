@@ -20,7 +20,6 @@
 
 #include "serviceplugin.h"
 #include <QPointer>
-#include <QRegExp>
 #include <QStringList>
 #include <QUrl>
 
