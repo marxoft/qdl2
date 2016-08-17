@@ -1,6 +1,12 @@
+qdl (2.3.0) unstable; urgency=low
+
+  * Add improved logging (use '-v' option with value 1-5).
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 16 Aug 2016 16:11:41 +0000
+
 qdl (2.2.0) unstable; urgency=low
 
-  * Add support for .7z archives.
+  * Add support for .7z archives (requires p7zip-full).
   * Add support for plugin settings requests when performing URL checks.
 
  -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 19 Jul 2016 20:53:25 +0000

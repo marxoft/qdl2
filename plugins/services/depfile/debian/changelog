@@ -1,3 +1,9 @@
+qdl-plugins-depfile (0.0.3) unstable; urgency=low
+
+  * Support short URLs.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 16 Aug 2016 20:08:21 +0000
+
 qdl-plugins-depfile (0.0.2) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.

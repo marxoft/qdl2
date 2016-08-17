@@ -1,5 +1,23 @@
+qdl-plugins-datafile (0.2.0) unstable; urgency=low
+
+  * Changes to plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 08 Jun 2016 22:37:12 +0000
+
+qdl-plugins-datafile (0.1.1) unstable; urgency=low
+
+  * Disconnect from timer signal when current operation is canceled.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sun, 01 Jun 2014 16:46:43 +0000
+
+qdl-plugins-datafile (0.1.0) unstable; urgency=low
+
+  * Fixes and changes to base plugin class.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sun, 03 Nov 2013 15:34:04 +0000
+
 qdl-plugins-datafile (0.0.1) unstable; urgency=low
 
   * Inital release.
 
- -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 08 Jun 2016 22:37:12 +0000
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 26 Apr 2013 12:02:04 +0000
