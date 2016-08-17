@@ -77,7 +77,7 @@ void JavaScriptServicePlugin::initEngine() {
             return;
         }
         
-        Logger::log("JavaScriptServicePlugin::initEngine(): JavaScript file evaluated OK");
+        Logger::log("JavaScriptServicePlugin::initEngine(): JavaScript file evaluated OK", Logger::HighVerbosity);
         m_evaluated = true;
         m_global = new JavaScriptServicePluginGlobalObject(m_engine);
         

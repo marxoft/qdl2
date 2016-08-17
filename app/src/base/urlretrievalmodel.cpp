@@ -195,7 +195,8 @@ int UrlRetrievalModel::match(int start, const QByteArray &role, const QVariant &
 }
 
 void UrlRetrievalModel::append(const QString &url, const QString &pluginId) {
-    Logger::log(QString("UrlRetrievalModel::append(): URL: %1, pluginId: %2").arg(url).arg(pluginId));
+    Logger::log(QString("UrlRetrievalModel::append(): URL: %1, pluginId: %2").arg(url).arg(pluginId),
+                Logger::LowVerbosity);
     beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
     m_items << UrlRetrieval(url, pluginId);
     endInsertRows();
@@ -263,7 +264,7 @@ void UrlRetrievalModel::onRetrieverFinished(UrlRetriever *retriever) {
     }
 
     Logger::log(QString("UrlRetrievalModel::onRetrieverFinished(): %1. %2 URLs found")
-                       .arg(retriever->url()).arg(retriever->results().size()));
+                       .arg(retriever->url()).arg(retriever->results().size()), Logger::LowVerbosity);
     m_items[m_index].done = true;
     m_items[m_index].results = retriever->results();
     const QModelIndex idx = index(m_index, 1);

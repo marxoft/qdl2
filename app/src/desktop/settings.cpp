@@ -214,6 +214,34 @@ void Settings::setArchivePasswords(const QStringList &passwords) {
     }
 }
 
+QString Settings::loggerFileName() {
+    return value("Logger/fileName", APP_CONFIG_PATH + "log").toString();
+}
+
+void Settings::setLoggerFileName(const QString &fileName) {
+    if (fileName != loggerFileName()) {
+        setValue("Logger/fileName", fileName);
+        
+        if (self) {
+            emit self->loggerFileNameChanged(fileName);
+        }
+    }
+}
+
+int Settings::loggerVerbosity() {
+    return value("Logger/verbosity", 0).toInt();
+}
+
+void Settings::setLoggerVerbosity(int verbosity) {
+    if (verbosity != loggerVerbosity()) {
+        setValue("Logger/verbosity", verbosity);
+        
+        if (self) {
+            emit self->loggerVerbosityChanged(verbosity);
+        }
+    }
+}
+
 int Settings::maximumConcurrentTransfers() {
     return qBound(1, value("maximumConcurrentTransfers", 1).toInt(), 5);
 }

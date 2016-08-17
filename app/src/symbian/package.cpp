@@ -400,12 +400,13 @@ void Package::childItemFinished(TransferItem *item) {
     const TransferItem::Status status = TransferItem::Status(item->data(StatusRole).toInt());
     
     if (status == Completed) {
-        Logger::log("Package::childItemFinished(): Child item completed");
+        Logger::log("Package::childItemFinished(): Child item completed", Logger::LowVerbosity);
         emit dataChanged(this, ProgressRole);
         
         foreach (const TransferItem *child, m_childItems) {
             if (child->data(StatusRole) != Completed) {
-                Logger::log("Package::childItemFinished(): Incomplete items remaining. Doing nothing");
+                Logger::log("Package::childItemFinished(): Incomplete items remaining. Doing nothing",
+                            Logger::MediumVerbosity);
                 return;
             }
         }
@@ -413,7 +414,7 @@ void Package::childItemFinished(TransferItem *item) {
         processCompletedItems();        
     }
     else if ((status == Canceled) || (status == CanceledAndDeleted)) {
-        Logger::log("Package::childItemFinished(): Child item canceled.");
+        Logger::log("Package::childItemFinished(): Child item canceled.", Logger::LowVerbosity);
         
         foreach (const TransferItem *child, m_childItems) {
             switch (child->data(StatusRole).toInt()) {
@@ -421,7 +422,8 @@ void Package::childItemFinished(TransferItem *item) {
             case CanceledAndDeleted:
                 break;
             default:
-                Logger::log("Package::childItemFinished(): Non-canceled items remaining. Doing nothing");
+                Logger::log("Package::childItemFinished(): Non-canceled items remaining. Doing nothing",
+                            Logger::MediumVerbosity);
                 return;
             }
         }
@@ -465,12 +467,11 @@ bool Package::moveFiles() {
     }
 
     if (!dir.mkpath(outputPath)) {
-        Logger::log("Package::moveFiles(): Cannot create output directory");
         setErrorString(tr("Cannot create output directory for downloaded files"));
         return false;
     };
 
-    Logger::log("Package::moveFiles(): Moving files to directory " + outputPath);
+    Logger::log("Package::moveFiles(): Moving files to directory " + outputPath, Logger::LowVerbosity);
     QFile file;
 
     foreach (TransferItem *child, m_childItems) {
@@ -481,20 +482,21 @@ bool Package::moveFiles() {
             const QString newFilePath = Utils::getSaveFileName(oldFileName, outputPath);
             
             if ((newFilePath.isEmpty()) || (!file.rename(oldFilePath, newFilePath))) {
-                Logger::log(QString("Package::moveFiles(): Cannot rename %1 to %2").arg(oldFilePath)
-                                                                                   .arg(newFilePath));
+                Logger::log(QString("Package::moveFiles(): Cannot rename %1 to %2").arg(oldFilePath).arg(newFilePath),
+                            Logger::LowVerbosity);
                 setErrorString(tr("Cannot move files: %1").arg(file.errorString()));
                 return false;
             }
             
-            Logger::log(QString("Package::moveFiles(): Renamed %1 to %2").arg(oldFilePath).arg(newFilePath));
+            Logger::log(QString("Package::moveFiles(): Renamed %1 to %2").arg(oldFilePath).arg(newFilePath),
+                        Logger::MediumVerbosity);
             dir.setPath(child->data(DownloadPathRole).toString());
             
             if (dir.rmdir(dir.path())) {
-                Logger::log("Package::moveFiles(): Removed directory " + dir.path());
+                Logger::log("Package::moveFiles(): Removed directory " + dir.path(), Logger::MediumVerbosity);
             }
             else {
-                Logger::log("Package::moveFiles(): Cannot remove directory " + dir.path());
+                Logger::log("Package::moveFiles(): Cannot remove directory " + dir.path(), Logger::MediumVerbosity);
             }
             
             child->setData(FilePathRole, newFilePath);
@@ -511,10 +513,10 @@ void Package::cleanup() {
         dir.setPath(child->data(DownloadPathRole).toString());
         
         if (dir.rmdir(dir.path())) {
-            Logger::log("Package::cleanup(): Removed directory " + dir.path());
+            Logger::log("Package::cleanup(): Removed directory " + dir.path(), Logger::MediumVerbosity);
         }
         else {
-            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
+            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path(), Logger::MediumVerbosity);
         }
     }
 }
@@ -529,14 +531,14 @@ void Package::getCustomCommands() {
 
         if (!command.isEmpty()) {
             command.replace("%f", child->data(FilePathRole).toString());
-            Logger::log("Package::getCustomCommands(): Adding custom command: " + command);
+            Logger::log("Package::getCustomCommands(): Adding custom command: " + command, Logger::MediumVerbosity);
             m_commands << command;
         }
         
         if ((defaultEnabled) && ((command.isEmpty()) || (!child->data(CustomCommandOverrideEnabledRole).toBool()))) {
             command = defaultCommand;
             command.replace("%f", child->data(FilePathRole).toString());
-            Logger::log("Package::getCustomCommands(): Adding custom command: " + command);
+            Logger::log("Package::getCustomCommands(): Adding custom command: " + command, Logger::MediumVerbosity);
             m_commands << command;
         }
     }
@@ -549,7 +551,7 @@ void Package::executeCustomCommand(const QString &command) {
         connect(m_process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onCustomCommandError()));
     }
 
-    Logger::log("Package::executeCustomCommand(): Command: " + command);
+    Logger::log("Package::executeCustomCommand(): Command: " + command, Logger::LowVerbosity);
     m_process->start(command);
 }
 

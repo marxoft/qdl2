@@ -259,7 +259,7 @@ int UrlCheckModel::match(int start, const QByteArray &role, const QVariant &valu
 }
 
 void UrlCheckModel::append(const QString &url) {
-    Logger::log("UrlCheckModel::append(): " + url);
+    Logger::log("UrlCheckModel::append(): " + url, Logger::LowVerbosity);
     beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
     m_items << UrlCheck(url);
     endInsertRows();
@@ -315,21 +315,23 @@ bool UrlCheckModel::submitSettingsResponse(const QVariantMap &settings) {
     if (status() == AwaitingSettingsResponse) {        
         if (ServicePlugin *plugin = getCurrentPlugin()) {            
             if (QMetaObject::invokeMethod(plugin, m_requestedSettingsCallback, Q_ARG(QVariantMap, settings))) {
-                Logger::log("UrlCheckModel::submitSettingsResponse(): Callback successful: " + m_requestedSettingsCallback);
+                Logger::log("UrlCheckModel::submitSettingsResponse(): Callback successful: "
+                            + m_requestedSettingsCallback, Logger::MediumVerbosity);
                 stopRequestedSettingsTimer();
                 clearRequestedSettings();
                 setStatus(Active);
                 return true;
             }
             
-            Logger::log("UrlCheckModel::submitSettingsResponse(): Error calling callback: " + m_requestedSettingsCallback);
+            Logger::log("UrlCheckModel::submitSettingsResponse(): Error calling callback: "
+                        + m_requestedSettingsCallback);
         }
         else {
             Logger::log("UrlCheckModel::submitSettingsResponse(): No plugin acquired");
         }
     }
     else {
-        Logger::log("UrlCheckModel::submitSettingsResponse(): Not awaiting settings response");
+        Logger::log("UrlCheckModel::submitSettingsResponse(): Not awaiting settings response", Logger::MediumVerbosity);
     }
     
     return false;
@@ -353,7 +355,7 @@ void UrlCheckModel::next() {
     const QString url = data(idx, UrlRole).toString();
 
     if (ServicePlugin *plugin = getCurrentPlugin()) {
-        Logger::log("UrlCheckModel::next(). Checking URL: " + url);
+        Logger::log("UrlCheckModel::next(). Checking URL: " + url, Logger::MediumVerbosity);
         connect(plugin, SIGNAL(urlChecked(UrlResult)), this, SLOT(onUrlChecked(UrlResult)));
         connect(plugin, SIGNAL(urlChecked(UrlResultList, QString)), this, SLOT(onUrlChecked(UrlResultList, QString)));
         connect(plugin, SIGNAL(error(QString)), this, SLOT(onUrlCheckError(QString)));
@@ -375,7 +377,8 @@ void UrlCheckModel::onUrlChecked(const UrlResult &result) {
         return;
     }
 
-    Logger::log(QString("UrlCheckModel::onUrlChecked(): %1 1 URL found").arg(m_items[m_index].url));
+    Logger::log(QString("UrlCheckModel::onUrlChecked(): %1 1 URL found").arg(m_items[m_index].url),
+                Logger::MediumVerbosity);
     m_items[m_index].checked = true;
     m_items[m_index].ok = true;
     const QModelIndex idx = index(m_index, 1);
@@ -393,8 +396,8 @@ void UrlCheckModel::onUrlChecked(const UrlResultList &results, const QString &pa
         return;
     }
 
-    Logger::log(QString("UrlCheckModel::onUrlChecked(): %1. %2 URLs found").arg(m_items[m_index].url)
-                                                                           .arg(results.size()));
+    Logger::log(QString("UrlCheckModel::onUrlChecked(): %1. %2 URLs found")
+                       .arg(m_items[m_index].url).arg(results.size()), Logger::MediumVerbosity);
     m_items[m_index].checked = true;
     m_items[m_index].ok = !results.isEmpty();
     const QModelIndex idx = index(m_index, 1);
@@ -425,8 +428,9 @@ void UrlCheckModel::onUrlCheckError(const QString &errorString) {
     next();
 }
 
-void UrlCheckModel::onUrlCheckSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
-    Logger::log("UrlCheckModel::onUrlCheckSettingsRequest()");
+void UrlCheckModel::onUrlCheckSettingsRequest(const QString &title, const QVariantList &settings,
+                                              const QByteArray &callback) {
+    Logger::log("UrlCheckModel::onUrlCheckSettingsRequest()", Logger::MediumVerbosity);
     setRequestedSettings(title, settings, callback);
     startRequestedSettingsTimer();
     setStatus(AwaitingSettingsResponse);

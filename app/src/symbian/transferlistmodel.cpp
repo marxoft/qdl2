@@ -35,15 +35,19 @@ TransferItem* TransferListModel::rootItem() const {
 void TransferListModel::setRootItem(TransferItem *item) {
     if (item != rootItem()) {
         if (m_rootItem) {
-            disconnect(m_rootItem, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onRootDataChanged(TransferItem*, int)));
+            disconnect(m_rootItem, SIGNAL(dataChanged(TransferItem*, int)),
+                       this, SLOT(onRootDataChanged(TransferItem*, int)));
         }
     
         m_rootItem = item;
 
         if (item) {
-            Logger::log(QString("TransferListModel::setRootItem(). Item type: %1, ID: %2, Name: %3").arg(item->itemTypeString())
-                        .arg(item->data(TransferItem::IdRole).toString()).arg(item->data(TransferItem::NameRole).toString()));
-            connect(m_rootItem, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onRootDataChanged(TransferItem*, int)));
+            Logger::log(QString("TransferListModel::setRootItem(). Item type: %1, ID: %2, Name: %3")
+                               .arg(item->itemTypeString())
+                               .arg(item->data(TransferItem::IdRole).toString())
+                               .arg(item->data(TransferItem::NameRole).toString()), Logger::HighVerbosity);
+            connect(m_rootItem, SIGNAL(dataChanged(TransferItem*, int)),
+                    this, SLOT(onRootDataChanged(TransferItem*, int)));
         }
 
         reload();

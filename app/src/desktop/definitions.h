@@ -58,7 +58,7 @@ static const QString DOWNLOAD_PATH(HOME_PATH + "/Downloads/qdl2/");
 static const int CAPTCHA_TIMEOUT = 120000;
 
 // Network
-static const int DOWNLOAD_BUFFER_SIZE = 128000;
+static const int DOWNLOAD_BUFFER_SIZE = 64000;
 static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
 
@@ -69,6 +69,6 @@ static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTE
                                                                      << QString("/opt/qdl2/plugins/icons/")
                                                                      << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
-static const QString VERSION_NUMBER("2.2.0");
+static const QString VERSION_NUMBER("2.3.0");
 
 #endif // DEFINITIONS_H

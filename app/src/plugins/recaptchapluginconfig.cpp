@@ -84,7 +84,7 @@ bool RecaptchaPluginConfig::load(const QString &filePath) {
         return false;
     }
 
-    Logger::log("RecaptchaPluginConfig::load(): Config file loaded: " + filePath);
+    Logger::log("RecaptchaPluginConfig::load(): Config file loaded: " + filePath, Logger::MediumVerbosity);
     const int slash = filePath.lastIndexOf("/");
     const QString fileName = filePath.mid(slash + 1);
     const int dot = fileName.lastIndexOf(".");

@@ -1270,7 +1270,8 @@ void Transfer::stopWaitTimer() {
 }
 
 void Transfer::startDownload() {
-    Logger::log(QString("Transfer::startDownload(). URL: %1, Method: %2").arg(url()).arg(requestMethod()));
+    Logger::log(QString("Transfer::startDownload(). URL: %1, Method: %2").arg(url()).arg(requestMethod()),
+                Logger::LowVerbosity);
     m_redirects = 0;
     m_metadataSet = false;
     initNetworkAccessManager();
@@ -1284,7 +1285,8 @@ void Transfer::startDownload() {
     }
 
     if (bytesTransferred() > 0) {
-        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()));
+        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()),
+                    Logger::MediumVerbosity);
         request.setRawHeader("Range", "bytes=" + QByteArray::number(bytesTransferred()) + "-");
     }
 
@@ -1311,13 +1313,14 @@ void Transfer::startDownload() {
 }
 
 void Transfer::followRedirect(const QUrl &url) {
-    Logger::log("Transfer::followRedirect(): " + url.toString());
+    Logger::log("Transfer::followRedirect(): " + url.toString(), Logger::LowVerbosity);
     m_redirects++;
     initNetworkAccessManager();
     QNetworkRequest request(url);
 
     if (bytesTransferred() > 0) {
-        Logger::log("Transfer::followRedirect(). Setting 'Range' header to " + QString::number(bytesTransferred()));
+        Logger::log("Transfer::followRedirect(). Setting 'Range' header to " + QString::number(bytesTransferred()),
+                    Logger::MediumVerbosity);
         request.setRawHeader("Range", "bytes=" + QByteArray::number(bytesTransferred()) + "-");
     }
     
@@ -1395,13 +1398,14 @@ void Transfer::onCaptchaResponseReported(const QString &) {
 void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &method, const QByteArray &data) {
     Logger::log(QString("Transfer::onDownloadRequest(). URL: %1, Method: %2, Data: %3")
                        .arg(request.url().toString())
-                       .arg(QString::fromUtf8(method)).arg(QString::fromUtf8(data)));
+                       .arg(QString::fromUtf8(method)).arg(QString::fromUtf8(data)), Logger::LowVerbosity);
     m_redirects = 0;
     m_metadataSet = false;
     initNetworkAccessManager();
     
     if (bytesTransferred() > 0) {
-        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()));
+        Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()),
+                    Logger::MediumVerbosity);
         request.setRawHeader("Range", "bytes=" + QByteArray::number(bytesTransferred()) + "-");
     }
 
@@ -1438,21 +1442,24 @@ void Transfer::onWaitRequest(int msecs, bool isLongDelay) {
     }    
 }
 
-void Transfer::onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+void Transfer::onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
+                                          const QByteArray &callback) {
     m_callback = callback;
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
     setRequestedSettings(title, settings);
     setStatus(AwaitingDecaptchaSettingsResponse);
 }
 
-void Transfer::onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+void Transfer::onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
+                                          const QByteArray &callback) {
     m_callback = callback;
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
     setRequestedSettings(title, settings);
     setStatus(AwaitingRecaptchaSettingsResponse);
 }
 
-void Transfer::onServiceSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+void Transfer::onServiceSettingsRequest(const QString &title, const QVariantList &settings,
+                                        const QByteArray &callback) {
     m_callback = callback;
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
     setRequestedSettings(title, settings);
@@ -1478,7 +1485,8 @@ void Transfer::onServiceError(const QString &errorString) {
 }
 
 void Transfer::onReplyMetaDataChanged() {
-    if ((m_metadataSet) || (m_reply->error() != QNetworkReply::NoError) || (!m_reply->rawHeader("Location").isEmpty())) {
+    if ((m_metadataSet) || (m_reply->error() != QNetworkReply::NoError)
+        || (!m_reply->rawHeader("Location").isEmpty())) {
         return;
     }
 
@@ -1488,7 +1496,8 @@ void Transfer::onReplyMetaDataChanged() {
         bytes = m_reply->rawHeader("Content-Length").toLongLong();
     }
 
-    Logger::log("Transfer::onReplyMetadataChanged(): Content-Length: " + QString::number(bytes));
+    Logger::log("Transfer::onReplyMetadataChanged(): Content-Length: " + QString::number(bytes),
+                Logger::MediumVerbosity);
     
     if (bytes > 0) {
         setSize(bytes + bytesTransferred());
@@ -1504,7 +1513,7 @@ void Transfer::onReplyMetaDataChanged() {
             const QString fileName = CONTENT_DISPOSITION_REGEXP.cap(2);
             
             if (!fileName.isEmpty()) {
-                Logger::log("Transfer::onReplyMetadataChanged(): Found filename: " + fileName);
+                Logger::log("Transfer::onReplyMetadataChanged(): Found filename: " + fileName, Logger::MediumVerbosity);
                 setFileName(Utils::getSanitizedFileName(fileName));
             }
         }

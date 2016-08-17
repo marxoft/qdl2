@@ -77,7 +77,7 @@ void JavaScriptDecaptchaPlugin::initEngine() {
             return;
         }
         
-        Logger::log("JavaScriptDecaptchaPlugin::initEngine(): JavaScript file evaluated OK");
+        Logger::log("JavaScriptDecaptchaPlugin::initEngine(): JavaScript file evaluated OK", Logger::HighVerbosity);
         m_evaluated = true;
         m_global = new JavaScriptDecaptchaPluginGlobalObject(m_engine);
         

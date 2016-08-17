@@ -400,12 +400,13 @@ void Package::childItemFinished(TransferItem *item) {
     const TransferItem::Status status = TransferItem::Status(item->data(StatusRole).toInt());
     
     if (status == Completed) {
-        Logger::log("Package::childItemFinished(): Child item completed");
+        Logger::log("Package::childItemFinished(): Child item completed", Logger::LowVerbosity);
         emit dataChanged(this, ProgressRole);
         
         foreach (const TransferItem *child, m_childItems) {
             if (child->data(StatusRole) != Completed) {
-                Logger::log("Package::childItemFinished(): Incomplete items remaining. Doing nothing");
+                Logger::log("Package::childItemFinished(): Incomplete items remaining. Doing nothing",
+                            Logger::MediumVerbosity);
                 return;
             }
         }
@@ -413,7 +414,7 @@ void Package::childItemFinished(TransferItem *item) {
         processCompletedItems();        
     }
     else if ((status == Canceled) || (status == CanceledAndDeleted)) {
-        Logger::log("Package::childItemFinished(): Child item canceled.");
+        Logger::log("Package::childItemFinished(): Child item canceled.", Logger::LowVerbosity);
         
         foreach (const TransferItem *child, m_childItems) {
             switch (child->data(StatusRole).toInt()) {
@@ -421,7 +422,8 @@ void Package::childItemFinished(TransferItem *item) {
             case CanceledAndDeleted:
                 break;
             default:
-                Logger::log("Package::childItemFinished(): Non-canceled items remaining. Doing nothing");
+                Logger::log("Package::childItemFinished(): Non-canceled items remaining. Doing nothing",
+                            Logger::MediumVerbosity);
                 return;
             }
         }
@@ -475,7 +477,7 @@ void Package::getArchives() {
         const QString fileName = child->data(FileNameRole).toString();
 
         if (Utils::isArchive(fileName)) {
-            Logger::log("Package::getArchives(): Found archive " + fileName);
+            Logger::log("Package::getArchives(): Found archive " + fileName, Logger::MediumVerbosity);
             const QString path = child->data(DownloadPathRole).toString();
             Archive archive;
             archive.fileNames << path + fileName;
@@ -493,19 +495,22 @@ void Package::getArchives() {
                         const QString otherPath = other->data(DownloadPathRole).toString();
                         
                         if (Utils::belongsToArchive(otherFileName, fileName)) {
-                            Logger::log("Package::getArchives(): Found archive part " + otherFileName);
+                            Logger::log("Package::getArchives(): Found archive part " + otherFileName,
+                                        Logger::MediumVerbosity);
                             
                             if (QFile::rename(otherPath + otherFileName, path + otherFileName)) {
                                 Logger::log(QString("Package::getArchives(): Moving archive part %1 to path %2")
-                                                   .arg(otherFileName).arg(path));
+                                                   .arg(otherFileName).arg(path), Logger::MediumVerbosity);
                                 archive.fileNames << path + otherFileName;
                                 other->setData(FilePathRole, path + otherFileName);
 
                                 if (QDir().rmdir(otherPath)) {
-                                    Logger::log("Package::getArchives(): Removed directory " + otherPath);
+                                    Logger::log("Package::getArchives(): Removed directory " + otherPath,
+                                                Logger::MediumVerbosity);
                                 }
                                 else {
-                                    Logger::log("Package::getArchives(): Cannot remove directory " + otherPath);
+                                    Logger::log("Package::getArchives(): Cannot remove directory " + otherPath,
+                                                Logger::MediumVerbosity);
                                 }
                             }
 
@@ -522,7 +527,7 @@ void Package::getArchives() {
         }
     }
     
-    Logger::log(QString("Package::getArchives(): %1 archives found").arg(m_archives.size()));
+    Logger::log(QString("Package::getArchives(): %1 archives found").arg(m_archives.size()), Logger::LowVerbosity);
 }
 
 void Package::extractArchive(const Archive &archive) {
@@ -554,12 +559,11 @@ bool Package::moveFiles() {
     }
 
     if (!dir.mkpath(outputPath)) {
-        Logger::log("Package::moveFiles(): Cannot create output directory");
         setErrorString(tr("Cannot create output directory for downloaded files"));
         return false;
     };
 
-    Logger::log("Package::moveFiles(): Moving files to directory " + outputPath);
+    Logger::log("Package::moveFiles(): Moving files to directory " + outputPath, Logger::LowVerbosity);
     QFile file;
 
     foreach (TransferItem *child, m_childItems) {
@@ -570,20 +574,21 @@ bool Package::moveFiles() {
             const QString newFilePath = Utils::getSaveFileName(oldFileName, outputPath);
             
             if ((newFilePath.isEmpty()) || (!file.rename(oldFilePath, newFilePath))) {
-                Logger::log(QString("Package::moveFiles(): Cannot rename %1 to %2").arg(oldFilePath)
-                                                                                   .arg(newFilePath));
+                Logger::log(QString("Package::moveFiles(): Cannot rename %1 to %2").arg(oldFilePath).arg(newFilePath),
+                            Logger::LowVerbosity);
                 setErrorString(tr("Cannot move files: %1").arg(file.errorString()));
                 return false;
             }
             
-            Logger::log(QString("Package::moveFiles(): Renamed %1 to %2").arg(oldFilePath).arg(newFilePath));
+            Logger::log(QString("Package::moveFiles(): Renamed %1 to %2").arg(oldFilePath).arg(newFilePath),
+                        Logger::MediumVerbosity);
             dir.setPath(child->data(DownloadPathRole).toString());
             
             if (dir.rmdir(dir.path())) {
-                Logger::log("Package::moveFiles(): Removed directory " + dir.path());
+                Logger::log("Package::moveFiles(): Removed directory " + dir.path(), Logger::MediumVerbosity);
             }
             else {
-                Logger::log("Package::moveFiles(): Cannot remove directory " + dir.path());
+                Logger::log("Package::moveFiles(): Cannot remove directory " + dir.path(), Logger::MediumVerbosity);
             }
             
             child->setData(FilePathRole, newFilePath);
@@ -600,10 +605,10 @@ void Package::cleanup() {
         dir.setPath(child->data(DownloadPathRole).toString());
         
         if (dir.rmdir(dir.path())) {
-            Logger::log("Package::cleanup(): Removed directory " + dir.path());
+            Logger::log("Package::cleanup(): Removed directory " + dir.path(), Logger::MediumVerbosity);
         }
         else {
-            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path());
+            Logger::log("Package::cleanup(): Cannot remove directory " + dir.path(), Logger::MediumVerbosity);
         }
     }
 }
@@ -620,7 +625,7 @@ void Package::getCustomCommands() {
             const QString workingDirectory = child->data(DownloadPathRole).toString();
             command.replace("%f", child->data(FileNameRole).toString());
             Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
-                               .arg(workingDirectory).arg(command));
+                               .arg(workingDirectory).arg(command), Logger::MediumVerbosity);
             m_commands << Command(workingDirectory, command);
         }
         
@@ -629,7 +634,7 @@ void Package::getCustomCommands() {
             command = defaultCommand;
             command.replace("%f", child->data(FileNameRole).toString());
             Logger::log(QString("Package::getCustomCommands(): Adding custom command: Working directory: %1, Command: %2")
-                               .arg(workingDirectory).arg(command));
+                               .arg(workingDirectory).arg(command), Logger::MediumVerbosity);
             m_commands << Command(workingDirectory, command);
         }
     }
@@ -643,7 +648,7 @@ void Package::executeCustomCommand(const Command &command) {
     }
 
     Logger::log(QString("Package::executeCustomCommand(): Working directory: %1, Command: %2")
-                       .arg(command.workingDirectory).arg(command.command));
+                       .arg(command.workingDirectory).arg(command.command), Logger::LowVerbosity);
     
     if (QDir(command.workingDirectory).exists()) {
         m_process->setWorkingDirectory(command.workingDirectory);

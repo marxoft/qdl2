@@ -34,6 +34,8 @@ class Settings : public QObject
     Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins NOTIFY usePluginsChanged)
     Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged)
     Q_PROPERTY(bool createSubfolders READ createSubfolders WRITE setCreateSubfolders NOTIFY createSubfoldersChanged)
+    Q_PROPERTY(QString loggerFileName READ loggerFileName WRITE setLoggerFileName NOTIFY loggerFileNameChanged)
+    Q_PROPERTY(int loggerVerbosity READ loggerVerbosity WRITE setLoggerVerbosity NOTIFY loggerVerbosityChanged)
     Q_PROPERTY(int maximumConcurrentTransfers READ maximumConcurrentTransfers WRITE setMaximumConcurrentTransfers
                NOTIFY maximumConcurrentTransfersChanged)
     Q_PROPERTY(bool startTransfersAutomatically READ startTransfersAutomatically
@@ -71,6 +73,9 @@ public:
 
     static QString downloadPath();
     static bool createSubfolders();
+    
+    static QString loggerFileName();
+    static int loggerVerbosity();
 
     static int maximumConcurrentTransfers();
     static bool startTransfersAutomatically();
@@ -100,6 +105,9 @@ public Q_SLOTS:
 
     static void setDownloadPath(const QString &path);
     static void setCreateSubfolders(bool enabled);
+    
+    static void setLoggerFileName(const QString &fileName);
+    static void setLoggerVerbosity(int verbosity);
 
     static void setMaximumConcurrentTransfers(int maximum);
 
@@ -127,6 +135,8 @@ Q_SIGNALS:
     void usePluginsChanged(bool enabled);
     void downloadPathChanged(const QString &path);
     void createSubfoldersChanged(bool enabled);
+    void loggerFileNameChanged(const QString &fileName);
+    void loggerVerbosityChanged(int verbosity);
     void maximumConcurrentTransfersChanged(int maximum);
     void nextActionChanged(int action);
     void startTransfersAutomaticallyChanged(bool enabled);

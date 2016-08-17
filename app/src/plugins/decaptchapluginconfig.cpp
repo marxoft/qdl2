@@ -84,7 +84,7 @@ bool DecaptchaPluginConfig::load(const QString &filePath) {
         return false;
     }
 
-    Logger::log("DecaptchaPluginConfig::load(): Config file loaded: " + filePath);
+    Logger::log("DecaptchaPluginConfig::load(): Config file loaded: " + filePath, Logger::MediumVerbosity);
     const int slash = filePath.lastIndexOf("/");
     const QString fileName = filePath.mid(slash + 1);
     const int dot = fileName.lastIndexOf(".");

@@ -108,7 +108,7 @@ void UrlRetriever::start(const QString &url, const QString &pluginId) {
         return;
     }
 
-    Logger::log("UrlRetriever::start(): " + url + " " + pluginId);
+    Logger::log("UrlRetriever::start(): " + url + " " + pluginId, Logger::MediumVerbosity);
     setStatus(Active);
     setUrl(url);
     setPluginId(pluginId);
@@ -124,7 +124,7 @@ void UrlRetriever::cancel() {
 }
 
 void UrlRetriever::followRedirect(const QUrl &url) {
-    Logger::log("UrlRetriever::followRedirect(): " + url.toString());
+    Logger::log("UrlRetriever::followRedirect(): " + url.toString(), Logger::MediumVerbosity);
     setStatus(Active);
     m_redirects++;
     m_reply = m_nam->get(QNetworkRequest(url));
@@ -193,7 +193,7 @@ UrlProcessor::~UrlProcessor() {
 }
 
 void UrlProcessor::processUrls(const QString &baseUrl, const QString &response, const QString &pluginId) {
-    Logger::log("UrlProcessor::processUrls(): " + baseUrl + " " + pluginId);
+    Logger::log("UrlProcessor::processUrls(): " + baseUrl + " " + pluginId, Logger::MediumVerbosity);
     QStringList urls;
     QRegExp re("(http(s|):/|href=\"|src=\")/[^'\"<\\s]+");
     int pos = 0;
@@ -234,7 +234,7 @@ void UrlProcessor::processUrls(const QString &baseUrl, const QString &response, 
     if (config) {
         for (int i = urls.size() -1; i >= 0; i--) {
             const QString &url = urls.at(i);
-            Logger::log("UrlProcessor::processUrls(): Checking URL " + url);
+            Logger::log("UrlProcessor::processUrls(): Checking URL " + url, Logger::MediumVerbosity);
         
             if (!config->urlIsSupported(url)) {
                 urls.removeAt(i);
@@ -244,7 +244,7 @@ void UrlProcessor::processUrls(const QString &baseUrl, const QString &response, 
     else {
         for (int i = urls.size() -1; i >= 0; i--) {
             const QString &url = urls.at(i);
-            Logger::log("UrlProcessor::processUrls(): Checking URL " + url);
+            Logger::log("UrlProcessor::processUrls(): Checking URL " + url, Logger::MediumVerbosity);
         
             if (!ServicePluginManager::instance()->urlIsSupported(url)) {
                 urls.removeAt(i);

@@ -32,7 +32,8 @@ RecaptchaPluginManager* RecaptchaPluginManager::self = 0;
 
 RecaptchaPluginManager::RecaptchaPluginManager() :
     QObject(),
-    m_nam(0)
+    m_nam(0),
+    m_lastLoaded(QDateTime::fromTime_t(0))
 {
 }
 
@@ -51,36 +52,38 @@ RecaptchaPluginList RecaptchaPluginManager::plugins() const {
 RecaptchaPluginConfig* RecaptchaPluginManager::getConfigById(const QString &id) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("RecaptchaPluginManager::getConfigById(). PluginFound: " + id);
+            Logger::log("RecaptchaPluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getConfigById(). No Plugin found");
+    Logger::log("RecaptchaPluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 RecaptchaPluginConfig* RecaptchaPluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("RecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id());
+            Logger::log("RecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+                        Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getConfigByFilePath(). No Plugin found");
+    Logger::log("RecaptchaPluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+                Logger::HighVerbosity);
     return 0;
 }
 
 RecaptchaPlugin* RecaptchaPluginManager::getPluginById(const QString &id) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("RecaptchaPluginManager::getPluginById(). PluginFound: " + id);
+            Logger::log("RecaptchaPluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
             return pair.plugin;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getPluginById(). No Plugin found");
+    Logger::log("RecaptchaPluginManager::getPluginById(). No Plugin found for id ", Logger::HighVerbosity);
     return 0;
 }
 
@@ -98,7 +101,7 @@ QNetworkAccessManager* RecaptchaPluginManager::networkAccessManager() {
 
 int RecaptchaPluginManager::load() {
     Logger::log("RecaptchaPluginManager::load(): Loading plugins modified since "
-                + m_lastLoaded.toString(Qt::ISODate));
+                + m_lastLoaded.toString(Qt::ISODate), Logger::LowVerbosity);
     int count = 0;
     QDir dir;
     
@@ -120,7 +123,7 @@ int RecaptchaPluginManager::load() {
                             m_plugins << RecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("RecaptchaPluginManager::load(). JavaScript plugin loaded: "
-                                        + config->id());
+                                        + config->id(), Logger::MediumVerbosity);
                         }
                         else {
                             QPluginLoader loader(config->pluginFilePath());
@@ -132,7 +135,7 @@ int RecaptchaPluginManager::load() {
                                     m_plugins << RecaptchaPluginPair(config, plugin);
                                     ++count;
                                     Logger::log("RecaptchaPluginManager::load(). Qt Plugin loaded: "
-                                                + config->id());
+                                                + config->id(), Logger::MediumVerbosity);
                                 }
                                 else {
                                     loader.unload();
@@ -156,7 +159,7 @@ int RecaptchaPluginManager::load() {
         }
     }
 
-    Logger::log(QString("RecaptchaPluginManager::load() %1 new plugins loaded").arg(count));
+    Logger::log(QString("RecaptchaPluginManager::load() %1 plugins loaded").arg(count), Logger::LowVerbosity);
 
     if (count > 0) {
         qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);

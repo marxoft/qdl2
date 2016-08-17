@@ -331,8 +331,8 @@ bool TransferModel::setItemData(const QVariant &index, const QVariantMap &data) 
 
 bool TransferModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                              const QModelIndex &destinationParent, int destinationChild) {
-    Logger::log(QString("TransferModel::moveRows(): sourceParent: %1, sourceRow: %2, count: %3, destinationParent: %4, destinationChild: %5")
-                       .arg(sourceParent.row()).arg(sourceRow).arg(count).arg(destinationParent.row()).arg(destinationChild));
+    Logger::log(QString("TransferModel::moveRows(): sourceParent: %1, sourceRow: %2, count: %3, destinationParent: %4, destinationChild: %5").arg(sourceParent.row()).arg(sourceRow).arg(count).arg(destinationParent.row())
+                     .arg(destinationChild), Logger::HighVerbosity);
     if ((sourceRow < 0) || (sourceRow + count > rowCount(sourceParent))
         || (destinationChild < 0) || (destinationChild > rowCount(destinationParent))) {
         return false;
@@ -341,7 +341,7 @@ bool TransferModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int
     const int sourceParentType = data(sourceParent, TransferItem::ItemTypeRole).toInt();
     const int destinationParentType = data(destinationParent, TransferItem::ItemTypeRole).toInt();
     Logger::log(QString("TransferModel::moveRows(): sourceParentType: %1, destinationParentType: %2")
-                       .arg(sourceParentType).arg(destinationParentType));
+                       .arg(sourceParentType).arg(destinationParentType), Logger::HighVerbosity);
 
     if ((sourceParentType != destinationParentType) || (sourceParentType == TransferItem::TransferType)
         || (destinationParentType == TransferItem::TransferType)) {
@@ -407,7 +407,7 @@ TransferItem* TransferModel::get(const QVariant &index) const {
 
 void TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
                            const QString &postData) {
-    Logger::log("TransferModel::append(): " + url + " " + requestMethod);
+    Logger::log("TransferModel::append(): " + url + " " + requestMethod, Logger::LowVerbosity);
     const QString fileName = url.mid(url.lastIndexOf("/") + 1);
     TransferItem *package = findPackage(fileName);
 
@@ -421,7 +421,7 @@ void TransferModel::append(const QString &url, const QString &requestMethod, con
 
     const int transferCount = package->rowCount();
     const QString transferId = Utils::createId();
-    Logger::log("TransferModel::append(): Creating transfer " + transferId);
+    Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
     Transfer *transfer = new Transfer(package);
     transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
     transfer->setFileName(Utils::getSanitizedFileName(fileName));
@@ -451,7 +451,7 @@ void TransferModel::append(const QStringList &urls, const QString &requestMethod
 }
 
 void TransferModel::append(const UrlResult &result) {
-    Logger::log("TransferModel::append(): " + result.url + " " + result.fileName);
+    Logger::log("TransferModel::append(): " + result.url + " " + result.fileName, Logger::LowVerbosity);
     TransferItem *package = findPackage(result.fileName);
 
     if (!package) {
@@ -464,7 +464,7 @@ void TransferModel::append(const UrlResult &result) {
 
     const int transferCount = package->rowCount();
     const QString transferId = Utils::createId();
-    Logger::log("TransferModel::append(): Creating transfer " + transferId);
+    Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
     Transfer *transfer = new Transfer(package);
     transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
     transfer->setFileName(Utils::getSanitizedFileName(result.fileName));
@@ -484,11 +484,11 @@ void TransferModel::append(const UrlResult &result) {
 
 void TransferModel::append(const UrlResultList &results, const QString &packageName) {
     if (results.isEmpty()) {
-        Logger::log("TransferModel::append(). URL list is empty");
+        Logger::log("TransferModel::append(). URL list is empty for package " + packageName, Logger::LowVerbosity);
         return;
     }
     
-    Logger::log("TransferModel::append(): " + packageName);
+    Logger::log("TransferModel::append(): " + packageName, Logger::LowVerbosity);
     TransferItem *package = createPackage(packageName);
     const int packageCount = m_packages->rowCount();
     beginInsertRows(QModelIndex(), packageCount, packageCount);
@@ -498,7 +498,7 @@ void TransferModel::append(const UrlResultList &results, const QString &packageN
     for (int i = 0; i < results.size(); i++) {
         const int transferCount = package->rowCount();
         const QString transferId = Utils::createId();
-        Logger::log("TransferModel::append(): Creating transfer " + transferId);
+        Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
         Transfer *transfer = new Transfer(package);
         transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
         transfer->setFileName(Utils::getSanitizedFileName(results.at(i).fileName));
@@ -532,10 +532,9 @@ void TransferModel::pause() {
     }
 }
 
-void TransferModel::restore() {
-    Logger::log("TransferModel::restore()");
-    
+void TransferModel::restore() {    
     if (m_packages->rowCount() > 0) {
+        Logger::log("TransferModel::restore(). No packages restored", Logger::LowVerbosity);
         return;
     }
     
@@ -551,14 +550,16 @@ void TransferModel::restore() {
 
     for (int i = 0; i < packageCount; i++) {
         settings.setArrayIndex(i);
-        Logger::log("TransferModel::restore(): Restoring package " + settings.value("id").toString());
+        Logger::log("TransferModel::restore(): Restoring package " + settings.value("id").toString(),
+                    Logger::MediumVerbosity);
         Package *package = new Package(m_packages);
 	package->restore(settings);
         const int transferCount = settings.beginReadArray("transfers");
 
         for (int j = 0; j < transferCount; j++) {
             settings.setArrayIndex(j);
-            Logger::log("TransferModel::restore(): Restoring transfer " + settings.value("id").toString());
+            Logger::log("TransferModel::restore(): Restoring transfer " + settings.value("id").toString(),
+                        Logger::MediumVerbosity);
             Transfer *transfer = new Transfer(package);
             transfer->restore(settings);
             package->appendRow(transfer);
@@ -573,17 +574,18 @@ void TransferModel::restore() {
 
     settings.endArray();
     endResetModel();
+    Logger::log(QString("TransferModel::restore() %1 packages restored").arg(packageCount), Logger::LowVerbosity);
 }
 
 void TransferModel::save() {
-    Logger::log("TransferModel::save()");
     QSettings settings(APP_CONFIG_PATH + "packages", QSettings::IniFormat);
     settings.clear();
     settings.beginWriteArray("packages");
 
     for (int i = 0; i < m_packages->rowCount(); i++) {
         if (TransferItem *package = m_packages->childItem(i)) {
-            Logger::log("TransferModel::save(): Saving package " + package->data(TransferItem::IdRole).toString());
+            Logger::log("TransferModel::save(): Saving package " + package->data(TransferItem::IdRole).toString(),
+                        Logger::MediumVerbosity);
             settings.setArrayIndex(i);
             package->save(settings);
             settings.beginWriteArray("transfers");
@@ -591,7 +593,7 @@ void TransferModel::save() {
             for (int j = 0; j < package->rowCount(); j++) {
                 if (TransferItem *transfer = package->childItem(j)) {
                     Logger::log("TransferModel::save(): Saving transfer "
-                                + transfer->data(TransferItem::IdRole).toString());
+                                + transfer->data(TransferItem::IdRole).toString(), Logger::MediumVerbosity);
                     settings.setArrayIndex(j);
                     transfer->save(settings);
                 }
@@ -602,11 +604,12 @@ void TransferModel::save() {
     }
 
     settings.endArray();
+    Logger::log(QString("TransferModel::save(). %1 packages saved").arg(m_packages->rowCount()), Logger::LowVerbosity);
 }
 
 TransferItem* TransferModel::createPackage(const QString &fileName) {
     const QString packageId = Utils::createId();
-    Logger::log("TransferModel::createPackage(): Creating package " + packageId);
+    Logger::log("TransferModel::createPackage(): Creating package " + packageId, Logger::MediumVerbosity);
     Package *package = new Package(m_packages);
     package->setId(packageId);
     package->setCategory(Settings::defaultCategory());
@@ -635,7 +638,7 @@ TransferItem* TransferModel::createPackage(const QString &fileName) {
 
 TransferItem* TransferModel::findPackage(const QString &fileName) const {
     if (!Utils::isSplitArchive(fileName)) {
-        Logger::log("TransferModel::findPackage(). No package found for " + fileName);
+        Logger::log("TransferModel::findPackage(). No package found for " + fileName, Logger::MediumVerbosity);
         return 0;
     }
     
@@ -646,20 +649,20 @@ TransferItem* TransferModel::findPackage(const QString &fileName) const {
         if (TransferItem *package = m_packages->childItem(i)) {
             if ((package->data(TransferItem::NameRole).toString() == name)
                 && (package->data(TransferItem::SuffixRole).toString() == suffix)) {
-                Logger::log("TransferModel::findPackage(). Found package for " + fileName);
+                Logger::log("TransferModel::findPackage(). Found package for " + fileName, Logger::MediumVerbosity);
                 return package;
             }
         }
     }
 
-    Logger::log("TransferModel::findPackage(). No package found for " + fileName);
+    Logger::log("TransferModel::findPackage(). No package found for " + fileName, Logger::MediumVerbosity);
     return 0;
 }
 
 void TransferModel::addActiveTransfer(TransferItem *transfer) {
     if (!m_activeTransfers.contains(transfer)) {
-        Logger::log(QString("TransferModel::addActiveTransfer(): "
-                    + transfer->data(TransferItem::IdRole).toString()));
+        Logger::log("TransferModel::addActiveTransfer(): " + transfer->data(TransferItem::IdRole).toString(),
+                    Logger::MediumVerbosity);
         m_activeTransfers.append(transfer);
         transfer->start();
         emit activeTransfersChanged(activeTransfers());
@@ -668,8 +671,8 @@ void TransferModel::addActiveTransfer(TransferItem *transfer) {
 }
 
 void TransferModel::removeActiveTransfer(TransferItem *transfer) {
-    Logger::log(QString("TransferModel::removeActiveTransfer(): "
-                + transfer->data(TransferItem::IdRole).toString()));
+    Logger::log("TransferModel::removeActiveTransfer(): " + transfer->data(TransferItem::IdRole).toString(),
+                Logger::MediumVerbosity);
     m_activeTransfers.removeOne(transfer);
     emit activeTransfersChanged(activeTransfers());
     emit totalSpeedChanged(totalSpeed());
@@ -677,14 +680,15 @@ void TransferModel::removeActiveTransfer(TransferItem *transfer) {
 
 void TransferModel::startNextTransfers() {
     if (m_packages->rowCount() == 0) {
-        Logger::log("TransferModel::startNextTransfers(): Transfer queue is empty.");
+        Logger::log("TransferModel::startNextTransfers(): Transfer queue is empty.", Logger::MediumVerbosity);
         return;
     }
 
     const int maximum = Settings::maximumConcurrentTransfers();
 
     if (activeTransfers() >= maximum) {
-        Logger::log("TransferModel::startNextTransfers(): Maximum concurrent transfers is reached.");
+        Logger::log("TransferModel::startNextTransfers(): Maximum concurrent transfers is reached.",
+                    Logger::MediumVerbosity);
         return;
     }
 
@@ -703,7 +707,8 @@ void TransferModel::startNextTransfers() {
     }
 
     if (queued.isEmpty()) {
-        Logger::log("TransferModel::startNextTransfers(): No transfers have status TransferItem::Queued.");
+        Logger::log("TransferModel::startNextTransfers(): No transfers have status TransferItem::Queued.",
+                    Logger::MediumVerbosity);
         return;
     }
     
@@ -823,7 +828,7 @@ void TransferModel::onPackageStatusChanged(TransferItem *package) {
     }
     
     Logger::log("TransferModel::onPackageStatusChanged(): Removing package "
-                + package->data(TransferItem::IdRole).toString());
+                + package->data(TransferItem::IdRole).toString(), Logger::LowVerbosity);
     const int row = package->row();
     beginRemoveRows(QModelIndex(), row, row);
     m_packages->removeRow(row);
@@ -884,7 +889,7 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
             }
             
             Logger::log("TransferModel::onTransferStatusChanged(): Removing transfer "
-                        + transfer->data(TransferItem::IdRole).toString());
+                        + transfer->data(TransferItem::IdRole).toString(), Logger::LowVerbosity);
             const int row = transfer->row();
             beginRemoveRows(index(package->row(), 0), row, row);
             package->removeRow(row);

@@ -22,6 +22,7 @@
 #include "decaptchapluginconfigmodel.h"
 #include "definitions.h"
 #include "logger.h"
+#include "loggerverbositymodel.h"
 #include "maskeditem.h"
 #include "networkproxytypemodel.h"
 #include "package.h"
@@ -53,6 +54,7 @@ void registerTypes() {
     qmlRegisterType<CategorySelectionModel>("Qdl", 2, 0, "CategorySelectionModel");
     qmlRegisterType<ConcurrentTransfersModel>("Qdl", 2, 0, "ConcurrentTransfersModel");
     qmlRegisterType<DecaptchaPluginConfigModel>("Qdl", 2, 0, "DecaptchaPluginConfigModel");
+    qmlRegisterType<LoggerVerbosityModel>("Qdl", 2, 0, "LoggerVerbosityModel");
     qmlRegisterType<MaskedItem>("Qdl", 2, 0, "MaskedItem");
     qmlRegisterType<NetworkProxyTypeModel>("Qdl", 2, 0, "NetworkProxyTypeModel");
     qmlRegisterType<PluginSettings>("Qdl", 2, 0, "PluginSettings");
@@ -92,15 +94,19 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<UrlCheckModel> checker(UrlCheckModel::instance());
     QScopedPointer<UrlRetrievalModel> retriever(UrlRetrievalModel::instance());
     
+    Logger logger;
     Utils utils;
     
     registerTypes();
+    Logger::setFileName(Settings::loggerFileName());
+    Logger::setVerbosity(Settings::loggerVerbosity());
     Settings::setNetworkProxy();
     
     QDeclarativeView view;
     QDeclarativeContext *context = view.rootContext();
     context->setContextProperty("categories", categories.data());
     context->setContextProperty("decaptchaPluginManager", decaptchaManager.data());
+    context->setContextProperty("logger", &logger);
     context->setContextProperty("qdl", qdl.data());
     context->setContextProperty("recaptchaPluginManager", recaptchaManager.data());
     context->setContextProperty("servicePluginManager", serviceManager.data());
@@ -116,6 +122,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     view.showFullScreen();
 
     QObject::connect(&app, SIGNAL(aboutToQuit()), transfers.data(), SLOT(save()));
+    QObject::connect(settings.data(), SIGNAL(loggerFileNameChanged(QString)), &logger, SLOT(setFileName(QString)));
+    QObject::connect(settings.data(), SIGNAL(loggerVerbosityChanged(int)), &logger, SLOT(setVerbosity(int)));
 
     return app.exec();
 }

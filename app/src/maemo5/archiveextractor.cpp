@@ -132,7 +132,8 @@ void ArchiveExtractor::extract(const QString &password) {
         }
 
         if (m_process->state() != QProcess::Running) {
-            Logger::log("ArchiveExtractor::extract(). Extracting archive using command: " + command);
+            Logger::log("ArchiveExtractor::extract(). Extracting archive using command: " + command,
+                        Logger::MediumVerbosity);
             m_process->start(command);
         }
     }

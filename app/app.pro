@@ -17,6 +17,7 @@ HEADERS += \
     src/base/concurrenttransfersmodel.h \
     src/base/json.h \
     src/base/logger.h \
+    src/base/loggerverbositymodel.h \
     src/base/networkproxytypemodel.h \
     src/base/selectionmodel.h \
     src/base/serviceselectionmodel.h \
@@ -177,7 +178,7 @@ maemo5 {
     TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
     TARGET.EPOCSTACKSIZE = 0x14000
     
-    VERSION = 2.2.0
+    VERSION = 2.3.0
     ICON = desktop/symbian/qdl2.svg
     
     MMP_RULES += "DEBUGGABLE_UDEBONLY"

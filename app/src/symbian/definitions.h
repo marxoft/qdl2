@@ -27,16 +27,20 @@
 // Home
 static const QString ROOT_PATH("C:/");
 static const QString HOME_PATH("E:/");
+static const QString CARD_PATH("F:/");
 
 // Plugins
 static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/decaptcha/")
-                                                                << QString(HOME_PATH + "qdl2/plugins/decaptcha/");
+                                                                << QString(HOME_PATH + "qdl2/plugins/decaptcha/")
+                                                                << QString(CARD_PATH + "qdl2/plugins/decaptcha/");
 
 static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/recaptcha/")
-                                                                << QString(HOME_PATH + "qdl2/plugins/recaptcha/");
+                                                                << QString(HOME_PATH + "qdl2/plugins/recaptcha/")
+                                                                << QString(CARD_PATH + "qdl2/plugins/recaptcha/");
 
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/services/")
-                                                              << QString(HOME_PATH + "qdl2/plugins/services/");
+                                                              << QString(HOME_PATH + "qdl2/plugins/services/")
+                                                              << QString(CARD_PATH + "qdl2/plugins/services/");
 
 static const QString LIB_PREFIX;
 static const QString LIB_SUFFIX(".qtplugin");
@@ -64,7 +68,7 @@ static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
 
 // Version
-static const QString VERSION_NUMBER("2.2.0");
+static const QString VERSION_NUMBER("2.3.0");
 
 // Appearance
 static const QString ACTIVE_COLOR("#0881cb");

@@ -40,6 +40,8 @@ class Settings : public QObject
                NOTIFY deleteExtractedArchivesChanged)
     Q_PROPERTY(QStringList archivePasswords READ archivePasswords WRITE setArchivePasswords
                NOTIFY archivePasswordsChanged)
+    Q_PROPERTY(QString loggerFileName READ loggerFileName WRITE setLoggerFileName NOTIFY loggerFileNameChanged)
+    Q_PROPERTY(int loggerVerbosity READ loggerVerbosity WRITE setLoggerVerbosity NOTIFY loggerVerbosityChanged)
     Q_PROPERTY(int maximumConcurrentTransfers READ maximumConcurrentTransfers WRITE setMaximumConcurrentTransfers
                NOTIFY maximumConcurrentTransfersChanged)
     Q_PROPERTY(bool startTransfersAutomatically READ startTransfersAutomatically WRITE setStartTransfersAutomatically
@@ -92,6 +94,9 @@ public:
     static bool extractArchives();
     static bool deleteExtractedArchives();
     static QStringList archivePasswords();
+    
+    static QString loggerFileName();
+    static int loggerVerbosity();
 
     static int maximumConcurrentTransfers();
     static bool startTransfersAutomatically();
@@ -135,6 +140,9 @@ public Q_SLOTS:
     static void setExtractArchives(bool enabled);
     static void setDeleteExtractedArchives(bool enabled);
     static void setArchivePasswords(const QStringList &passwords);
+    
+    static void setLoggerFileName(const QString &fileName);
+    static void setLoggerVerbosity(int verbosity);
 
     static void setMaximumConcurrentTransfers(int maximum);
 
@@ -174,6 +182,8 @@ Q_SIGNALS:
     void extractArchivesChanged(bool enabled);
     void deleteExtractedArchivesChanged(bool enabled);
     void archivePasswordsChanged(const QStringList &passwords);
+    void loggerFileNameChanged(const QString &fileName);
+    void loggerVerbosityChanged(int verbosity);
     void maximumConcurrentTransfersChanged(int maximum);
     void nextActionChanged(int action);
     void startTransfersAutomaticallyChanged(bool enabled);

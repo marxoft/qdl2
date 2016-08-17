@@ -76,7 +76,7 @@ void JavaScriptRecaptchaPlugin::initEngine() {
             return;
         }
         
-        Logger::log("JavaScriptRecaptchaPlugin::initEngine(): JavaScript file evaluated OK");
+        Logger::log("JavaScriptRecaptchaPlugin::initEngine(): JavaScript file evaluated OK", Logger::HighVerbosity);
         m_evaluated = true;
         m_global = new JavaScriptRecaptchaPluginGlobalObject(m_engine);
         

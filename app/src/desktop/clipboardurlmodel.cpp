@@ -97,7 +97,7 @@ void ClipboardUrlModel::onClipboardDataChanged() {
     foreach (const QString &url, urls) {
         if (!m_items.contains(url)) {
             if (ServicePluginManager::instance()->urlIsSupported(url)) {
-                Logger::log("ClipboardUrlModel::onClipboardDataChanged(): URL added: " + url);
+                Logger::log("ClipboardUrlModel::onClipboardDataChanged(): URL added: " + url, Logger::MediumVerbosity);
                 append(url);
             }
         }

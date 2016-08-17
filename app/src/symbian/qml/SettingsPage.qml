@@ -29,7 +29,7 @@ MyPage {
         id: view
         
         anchors.fill: parent
-        model: [qsTr("General"), qsTr("Network"), qsTr("Categories"), qsTr("Plugins")]
+        model: [qsTr("General"), qsTr("Network"), qsTr("Logging"), qsTr("Categories"), qsTr("Plugins")]
         delegate: MyListItem {
             subItemIndicator: true
             
@@ -53,9 +53,12 @@ MyPage {
                     appWindow.pageStack.push(Qt.resolvedUrl("NetworkSettingsPage.qml"));
                     break;
                 case 2:
-                    appWindow.pageStack.push(Qt.resolvedUrl("CategoriesPage.qml"));
+                    appWindow.pageStack.push(Qt.resolvedUrl("LoggingSettingsPage.qml"));
                     break;
                 case 3:
+                    appWindow.pageStack.push(Qt.resolvedUrl("CategoriesPage.qml"));
+                    break;
+                case 4:
                     appWindow.pageStack.push(Qt.resolvedUrl("PluginsPage.qml"));
                     break;
                 default:

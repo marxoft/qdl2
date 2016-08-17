@@ -32,7 +32,8 @@ DecaptchaPluginManager* DecaptchaPluginManager::self = 0;
 
 DecaptchaPluginManager::DecaptchaPluginManager() :
     QObject(),
-    m_nam(0)
+    m_nam(0),
+    m_lastLoaded(QDateTime::fromTime_t(0))
 {
 }
 
@@ -51,36 +52,38 @@ DecaptchaPluginList DecaptchaPluginManager::plugins() const {
 DecaptchaPluginConfig* DecaptchaPluginManager::getConfigById(const QString &id) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("DecaptchaPluginManager::getConfigById(). PluginFound: " + id);
+            Logger::log("DecaptchaPluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getConfigById(). No Plugin found");
+    Logger::log("DecaptchaPluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 DecaptchaPluginConfig* DecaptchaPluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("DecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id());
+            Logger::log("DecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+                        Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getConfigByFilePath(). No Plugin found");
+    Logger::log("DecaptchaPluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+                Logger::HighVerbosity);
     return 0;
 }
 
 DecaptchaPlugin* DecaptchaPluginManager::getPluginById(const QString &id) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("DecaptchaPluginManager::getPluginById(). PluginFound: " + id);
+            Logger::log("DecaptchaPluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
             return pair.plugin;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getPluginById(). No Plugin found");
+    Logger::log("DecaptchaPluginManager::getPluginById(). No Plugin found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
@@ -98,7 +101,7 @@ QNetworkAccessManager* DecaptchaPluginManager::networkAccessManager() {
 
 int DecaptchaPluginManager::load() {
     Logger::log("DecaptchaPluginManager::load(): Loading plugins modified since "
-                + m_lastLoaded.toString(Qt::ISODate));
+                + m_lastLoaded.toString(Qt::ISODate), Logger::LowVerbosity);
     int count = 0;
     QDir dir;
     
@@ -120,7 +123,7 @@ int DecaptchaPluginManager::load() {
                             m_plugins << DecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("DecaptchaPluginManager::load(). JavaScript plugin loaded: "
-                                        + config->id());
+                                        + config->id(), Logger::MediumVerbosity);
                         }
                         else {
                             QPluginLoader loader(config->pluginFilePath());
@@ -132,7 +135,7 @@ int DecaptchaPluginManager::load() {
                                     m_plugins << DecaptchaPluginPair(config, plugin);
                                     ++count;
                                     Logger::log("DecaptchaPluginManager::load(). Qt Plugin loaded: "
-                                                + config->id());
+                                                + config->id(), Logger::MediumVerbosity);
                                 }
                                 else {
                                     loader.unload();
@@ -156,7 +159,7 @@ int DecaptchaPluginManager::load() {
         }
     }
     
-    Logger::log(QString("DecaptchaPluginManager::load() %1 new plugins loaded").arg(count));
+    Logger::log(QString("DecaptchaPluginManager::load() %1 plugins loaded").arg(count), Logger::LowVerbosity);
 
     if (count > 0) {
         qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);

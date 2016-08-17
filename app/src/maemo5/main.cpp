@@ -41,9 +41,14 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QSslConfiguration::setDefaultConfiguration(config);
 
     const QStringList args = app.arguments();
-
-    if (args.contains("--log")) {
-        Logger::setVerbosity(10);
+    const int verbosity = args.indexOf("-v") + 1;
+    
+    if ((verbosity > 1) && (verbosity < args.size())) {
+        Logger::setVerbosity(qMax(1, args.at(verbosity).toInt()));
+    }
+    else {
+        Logger::setFileName(Settings::loggerFileName());
+        Logger::setVerbosity(Settings::loggerVerbosity());
     }
 
     QScopedPointer<Categories> categories(Categories::instance());
