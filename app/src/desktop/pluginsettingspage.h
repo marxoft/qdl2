@@ -14,21 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PLUGINSETTINGSTAB_H
-#define PLUGINSETTINGSTAB_H
+#ifndef PLUGINSETTINGSPAGE_H
+#define PLUGINSETTINGSPAGE_H
 
-#include "settingstab.h"
+#include "settingspage.h"
 #include <QVariantMap>
 
 class PluginSettings;
 class QFormLayout;
 
-class PluginSettingsTab : public SettingsTab
+class PluginSettingsPage : public SettingsPage
 {
     Q_OBJECT
 
 public:
-    explicit PluginSettingsTab(const QString &pluginId, const QVariantList &settings, QWidget *parent = 0);
+    explicit PluginSettingsPage(const QString &pluginId, const QVariantList &settings, QWidget *parent = 0);
 
 public Q_SLOTS:
     virtual void save();
@@ -57,4 +57,4 @@ private:
     QVariantMap m_settings;
 };
 
-#endif // PLUGINSETTINGSTAB_H
+#endif // PLUGINSETTINGSPAGE_H

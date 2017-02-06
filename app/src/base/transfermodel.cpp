@@ -854,7 +854,7 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
         removeActiveTransfer(transfer);
 
         switch (Settings::nextAction()) {
-        case Qdl::Stop:
+        case Qdl::Pause:
             if (activeTransfers() == 0) {
                 pause();
             }

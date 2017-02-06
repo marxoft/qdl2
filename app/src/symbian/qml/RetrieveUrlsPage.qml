@@ -94,7 +94,7 @@ MyPage {
                 enabled: urlsEdit.text != ""
                 visible: !inputContext.visible
                 onClicked: {
-                    urlRetrievalModel.append(urlsEdit.text.split(/\s+/), settings.defaultServicePlugin);
+                    urlRetrievalModel.append(urlsEdit.text.split("\n"), settings.defaultServicePlugin);
                     urlsEdit.text = "";
                 }
             }

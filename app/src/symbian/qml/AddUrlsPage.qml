@@ -35,7 +35,7 @@ MyPage {
             toolTip: qsTr("Done")
             enabled: urlsEdit.text != ""
             onClicked: {
-                var urls = urlsEdit.text.split(/\s+/);
+                var urls = urlsEdit.text.split("\n");
                 
                 if (settings.usePlugins) {
                     urlCheckModel.append(urls);

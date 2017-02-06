@@ -181,7 +181,7 @@ void AddUrlsDialog::setText(const QString &text) {
 }
 
 QStringList AddUrlsDialog::urls() const {
-    return text().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    return text().split("\n", QString::SkipEmptyParts);
 }
 
 void AddUrlsDialog::setUrls(const QStringList &u) {

@@ -14,24 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ACTIONMODEL_H
-#define ACTIONMODEL_H
+#ifndef PAGE_H
+#define PAGE_H
 
-#include "selectionmodel.h"
-#include "qdl.h"
+#include <QWidget>
 
-class ActionModel : public SelectionModel
+class Page : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ActionModel(QObject *parent = 0) :
-        SelectionModel(parent)
-    {
-        append(tr("Continue"), Qdl::Continue);
-        append(tr("Pause"), Qdl::Pause);
-        append(tr("Quit"), Qdl::Quit);
-    }
+    explicit Page(QWidget *parent = 0);
 };
 
-#endif // ACTIONMODEL_H
+#endif // PAGE_H

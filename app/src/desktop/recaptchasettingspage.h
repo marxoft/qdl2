@@ -14,21 +14,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETTINGSTAB_H
-#define SETTINGSTAB_H
+#ifndef RECAPTCHASETTINGSPAGE_H
+#define RECAPTCHASETTINGSPAGE_H
 
-#include <QWidget>
+#include "settingspage.h"
 
-class SettingsTab : public QWidget
+class RecaptchaPluginConfigModel;
+class QListView;
+class QScrollArea;
+class QSplitter;
+class QVBoxLayout;
+
+class RecaptchaSettingsPage : public SettingsPage
 {
     Q_OBJECT
 
 public:
-    explicit SettingsTab(QWidget *parent = 0);
+    explicit RecaptchaSettingsPage(QWidget *parent = 0);
 
 public Q_SLOTS:
-    virtual void restore();
     virtual void save();
+
+private Q_SLOTS:
+    void setCurrentPlugin(const QModelIndex &index);
+
+private:
+    RecaptchaPluginConfigModel *m_model;
+
+    QListView *m_view;
+
+    QScrollArea *m_scrollArea;
+
+    QSplitter *m_splitter;
+
+    QVBoxLayout *m_layout;
 };
 
-#endif // SETTINGSTAB_H
+#endif // RECAPTCHASETTINGSPAGE_H

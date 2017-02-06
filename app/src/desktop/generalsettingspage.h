@@ -14,10 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GENERALSETTINGSTAB_H
-#define GENERALSETTINGSTAB_H
+#ifndef GENERALSETTINGSPAGE_H
+#define GENERALSETTINGSPAGE_H
 
-#include "settingstab.h"
+#include "settingspage.h"
 
 class ArchivePasswordModel;
 class QCheckBox;
@@ -27,12 +27,12 @@ class QListView;
 class QPushButton;
 class QSpinBox;
 
-class GeneralSettingsTab : public SettingsTab
+class GeneralSettingsPage : public SettingsPage
 {
     Q_OBJECT
 
 public:
-    explicit GeneralSettingsTab(QWidget *parent = 0);
+    explicit GeneralSettingsPage(QWidget *parent = 0);
 
 public Q_SLOTS:
     virtual void restore();
@@ -71,4 +71,4 @@ private:
     QFormLayout *m_layout;
 };
     
-#endif // GENERALSETTINGSTAB_H
+#endif // GENERALSETTINGSPAGE_H

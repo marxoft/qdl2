@@ -14,31 +14,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INTERFACESETTINGSTAB_H
-#define INTERFACESETTINGSTAB_H
+#ifndef NETWORKSETTINGSPAGE_H
+#define NETWORKSETTINGSPAGE_H
 
-#include "settingstab.h"
+#include "settingspage.h"
 
+class NetworkProxyTypeModel;
 class QCheckBox;
+class QComboBox;
 class QFormLayout;
 class QLineEdit;
 class QSpinBox;
 
-class InterfaceSettingsTab : public SettingsTab
+class NetworkSettingsPage : public SettingsPage
 {
     Q_OBJECT
 
 public:
-    explicit InterfaceSettingsTab(QWidget *parent = 0);
+    explicit NetworkSettingsPage(QWidget *parent = 0);
 
 public Q_SLOTS:
     virtual void restore();
     virtual void save();
 
 private:
-    QCheckBox *m_webCheckBox;
+    NetworkProxyTypeModel *m_proxyTypeModel;
+    
+    QCheckBox *m_proxyCheckBox;
     QCheckBox *m_authCheckBox;
 
+    QComboBox *m_proxyTypeSelector;
+
+    QLineEdit *m_hostEdit;
     QLineEdit *m_usernameEdit;
     QLineEdit *m_passwordEdit;
 
@@ -47,4 +54,4 @@ private:
     QFormLayout *m_layout;
 };
 
-#endif // INTERFACESETTINGSTAB_H
+#endif // NETWORKSETTINGSPAGE_H

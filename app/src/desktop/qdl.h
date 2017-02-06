@@ -34,7 +34,7 @@ class Qdl : public QObject
 public:
     enum Action {
         Continue = 0,
-        Stop,
+        Pause,
         Quit
     };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,30 +17,24 @@
 import QtQuick 1.1
 import com.nokia.symbian 1.1
 
-QtObject {
-    property QtObject _popup
-    
+QtObject {    
     function load(popup, parent) {
-        if (_popup) {
-            _popup.destroy();
+        var obj = popup.createObject(parent);
+        
+        if ((obj) && (obj.hasOwnProperty("status"))) {
+            obj.statusChanged.connect(function () { if (obj.status == DialogStatus.Closed) obj.destroy(); });
         }
         
-        _popup = popup.createObject(parent);
-        
-        if ((_popup) && (_popup.hasOwnProperty("status"))) {
-            _popup.statusChanged.connect(function () { if (_popup.status == DialogStatus.Closed) _popup.destroy(); });
-        }
-        
-        return _popup
+        return obj
     }
     
     function open(popup, parent) {
-        load(popup, parent);
+        var obj = load(popup, parent);
         
-        if (_popup) {
-            _popup.open();
+        if (obj) {
+            obj.open();
         }
         
-        return _popup;
+        return obj;
     }
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QDL</title>
+<link rel="icon" href="images/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="css/widgets.css" />
+<link rel="stylesheet" type="text/css" href="css/mobile.css" />
+<script src="js/qdl.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/mobile.js"></script>
+</head>
+<body onload="init()">
+<div id="transfersTab" class="Tab" data-current="true">
+<div id="transfersToolBar" class="ToolBar">
+<div id="transfersTitle" class="Title">0DLs - 0B/s</div>
+<div class="ToolButtonRow">
+<input type="button" id="startButton" class="ToolButton" title="Start all downloads" value="Start" />
+<input type="button" id="startButton" class="ToolButton" title="Start all downloads" value="Pause" />
+<input type="button" id="transfersMenuButton" class="ToolButton" title="Show menu" value="|||" />
+</div>
+</div>
+<ul id="transfersList" class="ListView"></ul>
+<div id="transfersPopupBackground" class="PopupBackground"></div>
+<div id="packageMenu" class="Menu">
+<div id="packageReloadItem" class="MenuItem">Reload</div>
+<div id="packageStartItem" class="MenuItem">Start</div>
+<div id="packagePauseItem" class="MenuItem">Pause</div>
+<div id="packageCancelItem" class="MenuItem">Remove</div>
+<div id="packageCancelDeleteItem" class="MenuItem">Remove and delete files</div>
+</div>
+<div id="transferMenu" class="Menu">
+<div id="transferReloadItem" class="MenuItem">Reload</div>
+<div id="transferStartItem" class="MenuItem">Start</div>
+<div id="transferPauseItem" class="MenuItem">Pause</div>
+<div id="transferCancelItem" class="MenuItem">Remove</div>
+<div id="transferCancelDeleteItem" class="MenuItem">Remove and delete files</div>
+</div>
+</div>
+</body>
+</html>

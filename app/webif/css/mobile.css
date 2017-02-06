@@ -1,0 +1,105 @@
+body {
+    background-color: #383c45;
+    color: #fff;
+    font-family: "Droid Sans", Helvetica, sans-serif;
+    font-size: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: #5294e2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img.TransferIcon {
+    width: 48px;
+    height: 48px;
+    padding: 6px;
+}
+
+img.PluginIcon {
+    width: 48px;
+    height: 48px;
+    padding: 6px;
+}
+
+label {
+    line-height: 48px;
+}
+
+.Button {
+    height: 48px;
+}
+
+.ListItemText {
+    width: 50%;
+}
+
+.ListView {
+    overflow: hidden;
+}
+
+.Menu {
+    background-color: #444852;
+}
+
+.MenuItem {
+    height: 48px;
+}
+
+.NoWrap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline;
+}
+
+.ProgressBar {
+    height: 48px;
+}
+
+.ProgressBarLabel {
+    line-height: 48px;
+}
+
+.Selector {
+    height: 48px;
+}
+
+.TextField {
+    height: 48px;
+}
+
+.Title {
+    float: left;
+    line-height: 48px;
+    padding: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ToolBar {
+    width: 100%;
+    height: 64px;
+}
+
+.ToolButton {
+    min-width: 64px;
+}
+
+.ToolButtonRow {
+    float: right;
+    height: 64px;
+}
+
+#transfersList .Indicator {
+    min-width: 24px;
+    padding: 10px;
+    float: left;
+}

@@ -799,8 +799,8 @@ function getUrlChecks() {
         document.getElementById("urlCheckProgressBarLabel").innerHTML = progress;
         document.getElementById("urlCheckProgressBarFill").style.width = progress;
         document.getElementById("urlCheckStatusLabel").innerHTML = result.statusString;
-        document.getElementById("urlCheckCancelButton").disabled = result.status != 1;
-        document.getElementById("urlCheckOkButton").disabled = result.status <= 1;
+        document.getElementById("urlCheckCancelButton").disabled = result.status != UrlCheckStatus.Active;
+        document.getElementById("urlCheckOkButton").disabled = result.status <= UrlCheckStatus.Active;
 
         if (result.status == UrlCheckStatus.Active) {
             setTimeout(getUrlChecks, 3000);

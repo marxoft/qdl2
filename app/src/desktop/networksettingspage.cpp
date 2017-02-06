@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "networksettingstab.h"
+#include "networksettingspage.h"
 #include "networkproxytypemodel.h"
 #include "settings.h"
 #include <QCheckBox>
@@ -23,8 +23,8 @@
 #include <QLineEdit>
 #include <QSpinBox>
 
-NetworkSettingsTab::NetworkSettingsTab(QWidget *parent) :
-    SettingsTab(parent),
+NetworkSettingsPage::NetworkSettingsPage(QWidget *parent) :
+    SettingsPage(parent),
     m_proxyTypeModel(new NetworkProxyTypeModel(this)),
     m_proxyCheckBox(new QCheckBox(tr("&Enable network proxy"), this)),
     m_authCheckBox(new QCheckBox(tr("Enable &authentication"), this)),
@@ -54,7 +54,7 @@ NetworkSettingsTab::NetworkSettingsTab(QWidget *parent) :
     restore();
 }
 
-void NetworkSettingsTab::restore() {
+void NetworkSettingsPage::restore() {
     m_proxyCheckBox->setChecked(Settings::networkProxyEnabled());
     m_authCheckBox->setChecked(Settings::networkProxyAuthenticationEnabled());
     m_proxyTypeSelector->setCurrentIndex(qMax(0, m_proxyTypeSelector->findData(Settings::networkProxyType())));
@@ -64,7 +64,7 @@ void NetworkSettingsTab::restore() {
     m_portSpinBox->setValue(Settings::networkProxyPort());
 }
 
-void NetworkSettingsTab::save() {
+void NetworkSettingsPage::save() {
     Settings::setNetworkProxyEnabled(m_proxyCheckBox->isChecked());
     Settings::setNetworkProxyAuthenticationEnabled(m_authCheckBox->isChecked());
     Settings::setNetworkProxyType(m_proxyTypeSelector->itemData(m_proxyTypeSelector->currentIndex()).toInt());

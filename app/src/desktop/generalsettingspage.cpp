@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "generalsettingstab.h"
+#include "generalsettingspage.h"
 #include "archivepasswordmodel.h"
 #include "definitions.h"
 #include "settings.h"
@@ -28,8 +28,8 @@
 #include <QPushButton>
 #include <QSpinBox>
 
-GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
-    SettingsTab(parent),
+GeneralSettingsPage::GeneralSettingsPage(QWidget *parent) :
+    SettingsPage(parent),
     m_passwordModel(new ArchivePasswordModel(this)),
     m_pathEdit(new QLineEdit(this)),
     m_commandEdit(new QLineEdit(this)),
@@ -79,7 +79,7 @@ GeneralSettingsTab::GeneralSettingsTab(QWidget *parent) :
     restore();
 }
 
-void GeneralSettingsTab::restore() {
+void GeneralSettingsPage::restore() {
     m_pathEdit->setText(Settings::downloadPath());
     m_concurrentSpinBox->setValue(Settings::maximumConcurrentTransfers());
     m_commandEdit->setText(Settings::customCommand());
@@ -91,7 +91,7 @@ void GeneralSettingsTab::restore() {
     m_deleteCheckBox->setChecked(Settings::deleteExtractedArchives());
 }
 
-void GeneralSettingsTab::save() {
+void GeneralSettingsPage::save() {
     Settings::setDownloadPath(m_pathEdit->text());
     Settings::setMaximumConcurrentTransfers(m_concurrentSpinBox->value());
     Settings::setCustomCommand(m_commandEdit->text());
@@ -103,7 +103,7 @@ void GeneralSettingsTab::save() {
     Settings::setDeleteExtractedArchives(m_deleteCheckBox->isChecked());
 }
 
-void GeneralSettingsTab::showFileDialog() {
+void GeneralSettingsPage::showFileDialog() {
     const QString path = QFileDialog::getExistingDirectory(this, tr("Download path"), Settings::downloadPath());
 
     if (!path.isEmpty()) {
@@ -111,12 +111,12 @@ void GeneralSettingsTab::showFileDialog() {
     }
 }
 
-void GeneralSettingsTab::addPassword() {
+void GeneralSettingsPage::addPassword() {
     m_passwordModel->append(m_passwordEdit->text());
     m_passwordEdit->clear();
 }
 
-void GeneralSettingsTab::showPasswordContextMenu(const QPoint &pos) {
+void GeneralSettingsPage::showPasswordContextMenu(const QPoint &pos) {
     if (!m_passwordView->currentIndex().isValid()) {
         return;
     }
@@ -129,6 +129,6 @@ void GeneralSettingsTab::showPasswordContextMenu(const QPoint &pos) {
     }
 }
 
-void GeneralSettingsTab::onPasswordChanged(const QString &password) {
+void GeneralSettingsPage::onPasswordChanged(const QString &password) {
     m_passwordButton->setEnabled(!password.isEmpty());
 }

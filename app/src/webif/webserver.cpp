@@ -29,7 +29,6 @@
 #include "transferserver.h"
 #include "urlcheckserver.h"
 #include "urlretrievalserver.h"
-#include <QFile>
 
 WebServer* WebServer::self = 0;
 

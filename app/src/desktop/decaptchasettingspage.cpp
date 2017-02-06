@@ -14,33 +14,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "recaptchasettingstab.h"
-#include "pluginsettingstab.h"
-#include "recaptchapluginconfigmodel.h"
+#include "decaptchasettingspage.h"
+#include "pluginsettingspage.h"
+#include "decaptchapluginconfigmodel.h"
+#include "settings.h"
+#include <QCheckBox>
 #include <QLabel>
 #include <QListView>
 #include <QScrollArea>
 #include <QSplitter>
 #include <QVBoxLayout>
 
-RecaptchaSettingsTab::RecaptchaSettingsTab(QWidget *parent) :
-    SettingsTab(parent),
-    m_model(new RecaptchaPluginConfigModel(this)),
+DecaptchaSettingsPage::DecaptchaSettingsPage(QWidget *parent) :
+    SettingsPage(parent),
+    m_model(new DecaptchaPluginConfigModel(this)),
     m_view(new QListView(this)),
-    m_scrollArea(new QScrollArea(this)),
+    m_container(new QWidget(this)),
+    m_checkBox(new QCheckBox(tr("&Use this decaptcha plugin"), m_container)),
+    m_scrollArea(new QScrollArea(m_container)),
+    m_vbox(new QVBoxLayout(m_container)),
     m_splitter(new QSplitter(Qt::Horizontal, this)),
     m_layout(new QVBoxLayout(this))
 {
-    setWindowTitle(tr("Recaptcha"));
+    setWindowTitle(tr("Decaptcha"));
 
     m_view->setModel(m_model);
     m_view->setUniformItemSizes(true);
 
+    m_checkBox->hide();
+
     m_scrollArea->setWidgetResizable(true);
     m_scrollArea->setWidget(new QLabel(tr("No plugin selected"), m_scrollArea));
 
+    m_vbox->addWidget(m_checkBox);
+    m_vbox->addWidget(m_scrollArea);
+    m_vbox->setContentsMargins(0, 0, 0, 0);
+
     m_splitter->addWidget(m_view);
-    m_splitter->addWidget(m_scrollArea);
+    m_splitter->addWidget(m_container);
     m_splitter->setStretchFactor(1, 1);
 
     m_layout->addWidget(m_splitter);
@@ -48,13 +59,14 @@ RecaptchaSettingsTab::RecaptchaSettingsTab(QWidget *parent) :
     connect(m_view, SIGNAL(clicked(QModelIndex)), this, SLOT(setCurrentPlugin(QModelIndex)));
 }
 
-void RecaptchaSettingsTab::save() {
-    if (PluginSettingsTab *tab = qobject_cast<PluginSettingsTab*>(m_scrollArea->widget())) {
-        tab->save();
-    }
+void DecaptchaSettingsPage::save() {    
+    if (PluginSettingsPage *page = qobject_cast<PluginSettingsPage*>(m_scrollArea->widget())) {
+        page->save();
+        Settings::setDecaptchaPlugin(m_checkBox->isChecked() ? m_pluginId : QString());
+    }    
 }
 
-void RecaptchaSettingsTab::setCurrentPlugin(const QModelIndex &index) {
+void DecaptchaSettingsPage::setCurrentPlugin(const QModelIndex &index) {
     save();
     
     if (!index.isValid()) {
@@ -62,13 +74,16 @@ void RecaptchaSettingsTab::setCurrentPlugin(const QModelIndex &index) {
         return;
     }
 
-    const QString id = index.data(RecaptchaPluginConfigModel::IdRole).toString();
-    const QVariantList settings = index.data(RecaptchaPluginConfigModel::SettingsRole).toList();
+    m_pluginId = index.data(DecaptchaPluginConfigModel::IdRole).toString();
+    const QVariantList settings = index.data(DecaptchaPluginConfigModel::SettingsRole).toList();
 
-    if ((id.isEmpty()) || (settings.isEmpty())) {
+    if ((m_pluginId.isEmpty()) || (settings.isEmpty())) {
+        m_checkBox->hide();
         m_scrollArea->setWidget(new QLabel(tr("No settings for this plugin"), m_scrollArea));
         return;
     }
 
-    m_scrollArea->setWidget(new PluginSettingsTab(id, settings, m_scrollArea));
+    m_checkBox->show();
+    m_checkBox->setChecked(Settings::decaptchaPlugin() == m_pluginId);
+    m_scrollArea->setWidget(new PluginSettingsPage(m_pluginId, settings, m_scrollArea));
 }

@@ -14,40 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SERVICESETTINGSTAB_H
-#define SERVICESETTINGSTAB_H
+#include "page.h"
 
-#include "settingstab.h"
-
-class ServicePluginConfigModel;
-class QListView;
-class QScrollArea;
-class QSplitter;
-class QVBoxLayout;
-
-class ServiceSettingsTab : public SettingsTab
+Page::Page(QWidget *parent) :
+    QWidget(parent)
 {
-    Q_OBJECT
-
-public:
-    explicit ServiceSettingsTab(QWidget *parent = 0);
-
-public Q_SLOTS:
-    virtual void save();
-
-private Q_SLOTS:
-    void setCurrentPlugin(const QModelIndex &index);
-
-private:
-    ServicePluginConfigModel *m_model;
-
-    QListView *m_view;
-
-    QScrollArea *m_scrollArea;
-
-    QSplitter *m_splitter;
-
-    QVBoxLayout *m_layout;
-};
-
-#endif // SERVICESETTINGSTAB_H
+}

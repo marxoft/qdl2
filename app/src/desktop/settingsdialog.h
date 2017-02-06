@@ -19,13 +19,13 @@
 
 #include <QDialog>
 
-class CategorySettingsTab;
-class DecaptchaSettingsTab;
-class GeneralSettingsTab;
-class InterfaceSettingsTab;
-class NetworkSettingsTab;
-class RecaptchaSettingsTab;
-class ServiceSettingsTab;
+class CategorySettingsPage;
+class DecaptchaSettingsPage;
+class GeneralSettingsPage;
+class InterfaceSettingsPage;
+class NetworkSettingsPage;
+class RecaptchaSettingsPage;
+class ServiceSettingsPage;
 class QDialogButtonBox;
 class QStackedWidget;
 class QTabBar;
@@ -42,24 +42,24 @@ public Q_SLOTS:
     virtual void accept();
 
 private Q_SLOTS:
-    void setCurrentTab(int index);
+    void setCurrentPage(int index);
     
-    void showGeneralTab();
-    void showNetworkTab();
-    void showInterfaceTab();
-    void showCategoryTab();
-    void showServicesTab();
-    void showRecaptchaTab();
-    void showDecaptchaTab();    
+    void showGeneralPage();
+    void showNetworkPage();
+    void showInterfacePage();
+    void showCategoryPage();
+    void showServicesPage();
+    void showRecaptchaPage();
+    void showDecaptchaPage();
 
 private:
-    GeneralSettingsTab *m_generalTab;
-    NetworkSettingsTab *m_networkTab;
-    InterfaceSettingsTab *m_interfaceTab;
-    CategorySettingsTab *m_categoryTab;
-    ServiceSettingsTab *m_serviceTab;
-    RecaptchaSettingsTab *m_recaptchaTab;
-    DecaptchaSettingsTab *m_decaptchaTab;
+    GeneralSettingsPage *m_generalPage;
+    NetworkSettingsPage *m_networkPage;
+    InterfaceSettingsPage *m_interfacePage;
+    CategorySettingsPage *m_categoryPage;
+    ServiceSettingsPage *m_servicePage;
+    RecaptchaSettingsPage *m_recaptchaPage;
+    DecaptchaSettingsPage *m_decaptchaPage;
     
     QTabBar *m_tabBar;
 

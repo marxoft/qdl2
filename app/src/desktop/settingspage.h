@@ -14,24 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ACTIONMODEL_H
-#define ACTIONMODEL_H
+#ifndef SETTINGSPAGE_H
+#define SETTINGSPAGE_H
 
-#include "selectionmodel.h"
-#include "qdl.h"
+#include "page.h"
 
-class ActionModel : public SelectionModel
+class SettingsPage : public Page
 {
     Q_OBJECT
 
 public:
-    explicit ActionModel(QObject *parent = 0) :
-        SelectionModel(parent)
-    {
-        append(tr("Continue"), Qdl::Continue);
-        append(tr("Pause"), Qdl::Pause);
-        append(tr("Quit"), Qdl::Quit);
-    }
+    explicit SettingsPage(QWidget *parent = 0);
+
+public Q_SLOTS:
+    virtual void restore();
+    virtual void save();
 };
 
-#endif // ACTIONMODEL_H
+#endif // SETTINGSPAGE_H

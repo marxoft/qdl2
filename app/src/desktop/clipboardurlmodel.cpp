@@ -91,7 +91,7 @@ void ClipboardUrlModel::save() {
 }
 
 void ClipboardUrlModel::onClipboardDataChanged() {
-    QStringList urls = QApplication::clipboard()->text().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    QStringList urls = QApplication::clipboard()->text().split("\n", QString::SkipEmptyParts);
     urls.removeDuplicates();
 
     foreach (const QString &url, urls) {

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "categorysettingstab.h"
+#include "categorysettingspage.h"
 #include "categorymodel.h"
 #include <QFileDialog>
 #include <QFormLayout>
@@ -24,8 +24,8 @@
 #include <QPushButton>
 #include <QTreeView>
 
-CategorySettingsTab::CategorySettingsTab(QWidget *parent) :
-    SettingsTab(parent),
+CategorySettingsPage::CategorySettingsPage(QWidget *parent) :
+    SettingsPage(parent),
     m_model(new CategoryModel(this)),
     m_view(new QTreeView(this)),
     m_nameEdit(new QLineEdit(this)),
@@ -65,18 +65,18 @@ CategorySettingsTab::CategorySettingsTab(QWidget *parent) :
     connect(m_saveButton, SIGNAL(clicked()), this, SLOT(addCategory()));
 }
 
-void CategorySettingsTab::addCategory() {
+void CategorySettingsPage::addCategory() {
     m_model->append(m_nameEdit->text(), m_pathEdit->text());
     m_nameEdit->clear();
     m_pathEdit->clear();
 }
 
-void CategorySettingsTab::setCurrentCategory(const QModelIndex &index) {
+void CategorySettingsPage::setCurrentCategory(const QModelIndex &index) {
     m_nameEdit->setText(index.data(CategoryModel::NameRole).toString());
     m_pathEdit->setText(index.data(CategoryModel::ValueRole).toString());
 }
 
-void CategorySettingsTab::showContextMenu(const QPoint &pos) {
+void CategorySettingsPage::showContextMenu(const QPoint &pos) {
     if (!m_view->currentIndex().isValid()) {
         return;
     }
@@ -89,7 +89,7 @@ void CategorySettingsTab::showContextMenu(const QPoint &pos) {
     }
 }
 
-void CategorySettingsTab::showFileDialog() {
+void CategorySettingsPage::showFileDialog() {
     const QString path = QFileDialog::getExistingDirectory(this, tr("Path"), m_pathEdit->text());
 
     if (!path.isEmpty()) {
@@ -97,10 +97,10 @@ void CategorySettingsTab::showFileDialog() {
     }
 }
 
-void CategorySettingsTab::onNameChanged(const QString &name) {
+void CategorySettingsPage::onNameChanged(const QString &name) {
     m_saveButton->setEnabled((!name.isEmpty()) && (!m_pathEdit->text().isEmpty()));
 }
 
-void CategorySettingsTab::onPathChanged(const QString &path) {
+void CategorySettingsPage::onPathChanged(const QString &path) {
     m_saveButton->setEnabled((!path.isEmpty()) && (!m_nameEdit->text().isEmpty()));
 }

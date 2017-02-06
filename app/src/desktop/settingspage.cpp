@@ -14,13 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "settingstab.h"
+#include "settingspage.h"
 
-SettingsTab::SettingsTab(QWidget *parent) :
-    QWidget(parent)
+SettingsPage::SettingsPage(QWidget *parent) :
+    Page(parent)
 {
 }
 
-void SettingsTab::restore() {}
+void SettingsPage::restore() {}
 
-void SettingsTab::save() {}
+void SettingsPage::save() {}

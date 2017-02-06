@@ -95,7 +95,7 @@ void RetrieveUrlsDialog::setText(const QString &text) {
 }
 
 QStringList RetrieveUrlsDialog::urls() const {
-    return text().split(QRegExp("\\s+"));
+    return text().split("\n", QString::SkipEmptyParts);
 }
 
 void RetrieveUrlsDialog::setUrls(const QStringList &u) {
@@ -145,7 +145,7 @@ void RetrieveUrlsDialog::dropEvent(QDropEvent *event) {
 }
 
 void RetrieveUrlsDialog::addUrls() {
-    UrlRetrievalModel::instance()->append(m_edit->toPlainText().split(QRegExp("\\s+"), QString::SkipEmptyParts),
+    UrlRetrievalModel::instance()->append(m_edit->toPlainText().split("\n", QString::SkipEmptyParts),
                                           m_serviceSelector->itemData(m_serviceSelector->currentIndex()).toString());
     m_edit->clear();
 }

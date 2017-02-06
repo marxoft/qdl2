@@ -32,20 +32,20 @@ static const QString HOME_PATH(QDesktopServices::storageLocation(QDesktopService
 #endif
 
 // Plugins
-static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/decaptcha/")
+static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/decaptcha/")
                                                                 << QString(HOME_PATH + "/qdl2/plugins/decaptcha/");
 
-static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/recaptcha/")
+static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/recaptcha/")
                                                                 << QString(HOME_PATH + "/qdl2/plugins/recaptcha/");
 
-static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/opt/qdl2/plugins/services/")
+static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "/qdl2/plugins/services/");
 
 static const QString LIB_PREFIX("lib");
 static const QString LIB_SUFFIX(".so");
 
 // Icons
-static const QString DEFAULT_ICON("/opt/qdl2/icons/qdl2.png");
+static const QString DEFAULT_ICON("/usr/share/qdl2/icons/qdl2.png");
 
 // Config
 static const QString APP_CONFIG_PATH(HOME_PATH + "/.config/qdl2/");
@@ -63,12 +63,12 @@ static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
 
 // Web interface
-static const QString WEB_INTERFACE_PATH("/opt/qdl2/webif/");
+static const QString WEB_INTERFACE_PATH("/usr/share/qdl2/webif/");
 static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTERFACE_PATH
-                                                                     << QString("/opt/qdl2/icons/")
-                                                                     << QString("/opt/qdl2/plugins/icons/")
+                                                                     << QString("/usr/share/qdl2/icons/")
+                                                                     << QString("/usr/share/qdl2/plugins/icons/")
                                                                      << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
-static const QString VERSION_NUMBER("2.3.0");
+static const QString VERSION_NUMBER("2.3.1");
 
 #endif // DEFINITIONS_H

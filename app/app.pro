@@ -178,7 +178,7 @@ maemo5 {
     TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
     TARGET.EPOCSTACKSIZE = 0x14000
     
-    VERSION = 2.3.0
+    VERSION = 2.3.1
     ICON = desktop/symbian/qdl2.svg
     
     MMP_RULES += "DEBUGGABLE_UDEBONLY"
@@ -251,26 +251,27 @@ maemo5 {
         src/desktop/archiveextractor.h \
         src/desktop/archivepasswordmodel.h \
         src/desktop/captchadialog.h \
-        src/desktop/categorysettingstab.h \
+        src/desktop/categorysettingspage.h \
         src/desktop/clipboardurlmodel.h \
         src/desktop/clipboardurlsdialog.h \
         src/desktop/definitions.h \
-        src/desktop/decaptchasettingstab.h \
-        src/desktop/generalsettingstab.h \
-        src/desktop/interfacesettingstab.h \
-        src/desktop/networksettingstab.h \
+        src/desktop/decaptchasettingspage.h \
+        src/desktop/generalsettingspage.h \
+        src/desktop/interfacesettingspage.h \
+        src/desktop/networksettingspage.h \
         src/desktop/mainwindow.h \
         src/desktop/package.h \
         src/desktop/packagepropertiesdialog.h \
+        src/desktop/page.h \
         src/desktop/pluginsettingsdialog.h \
-        src/desktop/pluginsettingstab.h \
+        src/desktop/pluginsettingspage.h \
         src/desktop/qdl.h \
-        src/desktop/recaptchasettingstab.h \
+        src/desktop/recaptchasettingspage.h \
         src/desktop/retrieveurlsdialog.h \
-        src/desktop/servicesettingstab.h \
+        src/desktop/servicesettingspage.h \
         src/desktop/settings.h \
         src/desktop/settingsdialog.h \
-        src/desktop/settingstab.h \
+        src/desktop/settingspage.h \
         src/desktop/transferdelegate.h \
         src/desktop/transferpropertiesdialog.h \
         src/desktop/urlcheckdialog.h \
@@ -282,26 +283,27 @@ maemo5 {
         src/desktop/archiveextractor.cpp \
         src/desktop/archivepasswordmodel.cpp \
         src/desktop/captchadialog.cpp \
-        src/desktop/categorysettingstab.cpp \
+        src/desktop/categorysettingspage.cpp \
         src/desktop/clipboardurlmodel.cpp \
         src/desktop/clipboardurlsdialog.cpp \
-        src/desktop/decaptchasettingstab.cpp \
-        src/desktop/generalsettingstab.cpp \
-        src/desktop/interfacesettingstab.cpp \
-        src/desktop/networksettingstab.cpp \
+        src/desktop/decaptchasettingspage.cpp \
+        src/desktop/generalsettingspage.cpp \
+        src/desktop/interfacesettingspage.cpp \
+        src/desktop/networksettingspage.cpp \
         src/desktop/main.cpp \
         src/desktop/mainwindow.cpp \
         src/desktop/package.cpp \
         src/desktop/packagepropertiesdialog.cpp \
+        src/desktop/page.cpp \
         src/desktop/pluginsettingsdialog.cpp \
-        src/desktop/pluginsettingstab.cpp \
+        src/desktop/pluginsettingspage.cpp \
         src/desktop/qdl.cpp \
-        src/desktop/recaptchasettingstab.cpp \
+        src/desktop/recaptchasettingspage.cpp \
         src/desktop/retrieveurlsdialog.cpp \
-        src/desktop/servicesettingstab.cpp \
+        src/desktop/servicesettingspage.cpp \
         src/desktop/settings.cpp \
         src/desktop/settingsdialog.cpp \
-        src/desktop/settingstab.cpp \
+        src/desktop/settingspage.cpp \
         src/desktop/transferdelegate.cpp \
         src/desktop/transferpropertiesdialog.cpp \
         src/desktop/urlcheckdialog.cpp \

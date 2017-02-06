@@ -14,10 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DECAPTCHASETTINGSTAB_H
-#define DECAPTCHASETTINGSTAB_H
+#ifndef DECAPTCHASETTINGSPAGE_H
+#define DECAPTCHASETTINGSPAGE_H
 
-#include "settingstab.h"
+#include "settingspage.h"
 
 class DecaptchaPluginConfigModel;
 class QCheckBox;
@@ -26,12 +26,12 @@ class QScrollArea;
 class QSplitter;
 class QVBoxLayout;
 
-class DecaptchaSettingsTab : public SettingsTab
+class DecaptchaSettingsPage : public SettingsPage
 {
     Q_OBJECT
 
 public:
-    explicit DecaptchaSettingsTab(QWidget *parent = 0);
+    explicit DecaptchaSettingsPage(QWidget *parent = 0);
 
 public Q_SLOTS:
     virtual void save();
@@ -59,4 +59,4 @@ private:
     QString m_pluginId;
 };
 
-#endif // DECAPTCHASETTINGSTAB_H
+#endif // DECAPTCHASETTINGSPAGE_H

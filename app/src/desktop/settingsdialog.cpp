@@ -15,13 +15,13 @@
  */
 
 #include "settingsdialog.h"
-#include "categorysettingstab.h"
-#include "decaptchasettingstab.h"
-#include "generalsettingstab.h"
-#include "interfacesettingstab.h"
-#include "networksettingstab.h"
-#include "recaptchasettingstab.h"
-#include "servicesettingstab.h"
+#include "categorysettingspage.h"
+#include "decaptchasettingspage.h"
+#include "generalsettingspage.h"
+#include "interfacesettingspage.h"
+#include "networksettingspage.h"
+#include "recaptchasettingspage.h"
+#include "servicesettingspage.h"
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QStackedWidget>
@@ -30,13 +30,13 @@
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
-    m_generalTab(0),
-    m_networkTab(0),
-    m_interfaceTab(0),
-    m_categoryTab(0),
-    m_serviceTab(0),
-    m_recaptchaTab(0),
-    m_decaptchaTab(0),
+    m_generalPage(0),
+    m_networkPage(0),
+    m_interfacePage(0),
+    m_categoryPage(0),
+    m_servicePage(0),
+    m_recaptchaPage(0),
+    m_decaptchaPage(0),
     m_tabBar(new QTabBar(this)),
     m_stack(new QStackedWidget(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Save, Qt::Horizontal, this)),
@@ -58,110 +58,110 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_layout->addWidget(m_stack);
     m_layout->addWidget(m_buttonBox);
 
-    connect(m_tabBar, SIGNAL(currentChanged(int)), this, SLOT(setCurrentTab(int)));
+    connect(m_tabBar, SIGNAL(currentChanged(int)), this, SLOT(setCurrentPage(int)));
     connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
-    showGeneralTab();
+    showGeneralPage();
 }
 
 void SettingsDialog::accept() {
     for (int i = 0; i < m_stack->count(); i++) {
-        if (SettingsTab *tab = qobject_cast<SettingsTab*>(m_stack->widget(i))) {
-            tab->save();
+        if (SettingsPage *page = qobject_cast<SettingsPage*>(m_stack->widget(i))) {
+            page->save();
         }
     }
 
     QDialog::accept();
 }
 
-void SettingsDialog::setCurrentTab(int index) {
+void SettingsDialog::setCurrentPage(int index) {
     switch (index) {
     case 0:
-        showGeneralTab();
+        showGeneralPage();
         break;
     case 1:
-        showNetworkTab();
+        showNetworkPage();
         break;
     case 2:
-        showInterfaceTab();
+        showInterfacePage();
         break;
     case 3:
-        showCategoryTab();
+        showCategoryPage();
         break;
     case 4:
-        showServicesTab();
+        showServicesPage();
         break;
     case 5:
-        showRecaptchaTab();
+        showRecaptchaPage();
         break;
     case 6:
-        showDecaptchaTab();
+        showDecaptchaPage();
         break;
     default:
         break;
     }
 }
 
-void SettingsDialog::showGeneralTab() {
-    if (!m_generalTab) {
-        m_generalTab = new GeneralSettingsTab(m_stack);
-        m_stack->addWidget(m_generalTab);
+void SettingsDialog::showGeneralPage() {
+    if (!m_generalPage) {
+        m_generalPage = new GeneralSettingsPage(m_stack);
+        m_stack->addWidget(m_generalPage);
     }
 
-    m_stack->setCurrentWidget(m_generalTab);
+    m_stack->setCurrentWidget(m_generalPage);
 }
 
-void SettingsDialog::showNetworkTab() {
-    if (!m_networkTab) {
-        m_networkTab = new NetworkSettingsTab(m_stack);
-        m_stack->addWidget(m_networkTab);
+void SettingsDialog::showNetworkPage() {
+    if (!m_networkPage) {
+        m_networkPage = new NetworkSettingsPage(m_stack);
+        m_stack->addWidget(m_networkPage);
     }
 
-    m_stack->setCurrentWidget(m_networkTab);
+    m_stack->setCurrentWidget(m_networkPage);
 }
 
-void SettingsDialog::showInterfaceTab() {
-    if (!m_interfaceTab) {
-        m_interfaceTab = new InterfaceSettingsTab(m_stack);
-        m_stack->addWidget(m_interfaceTab);
+void SettingsDialog::showInterfacePage() {
+    if (!m_interfacePage) {
+        m_interfacePage = new InterfaceSettingsPage(m_stack);
+        m_stack->addWidget(m_interfacePage);
     }
 
-    m_stack->setCurrentWidget(m_interfaceTab);
+    m_stack->setCurrentWidget(m_interfacePage);
 }
 
-void SettingsDialog::showCategoryTab() {
-    if (!m_categoryTab) {
-        m_categoryTab = new CategorySettingsTab(m_stack);
-        m_stack->addWidget(m_categoryTab);
+void SettingsDialog::showCategoryPage() {
+    if (!m_categoryPage) {
+        m_categoryPage = new CategorySettingsPage(m_stack);
+        m_stack->addWidget(m_categoryPage);
     }
 
-    m_stack->setCurrentWidget(m_categoryTab);
+    m_stack->setCurrentWidget(m_categoryPage);
 }
 
-void SettingsDialog::showServicesTab() {
-    if (!m_serviceTab) {
-        m_serviceTab = new ServiceSettingsTab(m_stack);
-        m_stack->addWidget(m_serviceTab);
+void SettingsDialog::showServicesPage() {
+    if (!m_servicePage) {
+        m_servicePage = new ServiceSettingsPage(m_stack);
+        m_stack->addWidget(m_servicePage);
     }
 
-    m_stack->setCurrentWidget(m_serviceTab);
+    m_stack->setCurrentWidget(m_servicePage);
 }
 
-void SettingsDialog::showRecaptchaTab() {
-    if (!m_recaptchaTab) {
-        m_recaptchaTab = new RecaptchaSettingsTab(m_stack);
-        m_stack->addWidget(m_recaptchaTab);
+void SettingsDialog::showRecaptchaPage() {
+    if (!m_recaptchaPage) {
+        m_recaptchaPage = new RecaptchaSettingsPage(m_stack);
+        m_stack->addWidget(m_recaptchaPage);
     }
 
-    m_stack->setCurrentWidget(m_recaptchaTab);
+    m_stack->setCurrentWidget(m_recaptchaPage);
 }
 
-void SettingsDialog::showDecaptchaTab() {
-    if (!m_decaptchaTab) {
-        m_decaptchaTab = new DecaptchaSettingsTab(m_stack);
-        m_stack->addWidget(m_decaptchaTab);
+void SettingsDialog::showDecaptchaPage() {
+    if (!m_decaptchaPage) {
+        m_decaptchaPage = new DecaptchaSettingsPage(m_stack);
+        m_stack->addWidget(m_decaptchaPage);
     }
 
-    m_stack->setCurrentWidget(m_decaptchaTab);
+    m_stack->setCurrentWidget(m_decaptchaPage);
 }

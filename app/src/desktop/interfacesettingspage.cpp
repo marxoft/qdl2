@@ -14,15 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "interfacesettingstab.h"
+#include "interfacesettingspage.h"
 #include "settings.h"
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QSpinBox>
 
-InterfaceSettingsTab::InterfaceSettingsTab(QWidget *parent) :
-    SettingsTab(parent),
+InterfaceSettingsPage::InterfaceSettingsPage(QWidget *parent) :
+    SettingsPage(parent),
     m_webCheckBox(new QCheckBox(tr("&Enable web interface"), this)),
     m_authCheckBox(new QCheckBox(tr("Enable &authentication"), this)),
     m_usernameEdit(new QLineEdit(this)),
@@ -45,7 +45,7 @@ InterfaceSettingsTab::InterfaceSettingsTab(QWidget *parent) :
     restore();
 }
 
-void InterfaceSettingsTab::restore() {
+void InterfaceSettingsPage::restore() {
     m_webCheckBox->setChecked(Settings::webInterfaceEnabled());
     m_authCheckBox->setChecked(Settings::webInterfaceAuthenticationEnabled());
     m_usernameEdit->setText(Settings::webInterfaceUsername());
@@ -53,7 +53,7 @@ void InterfaceSettingsTab::restore() {
     m_portSpinBox->setValue(Settings::webInterfacePort());
 }
 
-void InterfaceSettingsTab::save() {
+void InterfaceSettingsPage::save() {
     Settings::setWebInterfaceAuthenticationEnabled(m_authCheckBox->isChecked());
     Settings::setWebInterfaceUsername(m_usernameEdit->text());
     Settings::setWebInterfacePassword(m_passwordEdit->text());
