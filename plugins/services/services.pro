@@ -4,6 +4,7 @@ SUBDIRS = \
     datafile \
     depfile \
     depositfiles \
+    dropbox \
     fileboom \
     filefactory \
     filejoker \
