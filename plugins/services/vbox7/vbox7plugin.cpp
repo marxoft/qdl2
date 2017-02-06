@@ -307,4 +307,6 @@ void Vbox7Plugin::followRedirect(const QString &url, const char *slot) {
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(qdl2-vbox7, Vbox7Plugin)
+#endif
