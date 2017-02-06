@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var VIDEO_FORMATS = ["720p", "480p", "240p"];
+var VIDEO_FORMATS = ["1080p", "720p", "480p", "240p"];
 
 var request = null;
 
@@ -57,14 +57,19 @@ function getDownloadRequest(url) {
                     return;
                 }
                 
+                var shd = parseInt(request.responseText.split("stream_shd  = ")[1].split(";")[0]);
                 var hd = parseInt(request.responseText.split("stream_hd  = ")[1].split(";")[0]);
                 var formats = VIDEO_FORMATS;
+                
+                if (shd != 1) {
+                    formats.splice(0, 1);
+                }
                 
                 if (hd != 1) {
                     formats.splice(0, 1);
                 }
                 
-                var format = settings.value("videoFormat", "720p");
+                var format = settings.value("videoFormat", "1080p");
 
                 if (settings.value("useDefaultVideoFormat", true) == true) {
                     var videoUrl = getVideoUrl(streamId, streamKey, formats[Math.max(0, formats.indexOf(format))]);

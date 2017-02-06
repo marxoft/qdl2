@@ -15,7 +15,24 @@ SOURCES += \
     json.cpp \
     rapidgatorplugin.cpp
 
-symbian {
+maemo5 {
+    INCLUDEPATH += /usr/include/qdl2
+    HEADERS += /usr/include/qdl2/serviceplugin.h
+
+    config.files = "$$TARGET".json
+    config.path = /opt/qdl2/plugins/services
+
+    icon.files = "$$TARGET".jpg
+    icon.path = /opt/qdl2/plugins/icons
+
+    target.path = /opt/qdl2/plugins/services
+
+    INSTALLS += \
+        target \
+        config \
+        icon
+
+} else:symbian {
     TARGET.UID3 = 0xE73CA31F
     TARGET.CAPABILITY += NetworkServices ReadUserData WriteUserData
     TARGET.EPOCALLOWDLLDATA = 1
@@ -53,12 +70,12 @@ symbian {
     HEADERS += /usr/include/qdl2/serviceplugin.h
 
     config.files = "$$TARGET".json
-    config.path = /opt/qdl2/plugins/services
+    config.path = /usr/share/qdl2/plugins/services
 
     icon.files = "$$TARGET".jpg
-    icon.path = /opt/qdl2/plugins/icons
+    icon.path = /usr/share/qdl2/plugins/icons
 
-    target.path = /opt/qdl2/plugins/services
+    target.path = /usr/share/qdl2/plugins/services
 
     INSTALLS += \
         target \

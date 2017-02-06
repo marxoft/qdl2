@@ -1,6 +1,21 @@
 TEMPLATE = subdirs
 
-symbian {
+maemo5 {
+    config.files = qdl2-porntrex.json
+    config.path = /opt/qdl2/plugins/services
+
+    icon.files = qdl2-porntrex.jpg
+    icon.path = /opt/qdl2/plugins/icons
+
+    plugin.files = qdl2-porntrex.js
+    plugin.path = /opt/qdl2/plugins/services
+    
+    INSTALLS += \
+        config \
+        icon \
+        plugin
+
+} else:symbian {
     config.sources = qdl2-porntrex.json
     config.path = !:/qdl2/plugins/services
 
@@ -22,13 +37,13 @@ symbian {
 
 } else:unix {
     config.files = qdl2-porntrex.json
-    config.path = /opt/qdl2/plugins/services
+    config.path = /usr/share/qdl2/plugins/services
 
     icon.files = qdl2-porntrex.jpg
-    icon.path = /opt/qdl2/plugins/icons
+    icon.path = /usr/share/qdl2/plugins/icons
 
     plugin.files = qdl2-porntrex.js
-    plugin.path = /opt/qdl2/plugins/services
+    plugin.path = /usr/share/qdl2/plugins/services
     
     INSTALLS += \
         config \

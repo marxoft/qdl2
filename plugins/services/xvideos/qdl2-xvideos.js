@@ -21,12 +21,10 @@ function checkUrl(url) {
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var paramString = "[" + request.responseText.split("new HTML5Player(")[1]
-                    .split(", video_related")[0].replace(/'/g, "\"") + "]";
-                var list = JSON.parse(paramString);
+                var title = /html5player\.setVideoTitle\('([^']+)'\)/.exec(request.responseText)[1];
 
-                if ((list) && (list.length > 4)) {
-                    urlChecked({"url": url, "fileName": list[2] + ".mp4"});
+                if (title) {
+                    urlChecked({"url": url, "fileName": title + ".mp4"});
                 }
                 else {
                     error(qsTr("File not found"));
@@ -47,46 +45,32 @@ function getDownloadRequest(url) {
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var paramString = "[" + request.responseText.split("new HTML5Player(")[1]
-                    .split(", video_related")[0].replace(/'/g, "\"") + "]";
-                var list = JSON.parse(paramString);
+                var lowUrl = /html5player\.setVideoUrlLow\('([^']+)'\)/.exec(request.responseText)[1];
+                var highUrl = /html5player\.setVideoUrlHigh\('([^']+)'\)/.exec(request.responseText)[1];
 
-                if ((list) && (list.length > 4)) {
+                if ((lowUrl) && (highUrl)) {
                     var format = settings.value("videoFormat", "mp4");
 
                     if (settings.value("useDefaultVideoFormat", true) == true) {
-                        if (format == "mp4") {
-                            try {
-                                downloadRequest({"url": list[5]});
-                            }
-                            catch(err) {
-                                downloadRequest({"url": list[4]});
-                            }
+                        if ((format == "mp4") && (highUrl)) {
+                            downloadRequest({"url": highUrl});
                         }
-                        else {
-                            downloadRequest({"url": list[4]});
+                        else if (lowUrl) {
+                            downloadRequest({"url": lowUrl});
                         }
                     }
                     else {
                         var settingsList = [];
                         var formatList = {"type": "list", "label": qsTr("Video format"), "key": "url"};
-                        
-                        try {
-                            formatList["value"] = (format == "mp4" ? list[5] : list[4]);
-                            formatList["options"] = [{"label": "MP4", "value": list[5]},
-                                                     {"label": "3GP", "value": list[4]}];
-                        }
-                        catch(err) {
-                            formatList["value"] = list[4];
-                            formatList["options"] = [{"label": "3GP", "value": list[4]}];
-                        }
-
+                        formatList["value"] = (format == "mp4" ? highUrl : lowUrl);
+                        formatList["options"] = [{"label": "MP4", "value": highUrl},
+                                                 {"label": "3GP", "value": lowUrl}];
                         settingsRequest(qsTr("Video format"), [formatList],
                                         function (f) { downloadRequest({"url": f.url}); });
                     }
                 }
                 else {
-                    error(qsTr("File not found"));
+                    error(qsTr("No video streams found"));
                 }
             }
             catch(err) {

@@ -171,7 +171,7 @@ maemo5 {
         icon64 \
         target
 
-} else:symbian|simulator {
+} else:symbian {
     TARGET = qdl2
     TARGET.UID3 = 0xE71CBF5C
     TARGET.CAPABILITY += NetworkServices ReadUserData
@@ -238,7 +238,6 @@ maemo5 {
 } else:unix {
     DEFINES += WEB_INTERFACE
     QT += dbus
-    CONFIG += debug
     
     greaterThan(QT_MAJOR_VERSION, 4) {
         QT += widgets
@@ -315,7 +314,7 @@ maemo5 {
     desktop.files = desktop/desktop/qdl2.desktop
 
     icon.files = desktop/desktop/64x64/qdl2.png
-    icon.path = /opt/qdl2/icons
+    icon.path = /usr/share/qdl2/icons
 
     icon64.files = desktop/desktop/64x64/qdl2.png
     icon64.path = /usr/share/icons/hicolor/64x64/apps
@@ -329,7 +328,7 @@ maemo5 {
     icon16.files = desktop/desktop/16x16/qdl2.png
     icon16.path = /usr/share/icons/hicolor/16x16/apps
     
-    target.path = /opt/qdl2/bin
+    target.path = /usr/bin
     
     INSTALLS += \
         dbus \
