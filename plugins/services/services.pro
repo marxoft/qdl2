@@ -15,6 +15,7 @@ SUBDIRS = \
     keeptoshare \
     mediafire \
     onefichier \
+    openload \
     pornhub \
     porntrex \
     publishtome \
@@ -22,6 +23,7 @@ SUBDIRS = \
     sendvid \
     spankbang \
     tezfiles \
+    txxx \
     uploaded \
     uploadly \
     upstore \
