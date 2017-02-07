@@ -12,6 +12,7 @@ maemo5 {
 
     INSTALLS += \
         config \
+        icon \
         plugin
 
 } else:symbian {
@@ -31,6 +32,7 @@ maemo5 {
     DEPLOYMENT += \
         openload_deployment \
         config \
+        icon \
         plugin
 
 } else:unix {
@@ -45,5 +47,6 @@ maemo5 {
 
     INSTALLS += \
         config \
+        icon \
         plugin
 }
