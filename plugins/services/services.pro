@@ -29,6 +29,7 @@ SUBDIRS = \
     uploadly \
     upstore \
     vbox7 \
+    vidlox \
     wenoo \
     xhamster \
     xvideos \

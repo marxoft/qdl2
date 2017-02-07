@@ -1,0 +1,7 @@
+{
+    "type": "js",
+    "name": "Vidlox.tv",
+    "icon": "qdl2-vidlox.jpg",
+    "version": 1,
+    "regExp": "http(s|)://vidlox\\.tv/\\w+/[\\w_]+\\.\\w+\\.html"
+}
