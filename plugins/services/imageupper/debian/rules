@@ -9,9 +9,14 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+
+
+
+
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
+	# qmake PREFIX=/usr# Uncomment this line for use without Qt Creator
 
 	touch configure-stamp
 
@@ -21,12 +26,20 @@ build: build-stamp
 build-stamp: configure-stamp  
 	dh_testdir
 
+	# Add here commands to compile the package.
+	qmake
+	$(MAKE) # Uncomment this line for use without Qt Creator
+	#docbook-to-man debian/qdl-plugins-imageupper.sgml > qdl.1
+
 	touch $@
 
 clean: 
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	#$(MAKE) clean
 
 	dh_clean 
 
@@ -36,10 +49,9 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	mkdir -p debian/qdl-plugins-imageupper/opt/qdl2/plugins/services
-	mkdir -p debian/qdl-plugins-imageupper/opt/qdl2/plugins/icons
-	cp qdl2-imageupper.js qdl2-imageupper.json debian/qdl-plugins-imageupper/opt/qdl2/plugins/services
-	cp qdl2-imageupper.jpg debian/qdl-plugins-imageupper/opt/qdl2/plugins/icons
+	# Add here commands to install the package into debian/qdl-plugins-imageupper.
+	$(MAKE) INSTALL_ROOT="$(CURDIR)"/debian/qdl-plugins-imageupper install
+
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -71,6 +83,7 @@ binary-arch: build install
 #	dh_perl
 #	dh_makeshlibs
 	dh_installdeb
+	# dh_shlibdeps # Uncomment this line for use without Qt Creator
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
