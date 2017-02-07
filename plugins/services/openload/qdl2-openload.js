@@ -94,7 +94,6 @@ function getDownloadRequest(url) {
                 }
                 
                 var videoUrl = STREAM_URL + urlcode;
-                var fileName = /<meta name="og:title" content="([^"]+)">/.exec(response)[1];
                 downloadRequest({"url": videoUrl});
             }
             catch(err) {
