@@ -224,6 +224,8 @@ private:
 
     void deleteFile();
     
+    static const QRegExp CONTENT_DISPOSITION_REGEXP;
+    
     DecaptchaPlugin *m_decaptchaPlugin;
     RecaptchaPlugin *m_recaptchaPlugin;
     ServicePlugin *m_servicePlugin;

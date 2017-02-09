@@ -35,7 +35,7 @@
 #include <QSettings>
 #include <QTimer>
 
-static QRegExp CONTENT_DISPOSITION_REGEXP("(filename=|filename\\*=UTF-8''|filename\\*= UTF-8'')([^;]+)");
+const QRegExp Transfer::CONTENT_DISPOSITION_REGEXP("(filename=|filename\\*=UTF-8''|filename\\*= UTF-8'')([^;]+)");
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
@@ -829,6 +829,7 @@ bool Transfer::pause() {
     case WaitingInactive:
         stopWaitTimer();
         break;
+    case Connecting:
     case WaitingActive:
         if ((m_servicePlugin) && (!m_servicePlugin->cancelCurrentOperation())) {
             return false;
