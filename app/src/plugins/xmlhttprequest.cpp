@@ -118,8 +118,7 @@ QString XMLHttpRequest::getAllResponseHeaders() const {
 }
 
 void XMLHttpRequest::open(const QString &method, const QString &url, const QString &username, const QString &password) {
-    Logger::log(QString("XMLHttpRequest::open(). Method: %1, URL: %2, Username: %3, Password: %4")
-                       .arg(method).arg(url).arg(username).arg(password), Logger::LowVerbosity);
+    Logger::log(QString("XMLHttpRequest::open(). Method: %1, URL: %2").arg(method).arg(url), Logger::LowVerbosity);
     
     switch (readyState()) {
     case OPENED:
