@@ -45,6 +45,7 @@ public:
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
+    virtual void fetchMore(const QString &next);
     virtual void search(const QString &query);
     
     void submitSettingsResponse(const QVariantMap &settings);

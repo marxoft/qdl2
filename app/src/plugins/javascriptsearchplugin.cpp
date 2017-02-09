@@ -106,6 +106,25 @@ bool JavaScriptSearchPlugin::cancelCurrentOperation() {
     return m_engine->globalObject().property("cancelCurrentOperation").call(QScriptValue()).toBool();
 }
 
+void JavaScriptSearchPlugin::fetchMore(const QString &next) {
+    initEngine();
+    QScriptValue func = m_engine->globalObject().property("fetchMore");
+
+    if (func.isFunction()) {
+        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << next);
+
+        if (result.isError()) {
+            const QString errorString = result.toString();
+            Logger::log("JavaScriptSearchPlugin::search(). Error calling fetchMore(): " + errorString);
+            emit error(tr("Error calling fetchMore(): %1").arg(errorString));
+        }
+    }
+    else {
+        Logger::log("JavaScriptSearchPlugin::fetchMore(). fetchMore() function not defined");
+        emit error(tr("fetchMore() function not defined"));
+    }
+}
+
 void JavaScriptSearchPlugin::search(const QString &query) {
     initEngine();
     QScriptValue func = m_engine->globalObject().property("search");
