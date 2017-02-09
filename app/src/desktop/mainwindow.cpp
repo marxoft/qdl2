@@ -28,6 +28,9 @@
 #include "qdl.h"
 #include "recaptchapluginmanager.h"
 #include "retrieveurlsdialog.h"
+#include "searchdialog.h"
+#include "searchpage.h"
+#include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "settingsdialog.h"
@@ -46,9 +49,12 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QTreeView>
+#include <QStackedWidget>
+#include <QTabBar>
 #include <QToolBar>
 #include <QToolButton>
+#include <QTreeView>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -66,8 +72,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bottomToolBar(new QToolBar(this)),
     m_addUrlsAction(new QAction(QIcon::fromTheme("list-add"), tr("&Add URLs"), this)),
     m_importUrlsAction(new QAction(QIcon::fromTheme("document-open"), tr("&Import URLs"), this)),
-    m_retrieveUrlsAction(new QAction(QIcon::fromTheme("edit-find"), tr("&Retrieve URLs"), this)),
+    m_retrieveUrlsAction(new QAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("edit-paste"), tr("Show &clipboard URLs"), this)),
+    m_searchAction(new QAction(QIcon::fromTheme("edit-find"), tr("&Search for content"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
     m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
@@ -91,13 +98,17 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packagePriorityGroup(new QActionGroup(this)),
     m_concurrentTransfersGroup(new QActionGroup(this)),
     m_actionSelector(new QComboBox(this)),
-    m_view(new QTreeView(this)),
-    m_optionsButton(new QToolButton(this)),
     m_activeLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
-    m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this))
+    m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this)),
+    m_optionsButton(new QToolButton(this)),
+    m_widget(new QWidget(this)),
+    m_tabs(new QTabBar(m_widget)),
+    m_stack(new QStackedWidget(m_widget)),
+    m_view(new QTreeView(m_widget)),
+    m_layout(new QVBoxLayout(m_widget))
 {
     setWindowTitle("QDL");
-    setCentralWidget(m_view);
+    setCentralWidget(m_widget);
     setAcceptDrops(true);
     addToolBar(Qt::TopToolBarArea, m_topToolBar);
     addToolBar(Qt::BottomToolBarArea, m_bottomToolBar);
@@ -118,6 +129,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
+    m_searchAction->setShortcut(tr("Ctrl+S"));
+    m_searchAction->setEnabled(!SearchPluginManager::instance()->plugins().isEmpty());
     m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_quitAction->setShortcut(tr("Ctrl+Q"));
 
@@ -125,6 +138,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu->addAction(m_importUrlsAction);
     m_fileMenu->addAction(m_retrieveUrlsAction);
     m_fileMenu->addAction(m_clipboardUrlsAction);
+    m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_searchAction);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_queueAction);
     m_fileMenu->addAction(m_pauseAction);
@@ -182,6 +197,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_actionSelector->setModel(new ActionModel(m_actionSelector));
     m_actionSelector->setCurrentIndex(Settings::nextAction());
+    
+    QLabel *actionLabel = new QLabel(tr("&After current download(s): "), this);
+    actionLabel->setBuddy(m_actionSelector);
 
     m_topToolBar->setObjectName("topToolBar");
     m_topToolBar->setWindowTitle(tr("Top toolbar"));
@@ -192,10 +210,12 @@ MainWindow::MainWindow(QWidget *parent) :
     m_topToolBar->addAction(m_retrieveUrlsAction);
     m_topToolBar->addAction(m_clipboardUrlsAction);
     m_topToolBar->addSeparator();
+    m_topToolBar->addAction(m_searchAction);
+    m_topToolBar->addSeparator();
     m_topToolBar->addAction(m_queueAction);
     m_topToolBar->addAction(m_pauseAction);
     m_topToolBar->addSeparator();
-    m_topToolBar->addWidget(new QLabel(tr("After current download(s): "), m_topToolBar));
+    m_topToolBar->addWidget(actionLabel);
     m_topToolBar->addWidget(m_actionSelector);
 
     QLabel *speedIcon = new QLabel(m_bottomToolBar);
@@ -210,7 +230,8 @@ MainWindow::MainWindow(QWidget *parent) :
     const int concurrent = Settings::maximumConcurrentTransfers();
 
     for (int i = 1; i <= MAX_CONCURRENT_TRANSFERS; i++) {
-        QAction *action = m_concurrentTransfersMenu->addAction(QString::number(i), this, SLOT(setMaximumConcurrentTransfers()));
+        QAction *action = m_concurrentTransfersMenu->addAction(QString::number(i),
+                                                               this, SLOT(setMaximumConcurrentTransfers()));
         action->setData(i);
         action->setCheckable(true);
         action->setChecked(i == concurrent);
@@ -233,6 +254,16 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bottomToolBar->addWidget(spacer2);
     m_bottomToolBar->addWidget(m_speedLabel);
     m_bottomToolBar->addWidget(speedIcon);
+    
+    m_tabs->setTabsClosable(true);
+    m_tabs->setSelectionBehaviorOnRemove(QTabBar::SelectLeftTab);
+    m_tabs->setExpanding(false);
+    m_tabs->addTab(tr("Downloads"));
+    m_tabs->hide();
+    
+    if (QWidget *button = m_tabs->tabButton(0, QTabBar::RightSide)) {
+        button->hide();
+    }
 
     m_view->setModel(TransferModel::instance());
     m_view->setItemDelegate(new TransferDelegate(m_view));
@@ -259,6 +290,12 @@ MainWindow::MainWindow(QWidget *parent) :
         header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)") + 20);
         header->resizeSection(3, fm.width("999.99KB/s") + 20);
     }
+    
+    m_stack->addWidget(m_view);
+    
+    m_layout->addWidget(m_tabs);
+    m_layout->addWidget(m_stack);
+    m_layout->setContentsMargins(0, 0, 0, 0);
 
     connect(Categories::instance(), SIGNAL(changed()), this, SLOT(setCategoryMenuActions()));
 
@@ -276,6 +313,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
+    connect(m_searchAction, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
     connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
     connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
     connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
@@ -299,6 +337,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
 
     connect(m_actionSelector, SIGNAL(activated(int)), Settings::instance(), SLOT(setNextAction(int)));
+        
+    connect(m_tabs, SIGNAL(currentChanged(int)), this, SLOT(setCurrentPage(int)));
+    connect(m_tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(closePage(int)));
 
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
@@ -520,6 +561,40 @@ void MainWindow::showOptionsMenu() {
     m_optionsMenu->popup(m_optionsButton->mapToGlobal(m_optionsButton->rect().center()));
 }
 
+void MainWindow::closePage(int index) {
+    if (index > 0) {
+        if (QWidget *page = m_stack->widget(index)) {
+            m_stack->removeWidget(page);
+            m_tabs->removeTab(index);
+            page->close();
+            
+            if (m_tabs->count() == 1) {
+                m_tabs->hide();
+            }
+        }
+    }
+}
+
+void MainWindow::closeCurrentPage() {
+    closePage(m_tabs->currentIndex());
+}
+
+void MainWindow::setCurrentPage(int index) {
+    m_stack->setCurrentIndex(index);
+}
+
+void MainWindow::search(const QString &query, const QString &pluginName, const QString &pluginId) {
+    SearchPage *page = new SearchPage(m_stack);
+    m_stack->addWidget(page);
+    const int index = m_stack->indexOf(page);
+    m_tabs->addTab(tr("Search - %1").arg(pluginName));
+    m_stack->setCurrentIndex(index);
+    m_tabs->setCurrentIndex(index);
+    m_tabs->setTabToolTip(index, tr("Search - %1 - %2").arg(query).arg(pluginName));
+    m_tabs->show();
+    page->search(query, pluginId);
+}
+
 void MainWindow::showAddUrlsDialog() {
     AddUrlsDialog addDialog(this);
 
@@ -624,6 +699,14 @@ void MainWindow::showClipboardUrlsDialog() {
     }
 }
 
+void MainWindow::showSearchDialog() {
+    SearchDialog dialog(this);
+    
+    if (dialog.exec() == QDialog::Accepted) {
+        search(dialog.query(), dialog.pluginName(), dialog.pluginId());
+    }
+}
+
 void MainWindow::showSettingsDialog() {
     SettingsDialog(this).exec();
 }
@@ -683,11 +766,18 @@ void MainWindow::showPluginSettingsDialog(TransferItem *t) {
 }
 
 void MainWindow::loadPlugins() {
-    const int count = DecaptchaPluginManager::instance()->load() + RecaptchaPluginManager::instance()->load()
-                      + ServicePluginManager::instance()->load();
+    const int decaptcha = DecaptchaPluginManager::instance()->load();
+    const int recaptcha = RecaptchaPluginManager::instance()->load();
+    const int search = SearchPluginManager::instance()->load();
+    const int services = ServicePluginManager::instance()->load();
+    const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
         QMessageBox::information(this, tr("Load plugins"), tr("%1 new plugins found").arg(count));
+        
+        if (search > 0) {
+            m_searchAction->setEnabled(true);
+        }
     }
     else {
         QMessageBox::information(this, tr("Load plugins"), tr("No new plugins found"));

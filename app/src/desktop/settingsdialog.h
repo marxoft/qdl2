@@ -25,6 +25,7 @@ class GeneralSettingsPage;
 class InterfaceSettingsPage;
 class NetworkSettingsPage;
 class RecaptchaSettingsPage;
+class SearchSettingsPage;
 class ServiceSettingsPage;
 class QDialogButtonBox;
 class QStackedWidget;
@@ -51,6 +52,7 @@ private Q_SLOTS:
     void showServicesPage();
     void showRecaptchaPage();
     void showDecaptchaPage();
+    void showSearchPage();
 
 private:
     GeneralSettingsPage *m_generalPage;
@@ -60,6 +62,7 @@ private:
     ServiceSettingsPage *m_servicePage;
     RecaptchaSettingsPage *m_recaptchaPage;
     DecaptchaSettingsPage *m_decaptchaPage;
+    SearchSettingsPage *m_searchPage;
     
     QTabBar *m_tabBar;
 

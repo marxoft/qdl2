@@ -38,6 +38,9 @@ static const QStringList DECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/usr
 static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/recaptcha/")
                                                                 << QString(HOME_PATH + "/qdl2/plugins/recaptcha/");
 
+static const QStringList SEARCH_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/search/")
+                                                             << QString(HOME_PATH + "/qdl2/plugins/search/");
+
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString("/usr/share/qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "/qdl2/plugins/services/");
 
@@ -69,6 +72,6 @@ static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTE
                                                                      << QString("/usr/share/qdl2/plugins/icons/")
                                                                      << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
-static const QString VERSION_NUMBER("2.3.1");
+static const QString VERSION_NUMBER("2.4.0");
 
 #endif // DEFINITIONS_H

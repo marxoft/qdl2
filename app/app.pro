@@ -19,6 +19,9 @@ HEADERS += \
     src/base/logger.h \
     src/base/loggerverbositymodel.h \
     src/base/networkproxytypemodel.h \
+    src/base/searchmodel.h \
+    src/base/searchresult.h \
+    src/base/searchselectionmodel.h \
     src/base/selectionmodel.h \
     src/base/serviceselectionmodel.h \
     src/base/stringmodel.h \
@@ -38,12 +41,17 @@ HEADERS += \
     src/plugins/javascriptdecaptchaplugin.h \
     src/plugins/javascriptpluginglobalobject.h \
     src/plugins/javascriptrecaptchaplugin.h \
+    src/plugins/javascriptsearchplugin.h \
     src/plugins/javascriptserviceplugin.h \
     src/plugins/pluginsettings.h \
     src/plugins/recaptchaplugin.h \
     src/plugins/recaptchapluginconfig.h \
     src/plugins/recaptchapluginconfigmodel.h \
     src/plugins/recaptchapluginmanager.h \
+    src/plugins/searchplugin.h \
+    src/plugins/searchpluginconfig.h \
+    src/plugins/searchpluginconfigmodel.h \
+    src/plugins/searchpluginmanager.h \
     src/plugins/serviceplugin.h \
     src/plugins/servicepluginconfig.h \
     src/plugins/servicepluginconfigmodel.h \
@@ -55,6 +63,7 @@ SOURCES += \
     src/base/categorymodel.cpp \
     src/base/json.cpp \
     src/base/logger.cpp \
+    src/base/searchmodel.cpp \
     src/base/selectionmodel.cpp \
     src/base/stringmodel.cpp \
     src/base/transfer.cpp \
@@ -69,11 +78,15 @@ SOURCES += \
     src/plugins/javascriptdecaptchaplugin.cpp \
     src/plugins/javascriptpluginglobalobject.cpp \
     src/plugins/javascriptrecaptchaplugin.cpp \
+    src/plugins/javascriptsearchplugin.cpp \
     src/plugins/javascriptserviceplugin.cpp \
     src/plugins/pluginsettings.cpp \
     src/plugins/recaptchapluginconfig.cpp \
     src/plugins/recaptchapluginconfigmodel.cpp \
     src/plugins/recaptchapluginmanager.cpp \
+    src/plugins/searchpluginconfig.cpp \
+    src/plugins/searchpluginconfigmodel.cpp \
+    src/plugins/searchpluginmanager.cpp \
     src/plugins/servicepluginconfig.cpp \
     src/plugins/servicepluginconfigmodel.cpp \
     src/plugins/servicepluginmanager.cpp \
@@ -191,7 +204,6 @@ maemo5 {
     
     HEADERS += \
         src/symbian/definitions.h \
-        src/symbian/graphicsview.h \
         src/symbian/maskeditem.h \
         src/symbian/maskeffect.h \
         src/symbian/package.h \
@@ -250,6 +262,7 @@ maemo5 {
         src/desktop/addurlsdialog.h \
         src/desktop/archiveextractor.h \
         src/desktop/archivepasswordmodel.h \
+        src/desktop/browser.h \
         src/desktop/captchadialog.h \
         src/desktop/categorysettingspage.h \
         src/desktop/clipboardurlmodel.h \
@@ -257,6 +270,7 @@ maemo5 {
         src/desktop/definitions.h \
         src/desktop/decaptchasettingspage.h \
         src/desktop/generalsettingspage.h \
+        src/desktop/imagecache.h \
         src/desktop/interfacesettingspage.h \
         src/desktop/networksettingspage.h \
         src/desktop/mainwindow.h \
@@ -268,6 +282,9 @@ maemo5 {
         src/desktop/qdl.h \
         src/desktop/recaptchasettingspage.h \
         src/desktop/retrieveurlsdialog.h \
+        src/desktop/searchdialog.h \
+        src/desktop/searchpage.h \
+        src/desktop/searchsettingspage.h \
         src/desktop/servicesettingspage.h \
         src/desktop/settings.h \
         src/desktop/settingsdialog.h \
@@ -282,12 +299,14 @@ maemo5 {
         src/desktop/addurlsdialog.cpp \
         src/desktop/archiveextractor.cpp \
         src/desktop/archivepasswordmodel.cpp \
+        src/desktop/browser.cpp \
         src/desktop/captchadialog.cpp \
         src/desktop/categorysettingspage.cpp \
         src/desktop/clipboardurlmodel.cpp \
         src/desktop/clipboardurlsdialog.cpp \
         src/desktop/decaptchasettingspage.cpp \
         src/desktop/generalsettingspage.cpp \
+        src/desktop/imagecache.cpp \
         src/desktop/interfacesettingspage.cpp \
         src/desktop/networksettingspage.cpp \
         src/desktop/main.cpp \
@@ -300,6 +319,9 @@ maemo5 {
         src/desktop/qdl.cpp \
         src/desktop/recaptchasettingspage.cpp \
         src/desktop/retrieveurlsdialog.cpp \
+        src/desktop/searchdialog.cpp \
+        src/desktop/searchpage.cpp \
+        src/desktop/searchsettingspage.cpp \
         src/desktop/servicesettingspage.cpp \
         src/desktop/settings.cpp \
         src/desktop/settingsdialog.cpp \

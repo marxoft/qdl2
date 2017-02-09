@@ -23,8 +23,11 @@ class TransferItem;
 class QActionGroup;
 class QComboBox;
 class QLabel;
+class QStackedWidget;
+class QTabBar;
 class QToolButton;
 class QTreeView;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -65,12 +68,19 @@ private Q_SLOTS:
     void showContextMenu(const QPoint &pos);
     void showOptionsMenu();
     
+    void closePage(int index);
+    void closeCurrentPage();
+    void setCurrentPage(int index);
+    
+    void search(const QString &query, const QString &pluginName, const QString &pluginId);
+    
     void showAddUrlsDialog();
     void showAddUrlsDialog(const QStringList &urls);
     void showImportUrlsDialog();
     void showRetrieveUrlsDialog();
     void showRetrieveUrlsDialog(const QStringList &urls);
     void showClipboardUrlsDialog();
+    void showSearchDialog();
     void showSettingsDialog();
     void showAboutDialog();
     
@@ -84,7 +94,7 @@ private Q_SLOTS:
     void onMaximumConcurrentTransfersChanged(int maximum);
     void onTotalSpeedChanged(int speed);
     
-private:
+private:    
     QMenu *m_fileMenu;
     QMenu *m_transferMenu;
     QMenu *m_packageMenu;
@@ -107,6 +117,7 @@ private:
     QAction *m_importUrlsAction;
     QAction *m_retrieveUrlsAction;
     QAction *m_clipboardUrlsAction;
+    QAction *m_searchAction;
     QAction *m_queueAction;
     QAction *m_pauseAction;
     QAction *m_pluginsAction;
@@ -136,13 +147,21 @@ private:
     QActionGroup *m_concurrentTransfersGroup;
 
     QComboBox *m_actionSelector;
-
-    QTreeView *m_view;
-
-    QToolButton *m_optionsButton;
-
+    
     QLabel *m_activeLabel;
     QLabel *m_speedLabel;
+    
+    QToolButton *m_optionsButton;
+    
+    QWidget *m_widget;
+    
+    QTabBar *m_tabs;
+    
+    QStackedWidget *m_stack;
+
+    QTreeView *m_view;
+    
+    QVBoxLayout *m_layout;
 };
 
 #endif // MAINWINDOW_H

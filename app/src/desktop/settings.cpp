@@ -112,6 +112,20 @@ void Settings::setDefaultCategory(const QString &category) {
     }
 }
 
+QString Settings::defaultSearchPlugin() {
+    return value("Plugins/defaultSearchPlugin").toString();
+}
+
+void Settings::setDefaultSearchPlugin(const QString &pluginId) {
+    if (pluginId != defaultSearchPlugin()) {
+        setValue("Plugins/defaultSearchPlugin", pluginId);
+
+        if (self) {
+            emit self->defaultSearchPluginChanged(pluginId);
+        }
+    }
+}
+
 QString Settings::defaultServicePlugin() {
     return value("Plugins/defaultServicePlugin").toString();
 }

@@ -1,0 +1,88 @@
+{
+    "type": "qt",
+    "name": "YouTube",
+    "icon": "qdl2-youtubesearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "list",
+            "label": "Search type",
+            "key": "searchType",
+            "value": "video",
+            "options": [
+                {
+                    "label": "Playlists",
+                    "value": "playlist"
+                },
+                
+                {
+                    "label": "Videos",
+                    "value": "video"
+                }
+            ]
+        },
+        
+        {
+            "type": "list",
+            "label": "Search order",
+            "key": "searchOrder",
+            "value": "relevance",
+            "options": [
+                {
+                    "label": "Date",
+                    "value": "date"
+                },
+                
+                {
+                    "label": "Rating",
+                    "value": "rating"
+                },
+
+                {
+                    "label": "Relevance",
+                    "value": "relevance"
+                },
+                
+                {
+                    "label": "Title",
+                    "value": "title"
+                },
+                
+                {
+                    "label": "Views",
+                    "value": "viewCount"
+                }
+            ]
+        },
+        
+        {
+            "type": "list",
+            "label": "Safe search",
+            "key": "safeSearch",
+            "value": "none",
+            "options": [
+                {
+                    "label": "None",
+                    "value": "none"
+                },
+                
+                {
+                    "label": "Moderate",
+                    "value": "moderate"
+                },
+
+                {
+                    "label": "Strict",
+                    "value": "strict"
+                }
+            ]
+        }
+    ]
+}

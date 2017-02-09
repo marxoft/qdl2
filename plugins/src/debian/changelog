@@ -1,3 +1,9 @@
+qdl-plugins-dev (0.1.0) unstable; urgency=low
+
+  * Add SearchPlugin class and SearchResult struct.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 08 Feb 2017 23:47:12 +0000
+
 qdl-plugins-dev (0.0.1) unstable; urgency=low
 
   * Initial release.

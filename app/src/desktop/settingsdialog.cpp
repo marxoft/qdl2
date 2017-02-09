@@ -21,6 +21,7 @@
 #include "interfacesettingspage.h"
 #include "networksettingspage.h"
 #include "recaptchasettingspage.h"
+#include "searchsettingspage.h"
 #include "servicesettingspage.h"
 #include <QDialogButtonBox>
 #include <QPushButton>
@@ -37,6 +38,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_servicePage(0),
     m_recaptchaPage(0),
     m_decaptchaPage(0),
+    m_searchPage(0),
     m_tabBar(new QTabBar(this)),
     m_stack(new QStackedWidget(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Save, Qt::Horizontal, this)),
@@ -51,6 +53,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_tabBar->addTab(tr("Services"));
     m_tabBar->addTab(tr("Recaptcha"));
     m_tabBar->addTab(tr("Decaptcha"));
+    m_tabBar->addTab(tr("Search"));
 
     m_buttonBox->button(QDialogButtonBox::Cancel)->setDefault(false);
 
@@ -97,6 +100,9 @@ void SettingsDialog::setCurrentPage(int index) {
         break;
     case 6:
         showDecaptchaPage();
+        break;
+    case 7:
+        showSearchPage();
         break;
     default:
         break;
@@ -164,4 +170,13 @@ void SettingsDialog::showDecaptchaPage() {
     }
 
     m_stack->setCurrentWidget(m_decaptchaPage);
+}
+
+void SettingsDialog::showSearchPage() {
+    if (!m_searchPage) {
+        m_searchPage = new SearchSettingsPage(m_stack);
+        m_stack->addWidget(m_searchPage);
+    }
+    
+    m_stack->setCurrentWidget(m_searchPage);
 }

@@ -21,6 +21,7 @@
 #include "logger.h"
 #include "qdl.h"
 #include "recaptchapluginmanager.h"
+#include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "transfermodel.h"
@@ -53,6 +54,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
     QScopedPointer<Qdl> qdl(Qdl::instance());
     QScopedPointer<RecaptchaPluginManager> recaptchaManager(RecaptchaPluginManager::instance());
+    QScopedPointer<SearchPluginManager> searchManager(SearchPluginManager::instance());
     QScopedPointer<ServicePluginManager> serviceManager(ServicePluginManager::instance());
     QScopedPointer<Settings> settings(Settings::instance());
     QScopedPointer<TransferModel> transfers(TransferModel::instance());
@@ -70,6 +72,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
 
     decaptchaManager.data()->load();
     recaptchaManager.data()->load();
+    searchManager.data()->load();
     serviceManager.data()->load();
     clipboard.data()->restore();
     transfers.data()->restore();

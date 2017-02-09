@@ -30,6 +30,8 @@ class Settings : public QObject
                NOTIFY customCommandEnabledChanged)
     Q_PROPERTY(QString decaptchaPlugin READ decaptchaPlugin WRITE setDecaptchaPlugin NOTIFY decaptchaPluginChanged)
     Q_PROPERTY(QString defaultCategory READ defaultCategory WRITE setDefaultCategory NOTIFY defaultCategoryChanged)
+    Q_PROPERTY(QString defaultSearchPlugin READ defaultSearchPlugin WRITE setDefaultSearchPlugin
+               NOTIFY defaultSearchPluginChanged)
     Q_PROPERTY(QString defaultServicePlugin READ defaultServicePlugin WRITE setDefaultServicePlugin
                NOTIFY defaultServicePluginChanged)
     Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins NOTIFY usePluginsChanged)
@@ -84,7 +86,9 @@ public:
     static QString decaptchaPlugin();
 
     static QString defaultCategory();
-
+    
+    static QString defaultSearchPlugin();
+    
     static QString defaultServicePlugin();
     static bool usePlugins();
 
@@ -130,7 +134,9 @@ public Q_SLOTS:
     static void setDecaptchaPlugin(const QString &pluginId);
     
     static void setDefaultCategory(const QString &category);
-
+    
+    static void setDefaultSearchPlugin(const QString &pluginId);
+    
     static void setDefaultServicePlugin(const QString &pluginId);
     static void setUsePlugins(bool enabled);
 
@@ -175,6 +181,7 @@ Q_SIGNALS:
     void customCommandEnabledChanged(bool enabled);
     void decaptchaPluginChanged(const QString &pluginId);
     void defaultCategoryChanged(const QString &category);
+    void defaultSearchPluginChanged(const QString &pluginId);
     void defaultServicePluginChanged(const QString &pluginId);
     void usePluginsChanged(bool enabled);
     void downloadPathChanged(const QString &path);
