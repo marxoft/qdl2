@@ -177,6 +177,7 @@ void XMLHttpRequest::followRedirect(const QUrl &url) {
     QNetworkRequest request(m_request);
     request.setUrl(url);
     setReadyState(OPENED);
+    m_reply = networkAccessManager()->get(request);
     connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
     connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
