@@ -155,7 +155,7 @@ void JavaScriptServicePlugin::submitCaptchaResponse(const QString &challenge, co
         const QScriptValue result = m_callback.call(QScriptValue(), QScriptValueList() << challenge << response);
 
         if (result.isError()) {
-            emit error(tr("Decaptcha callback error: %1").arg(result.toString()));
+            emit error(tr("Captcha callback error: %1").arg(result.toString()));
         }
     }
     else {
@@ -182,7 +182,7 @@ void JavaScriptServicePlugin::submitSettingsResponse(const QVariantMap &settings
                                                     << m_engine->toScriptValue(settings));
 
         if (result.isError()) {
-            emit error(tr("Decaptcha callback error: %1").arg(result.toString()));
+            emit error(tr("Settings callback error: %1").arg(result.toString()));
         }
     }
     else {

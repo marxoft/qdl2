@@ -170,7 +170,7 @@ void JavaScriptDecaptchaPlugin::submitSettingsResponse(const QVariantMap &settin
                                                     << m_engine->toScriptValue(settings));
 
         if (result.isError()) {
-            emit error(tr("Decaptcha callback error: %1").arg(result.toString()));
+            emit error(tr("Settings callback error: %1").arg(result.toString()));
         }
     }
     else {

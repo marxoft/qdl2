@@ -58,11 +58,7 @@ QVariant ServicePluginConfigModel::data(const QModelIndex &index, int role) cons
     
     switch (role) {
     case Qt::DecorationRole:
-        if (!config->iconFilePath().isEmpty()) {
-            return QIcon(config->iconFilePath());
-        }
-
-        return QVariant();
+        return QIcon(config->iconFilePath());
     case DisplayNameRole:
         return config->displayName();
     case FilePathRole:
