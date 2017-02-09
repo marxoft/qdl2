@@ -15,14 +15,15 @@
  */
 
 #include "clipboardurlsdialog.h"
+#include "addurlsdialog.h"
 #include "clipboardurlmodel.h"
-#include <QAction>
-#include <QComboBox>
+#include "retrieveurlsdialog.h"
+#include "transfermodel.h"
+#include "urlcheckdialog.h"
 #include <QDialogButtonBox>
-#include <QFormLayout>
 #include <QListView>
 #include <QMenu>
-#include <QPushButton>
+#include <QVBoxLayout>
 
 static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
     return index.row() < other.row();
@@ -30,42 +31,87 @@ static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
 
 ClipboardUrlsDialog::ClipboardUrlsDialog(QWidget *parent) :
     QDialog(parent),
-    m_actionModel(new UrlActionModel(this)),
     m_view(new QListView(this)),
-    m_actionSelector(new QComboBox(this)),
-    m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
-    m_layout(new QFormLayout(this))
+    m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, this)),
+    m_layout(new QVBoxLayout(this))
 {
     setWindowTitle(tr("Clipboard URLs"));
 
     m_view->setModel(ClipboardUrlModel::instance());
     m_view->setSelectionMode(QListView::MultiSelection);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_view->setUniformItemSizes(true);
 
-    m_actionSelector->setModel(m_actionModel);
-
-    m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-
-    m_layout->addRow(m_view);
-    m_layout->addRow(tr("&Action:"), m_actionSelector);
-    m_layout->addRow(m_buttonBox);
+    m_layout->addWidget(m_view);
+    m_layout->addWidget(m_buttonBox);
 
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
-    connect(m_view->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-            this, SLOT(onSelectionChanged()));
     connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
-Qdl::UrlAction ClipboardUrlsDialog::action() const {
-    return Qdl::UrlAction(m_actionSelector->itemData(m_actionSelector->currentIndex()).toInt());
+void ClipboardUrlsDialog::addUrls() {
+    AddUrlsDialog addDialog(this);
+    addDialog.setUrls(selectedUrls());
+
+    if (addDialog.exec() == QDialog::Accepted) {
+        const QStringList urls = addDialog.urls();
+
+        if (!urls.isEmpty()) {
+            if (addDialog.usePlugins()) {
+                UrlCheckDialog checkDialog(this);
+                checkDialog.addUrls(urls);
+                checkDialog.exec();
+            }
+            else {
+                TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                  addDialog.postData());
+            }
+        }
+    }
 }
 
-void ClipboardUrlsDialog::setAction(Qdl::UrlAction action) {
-    m_actionSelector->setCurrentIndex(m_actionSelector->findData(action));
+void ClipboardUrlsDialog::removeUrls() {
+    QModelIndexList rows = m_view->selectionModel()->selectedRows();
+    qSort(rows.begin(), rows.end(), rowLessThan);
+
+    for (int i = rows.size() - 1; i >= 0; i--) {
+        ClipboardUrlModel::instance()->remove(rows.at(i).row());
+    }
 }
 
-QStringList ClipboardUrlsDialog::urls() const {
+void ClipboardUrlsDialog::retrieveUrls() {
+    RetrieveUrlsDialog retrieveDialog(this);
+    retrieveDialog.setUrls(selectedUrls());
+
+    if (retrieveDialog.exec() == QDialog::Accepted) {
+        const QStringList results = retrieveDialog.results();
+        retrieveDialog.clear();
+
+        if (!results.isEmpty()) {
+            AddUrlsDialog addDialog(this);
+            addDialog.setUrls(results);
+            
+            if (addDialog.exec() == QDialog::Accepted) {
+                const QStringList urls = addDialog.urls();
+                
+                if (!urls.isEmpty()) {
+                    if (addDialog.usePlugins()) {
+                        UrlCheckDialog checkDialog(this);
+                        checkDialog.addUrls(urls);
+                        checkDialog.exec();
+                    }
+                    else {
+                        TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                          addDialog.postData());
+                    }
+                }
+            }
+        }
+    }
+}
+
+QStringList ClipboardUrlsDialog::selectedUrls() const {
     if (!m_view->selectionModel()->hasSelection()) {
         return QStringList();
     }
@@ -87,18 +133,22 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     }
 
     QMenu menu(this);
-    menu.addAction(QIcon::fromTheme("edit-delete"), tr("&Remove"));
-
-    if (menu.exec(m_view->mapToGlobal(pos))) {
-        QModelIndexList rows = m_view->selectionModel()->selectedRows();
-        qSort(rows.begin(), rows.end(), rowLessThan);
-
-        for (int i = rows.size() - 1; i >= 0; i--) {
-            ClipboardUrlModel::instance()->remove(rows.at(i).row());
-        }
+    QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("Add URL"));
+    QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("Retrieve URLs"));
+    QAction *removeAction = menu.addAction(QIcon::fromTheme("edit-delete"), tr("&Remove"));
+    QAction *action = menu.exec(m_view->mapToGlobal(pos));
+    
+    if (!action) {
+        return;
     }
-}
-
-void ClipboardUrlsDialog::onSelectionChanged() {
-    m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(m_view->selectionModel()->hasSelection());
+    
+    if (action == addAction) {
+        addUrls();
+    }
+    else if (action == retrieveAction) {
+        retrieveUrls();
+    }
+    else if (action == removeAction) {
+        removeUrls();
+    }
 }
