@@ -77,6 +77,7 @@ void YouTubeSearchPlugin::search(const QString &query) {
         searchType["type"] = "list";
         searchType["label"] = tr("Search type");
         searchType["key"] = "searchType";
+        searchType["value"] = "video";
         searchType["options"] = QVariantList() << videos << playlists;
         QVariantMap searchOrder;
         QVariantMap date;
@@ -97,6 +98,7 @@ void YouTubeSearchPlugin::search(const QString &query) {
         searchOrder["type"] = "list";
         searchOrder["label"] = tr("Search order");
         searchOrder["key"] = "searchOrder";
+        searchOrder["value"] = "relevance";
         searchOrder["options"] = QVariantList() << date << rating << relevance << title << views;
         QVariantMap safeSearch;
         QVariantMap none;
@@ -111,6 +113,7 @@ void YouTubeSearchPlugin::search(const QString &query) {
         safeSearch["type"] = "list";
         safeSearch["label"] = tr("Safe search");
         safeSearch["key"] = "safeSearch";
+        safeSearch["value"] = "none";
         safeSearch["options"] = QVariantList() << none << moderate << strict;
         emit settingsRequest(tr("Choose search options"), QVariantList() << searchType << searchOrder << safeSearch,
                              "submitSettings");
