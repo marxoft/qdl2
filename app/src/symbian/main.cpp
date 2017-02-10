@@ -37,7 +37,6 @@
 #include "transferitemprioritymodel.h"
 #include "transfermodel.h"
 #include "transferlistmodel.h"
-#include "urlactionmodel.h"
 #include "urlcheckmodel.h"
 #include "urlretrievalmodel.h"
 #include "utils.h"
@@ -65,7 +64,6 @@ void registerTypes() {
     qmlRegisterType<ServiceSelectionModel>("Qdl", 2, 0, "ServiceSelectionModel");
     qmlRegisterType<TransferItemPriorityModel>("Qdl", 2, 0, "TransferItemPriorityModel");
     qmlRegisterType<TransferListModel>("Qdl", 2, 0, "TransferListModel");
-    qmlRegisterType<UrlActionModel>("Qdl", 2, 0, "UrlActionModel");
     
     qmlRegisterUncreatableType<Package>("Qdl", 2, 0, "Package", "");
     qmlRegisterUncreatableType<Qdl>("Qdl", 2, 0, "Qdl", "");

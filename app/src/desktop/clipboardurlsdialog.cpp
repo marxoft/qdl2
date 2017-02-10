@@ -133,8 +133,8 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     }
 
     QMenu menu(this);
-    QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("Add URL"));
-    QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("Retrieve URLs"));
+    QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("&Add URL"));
+    QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"));
     QAction *removeAction = menu.addAction(QIcon::fromTheme("edit-delete"), tr("&Remove"));
     QAction *action = menu.exec(m_view->mapToGlobal(pos));
     

@@ -17,46 +17,34 @@
 #ifndef CLIPBOARDURLSDIALOG_H
 #define CLIPBOARDURLSDIALOG_H
 
-#include "urlactionmodel.h"
 #include <QDialog>
 
-class ValueSelector;
 class QDialogButtonBox;
-class QGridLayout;
 class QListView;
+class QHBoxLayout;
 
 class ClipboardUrlsDialog : public QDialog
 {
     Q_OBJECT
 
-    Q_PROPERTY(Qdl::UrlAction action READ action WRITE setAction)
-    Q_PROPERTY(QStringList urls READ urls)
-
 public:
     explicit ClipboardUrlsDialog(QWidget *parent = 0);
 
-    Qdl::UrlAction action() const;
-    
-    QStringList urls() const;
-
-public Q_SLOTS:
-    void setAction(Qdl::UrlAction action);
-
 private Q_SLOTS:    
     void showContextMenu(const QPoint &pos);
-
-    void onSelectionChanged();
     
 private:
-    UrlActionModel *m_actionModel;
+    void addUrls();
+    void removeUrls();
+    void retrieveUrls();
+    
+    QStringList selectedUrls() const;
     
     QListView *m_view;
 
-    ValueSelector *m_actionSelector;
-
     QDialogButtonBox *m_buttonBox;
 
-    QGridLayout *m_layout;
+    QHBoxLayout *m_layout;
 };
 
 #endif // CLIPBOARDURLSDIALOG_H
