@@ -17,6 +17,7 @@
 #include "aboutpluginsdialog.h"
 #include "decaptchapluginconfigmodel.h"
 #include "recaptchapluginconfigmodel.h"
+#include "searchpluginconfigmodel.h"
 #include "servicepluginconfigmodel.h"
 #include <QDialogButtonBox>
 #include <QGridLayout>
@@ -30,6 +31,7 @@ AboutPluginsDialog::AboutPluginsDialog(QWidget *parent) :
     m_serviceModel(0),
     m_recaptchaModel(0),
     m_decaptchaModel(0),
+    m_searchModel(0),
     m_view(new QListView(this)),
     m_tabBar(new QTabBar(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Vertical, this)),
@@ -44,6 +46,7 @@ AboutPluginsDialog::AboutPluginsDialog(QWidget *parent) :
     m_tabBar->addTab(tr("Services"));
     m_tabBar->addTab(tr("Recaptcha"));
     m_tabBar->addTab(tr("Decaptcha"));
+    m_tabBar->addTab(tr("Search"));
     
     m_buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Load"));
 
@@ -111,6 +114,14 @@ void AboutPluginsDialog::showDecaptchaPlugins() {
     m_view->setModel(m_decaptchaModel);
 }
 
+void AboutPluginsDialog::showSearchPlugins() {
+    if (!m_searchModel) {
+        m_searchModel = new SearchPluginConfigModel(this);
+    }
+
+    m_view->setModel(m_searchModel);
+}
+
 void AboutPluginsDialog::onTabChanged(int index) {
     switch (index) {
     case 0:
@@ -121,6 +132,9 @@ void AboutPluginsDialog::onTabChanged(int index) {
         break;
     case 2:
         showDecaptchaPlugins();
+        break;
+    case 3:
+        showSearchPlugins();
         break;
     default:
         break;

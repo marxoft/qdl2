@@ -75,7 +75,15 @@ int PluginSettingsDialog::timeout() const {
 void PluginSettingsDialog::setTimeout(int t) {
     m_timeout = t;
     m_remaining = t;
-    m_timer->start();
+    
+    if (t > 0) {
+        m_timeLabel->show();
+        m_timer->start();
+    }
+    else {
+        m_timeLabel->hide();
+        m_timer->stop();
+    }
 }
 
 int PluginSettingsDialog::timeRemaining() const {
@@ -87,7 +95,10 @@ void PluginSettingsDialog::showEvent(QShowEvent *event) {
 
     if (!m_timer->isActive()) {
         m_remaining = timeout();
-        m_timer->start();
+        
+        if (m_remaining > 0) {
+            m_timer->start();
+        }
     }
 }
 

@@ -21,6 +21,7 @@
 
 class DecaptchaPluginConfigModel;
 class RecaptchaPluginConfigModel;
+class SearchPluginConfigModel;
 class ServicePluginConfigModel;
 class QDialogButtonBox;
 class QGridLayout;
@@ -40,6 +41,7 @@ private Q_SLOTS:
     void showServicePlugins();
     void showRecaptchaPlugins();
     void showDecaptchaPlugins();
+    void showSearchPlugins();
     
     void onTabChanged(int index);
 
@@ -47,6 +49,7 @@ private:
     ServicePluginConfigModel *m_serviceModel;
     RecaptchaPluginConfigModel *m_recaptchaModel;
     DecaptchaPluginConfigModel *m_decaptchaModel;
+    SearchPluginConfigModel *m_searchModel;
     
     QListView *m_view;
 

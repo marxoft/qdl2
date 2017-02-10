@@ -35,7 +35,15 @@ MyPage {
     
     function startTimer(timeout) {
         timer.timeRemaining = timeout;
-        timer.restart();
+        
+        if (timeout > 0) {
+            timeLabel.visible = true;
+            timer.restart();
+        }
+        else {
+            timeLabel.visible = false;
+            timer.stop();
+        }
     }
     
     title: qsTr("Enter settings")
@@ -72,6 +80,8 @@ MyPage {
             spacing: platformStyle.paddingLarge
 
             Label {
+                id: timeLabel
+                
                 width: parent.width
                 text: utils.formatMSecs(timer.timeRemaining)
             }
