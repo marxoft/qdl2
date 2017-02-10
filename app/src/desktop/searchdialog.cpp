@@ -34,6 +34,7 @@ SearchDialog::SearchDialog(QWidget *parent) :
     setWindowTitle(tr("Search"));
     
     m_pluginSelector->setModel(m_selectionModel);
+    m_pluginSelector->setCurrentIndex(qMax(0, m_pluginSelector->findData(Settings::defaultSearchPlugin())));
     
     m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         
