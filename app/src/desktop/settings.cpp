@@ -484,6 +484,14 @@ void Settings::setWebInterfacePassword(const QString &password) {
     }
 }
 
+QByteArray Settings::searchPageState() {
+    return value("MainWindow/searchPageState").toByteArray();
+}
+
+void Settings::setSearchPageState(const QByteArray &state) {
+    setValue("MainWindow/searchPageState", state);
+}
+
 QByteArray Settings::transferViewHeaderState() {
     return value("MainWindow/transferViewHeaderState").toByteArray();
 }

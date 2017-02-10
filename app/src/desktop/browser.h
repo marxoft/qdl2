@@ -31,7 +31,7 @@ public:
 
     virtual QVariant loadResource(int type, const QUrl &name);
 
-private:
+private:    
     ImageCache *m_cache;
 };
 

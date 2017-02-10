@@ -35,6 +35,9 @@ public:
 public Q_SLOTS:
     void search(const QString &query, const QString &pluginId);
 
+protected:
+    virtual void closeEvent(QCloseEvent *event);
+
 private Q_SLOTS:
     void addUrl(const QModelIndex &index);
     void retrieveUrls(const QModelIndex &index);

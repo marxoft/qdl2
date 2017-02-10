@@ -69,6 +69,7 @@ class Settings : public QObject
                NOTIFY webInterfaceUsernameChanged)
     Q_PROPERTY(QString webInterfacePassword READ webInterfacePassword WRITE setWebInterfacePassword
                NOTIFY webInterfacePasswordChanged)
+    Q_PROPERTY(QByteArray searchPageState READ searchPageState WRITE setSearchPageState)
     Q_PROPERTY(QByteArray transferViewHeaderState READ transferViewHeaderState WRITE setTransferViewHeaderState)
     Q_PROPERTY(QByteArray windowGeometry READ windowGeometry WRITE setWindowGeometry)
     Q_PROPERTY(QByteArray windowState READ windowState WRITE setWindowState)
@@ -121,6 +122,7 @@ public:
     static QString webInterfaceUsername();
     static QString webInterfacePassword();
     
+    static QByteArray searchPageState();
     static QByteArray transferViewHeaderState();
     static QByteArray windowGeometry();
     static QByteArray windowState();
@@ -171,6 +173,7 @@ public Q_SLOTS:
     static void setWebInterfaceUsername(const QString &username);
     static void setWebInterfacePassword(const QString &password);
     
+    static void setSearchPageState(const QByteArray &state);
     static void setTransferViewHeaderState(const QByteArray &state);
     static void setWindowGeometry(const QByteArray &geometry);
     static void setWindowState(const QByteArray &state);

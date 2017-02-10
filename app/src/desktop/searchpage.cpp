@@ -20,6 +20,7 @@
 #include "browser.h"
 #include "pluginsettingsdialog.h"
 #include "retrieveurlsdialog.h"
+#include "settings.h"
 #include "transfermodel.h"
 #include <QHBoxLayout>
 #include <QListView>
@@ -47,12 +48,19 @@ SearchPage::SearchPage(QWidget *parent) :
     m_layout->addWidget(m_splitter);
     m_layout->setContentsMargins(0, 0, 0, 0);
     
+    m_splitter->restoreState(Settings::searchPageState());
+    
     connect(m_model, SIGNAL(settingsRequest(QString, QVariantList)),
             this, SLOT(showPluginSettingsDialog(QString, QVariantList)));
     connect(m_model, SIGNAL(statusChanged(SearchModel::Status)), this, SLOT(onModelStatusChanged(SearchModel::Status)));
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this, SLOT(showItemDetails(QModelIndex)));
+}
+
+void SearchPage::closeEvent(QCloseEvent *event) {
+    Settings::setSearchPageState(m_splitter->saveState());
+    Page::closeEvent(event);
 }
 
 void SearchPage::search(const QString &query, const QString &pluginId) {
