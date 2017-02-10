@@ -144,12 +144,15 @@ void SearchPage::showContextMenu(const QPoint &pos) {
 }
 
 void SearchPage::showItemDetails(const QModelIndex &index) {
-    m_browser->setHtml(index.data(SearchModel::DescriptionRole).toString());
+    m_browser->setHtml(QString("<p style='font-weight: bold'>%1</p><p>%2</p>")
+                       .arg(index.data(SearchModel::NameRole).toString())
+                       .arg(index.data(SearchModel::DescriptionRole).toString()));
 }
 
 void SearchPage::showPluginSettingsDialog(const QString &title, const QVariantList &settings) {
     PluginSettingsDialog dialog(settings, this);
     dialog.setWindowTitle(title);
+    dialog.setTimeout(-1);
     
     switch (dialog.exec()) {
     case QDialog::Accepted:
