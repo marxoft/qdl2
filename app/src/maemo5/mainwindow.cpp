@@ -428,20 +428,7 @@ void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
 }
 
 void MainWindow::showClipboardUrlsDialog() {
-    ClipboardUrlsDialog dialog(this);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        const QStringList urls = dialog.urls();
-
-        if (!urls.isEmpty()) {
-            if (dialog.action() == Qdl::RetrieveUrls) {
-                showRetrieveUrlsDialog(urls);
-            }
-            else {
-                showAddUrlsDialog(urls);
-            }
-        }
-    }
+    ClipboardUrlsDialog(this).exec();
 }
 
 void MainWindow::showSettingsDialog() {
