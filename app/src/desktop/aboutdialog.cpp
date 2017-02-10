@@ -18,6 +18,7 @@
 #include "decaptchapluginconfigmodel.h"
 #include "definitions.h"
 #include "recaptchapluginconfigmodel.h"
+#include "searchpluginconfigmodel.h"
 #include "servicepluginconfigmodel.h"
 #include <QDialogButtonBox>
 #include <QLabel>
@@ -30,6 +31,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     m_serviceModel(0),
     m_recaptchaModel(0),
     m_decaptchaModel(0),
+    m_searchModel(0),
     m_iconLabel(new QLabel(this)),
     m_textLabel(new QLabel(this)),
     m_view(new QListView(this)),
@@ -53,6 +55,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     m_tabBar->addTab(tr("Services"));
     m_tabBar->addTab(tr("Recaptcha"));
     m_tabBar->addTab(tr("Decaptcha"));
+    m_tabBar->addTab(tr("Search"));
 
     m_layout->addWidget(m_iconLabel);
     m_layout->addWidget(m_textLabel);
@@ -90,6 +93,14 @@ void AboutDialog::showDecaptchaPlugins() {
     m_view->setModel(m_decaptchaModel);
 }
 
+void AboutDialog::showSearchPlugins() {
+    if (!m_searchModel) {
+        m_searchModel = new SearchPluginConfigModel(this);
+    }
+    
+    m_view->setModel(m_searchModel);
+}
+
 void AboutDialog::onTabChanged(int index) {
     switch (index) {
     case 0:
@@ -100,6 +111,9 @@ void AboutDialog::onTabChanged(int index) {
         break;
     case 2:
         showDecaptchaPlugins();
+        break;
+    case 3:
+        showSearchPlugins();
         break;
     default:
         break;
