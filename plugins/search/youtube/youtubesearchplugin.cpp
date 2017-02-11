@@ -51,19 +51,16 @@ bool YouTubeSearchPlugin::cancelCurrentOperation() {
         m_request->cancel();
     }
     
+    m_params.clear();
     return true;
 }
 
-void YouTubeSearchPlugin::fetchMore(const QString &token) {
-    QVariantMap filters;
-    filters["nextPageToken"] = token;
-    QVariantMap params;
-    params["maxResults"] = 20;
-    request()->list("/search", QStringList() << "snippet", filters, params);
+void YouTubeSearchPlugin::fetchMore(const QVariantMap &params) {
+    request()->list("/search", QStringList() << "snippet", params);
 }
 
 void YouTubeSearchPlugin::search(const QString &query) {
-    m_query = query;
+    m_params["q"] = query;
     const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
@@ -120,23 +117,19 @@ void YouTubeSearchPlugin::search(const QString &query) {
         return;
     }
     
-    QVariantMap params;
-    params["q"] = query;
-    params["type"] = settings.value("searchType", "video").toString();
-    params["order"] = settings.value("searchOrder", "relevance").toString();
-    params["safeSearch"] = settings.value("safeSearch", "none").toString();
-    params["maxResults"] = 20;
-    request()->list("/search", QStringList() << "snippet", QVariantMap(), params);
+    m_params["type"] = settings.value("searchType", "video").toString();
+    m_params["order"] = settings.value("searchOrder", "relevance").toString();
+    m_params["safeSearch"] = settings.value("safeSearch", "none").toString();
+    m_params["maxResults"] = 20;
+    request()->list("/search", QStringList() << "snippet", QVariantMap(), m_params);
 }
 
 void YouTubeSearchPlugin::submitSettings(const QVariantMap &settings) {
-    QVariantMap params;
-    params["q"] = m_query;
-    params["type"] = settings.value("searchType", "video").toString();
-    params["order"] = settings.value("searchOrder", "relevance").toString();
-    params["safeSearch"] = settings.value("safeSearch", "none").toString();
-    params["maxResults"] = 20;
-    request()->list("/search", QStringList() << "snippet", QVariantMap(), params);
+    m_params["type"] = settings.value("searchType", "video").toString();
+    m_params["order"] = settings.value("searchOrder", "relevance").toString();
+    m_params["safeSearch"] = settings.value("safeSearch", "none").toString();
+    m_params["maxResults"] = 20;
+    request()->list("/search", QStringList() << "snippet", QVariantMap(), m_params);
 }
 
 QYouTube::ResourcesRequest* YouTubeSearchPlugin::request() {
@@ -179,7 +172,15 @@ void YouTubeSearchPlugin::onRequestFinished() {
             results << SearchResult(title, description, url);
         }
         
-        emit searchCompleted(results, result.value("nextPageToken").toString());
+        const QString token = result.value("nextPageToken").toString();
+        
+        if (!token.isEmpty()) {
+            m_params["pageToken"] = token;
+            emit searchCompleted(results, m_params);
+        }
+        else {
+            emit searchCompleted(results);
+        }
     }
     else if (m_request->status() == QYouTube::ResourcesRequest::Failed) {
         emit error(m_request->errorString());

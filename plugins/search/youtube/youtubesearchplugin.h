@@ -40,7 +40,8 @@ public:
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
-    virtual void fetchMore(const QString &token);
+    
+    virtual void fetchMore(const QVariantMap &params);
     virtual void search(const QString &query);
 
     void submitSettings(const QVariantMap &settings);
@@ -58,7 +59,7 @@ private:
     
     QYouTube::ResourcesRequest *m_request;
     
-    QString m_query;
+    QVariantMap m_params;
 };
 
 #endif // YOUTUBESEARCHPLUGIN_H
