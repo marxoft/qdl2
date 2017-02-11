@@ -1,0 +1,57 @@
+{
+    "type": "qt",
+    "name": "Dailymotion",
+    "icon": "qdl2-dailymotionsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "list",
+            "label": "Search type",
+            "key": "searchType",
+            "value": "/videos",
+            "options": [
+                {
+                    "label": "Playlists",
+                    "value": "/playlists"
+                },
+                
+                {
+                    "label": "Videos",
+                    "value": "/videos"
+                }
+            ]
+        },
+        
+        {
+            "type": "list",
+            "label": "Search order",
+            "key": "searchOrder",
+            "value": "relevance",
+            "options": [
+                {
+                    "label": "Date",
+                    "value": "recent"
+                },
+ 
+                {
+                    "label": "Relevance",
+                    "value": "relevance"
+                }
+            ]
+        },
+        
+        {
+            "type": "boolean",
+            "label": "Enable family filter",
+            "key": "familyFilterEnabled",
+            "value": false
+        }
+    ]
+}
