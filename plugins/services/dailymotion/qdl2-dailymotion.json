@@ -1,0 +1,58 @@
+{
+    "type": "qt",
+    "name": "Dailymotion",
+    "icon": "qdl2-dailymotion.jpg",
+    "version": 1,
+    "regExp": "(http(s|)://(www\\.|)dailymotion\\.com/|http://dai\\.ly/)\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default video format",
+            "key": "useDefaultVideoFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Default video format",
+            "key": "videoFormat",
+            "value": "2160",
+            "options": [
+                {
+                    "label": "2160P",
+                    "value": "2160"
+                },
+
+                {
+                    "label": "1080P",
+                    "value": "1080"
+                },
+
+                {
+                    "label": "720P",
+                    "value": "720"
+                },
+
+                {
+                    "label": "480P",
+                    "value": "480"
+                },
+                
+                {
+                    "label": "380P",
+                    "value": "380"
+                },
+
+                {
+                    "label": "240P",
+                    "value": "240"
+                },
+
+                {
+                    "label": "144P",
+                    "value": "144"
+                }
+            ]
+        }
+    ]
+}
