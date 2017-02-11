@@ -198,6 +198,7 @@ void SearchModel::clear() {
         setStatus(Idle);
         beginResetModel();
         m_items.clear();
+        m_next.clear();
         endResetModel();
         emit countChanged(0);
     }
@@ -242,8 +243,10 @@ SearchPlugin* SearchModel::plugin() {
         
         if (m_plugin) {
             connect(m_plugin, SIGNAL(error(QString)), this, SLOT(onSearchError(QString)));
-            connect(m_plugin, SIGNAL(searchCompleted(SearchResultList, QString)),
-                    this, SLOT(onSearchCompleted(SearchResultList, QString)));
+            connect(m_plugin, SIGNAL(searchCompleted(SearchResultList)),
+                    this, SLOT(onSearchCompleted(SearchResultList)));
+            connect(m_plugin, SIGNAL(searchCompleted(SearchResultList, QVariantMap)),
+                    this, SLOT(onSearchCompleted(SearchResultList, QVariantMap)));
             connect(m_plugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
                     this, SLOT(onSearchSettingsRequest(QString, QVariantList, QByteArray)));
         }
@@ -252,7 +255,7 @@ SearchPlugin* SearchModel::plugin() {
     return m_plugin;
 }
 
-void SearchModel::onSearchCompleted(const SearchResultList &results, const QString &next) {
+void SearchModel::onSearchCompleted(const SearchResultList &results, const QVariantMap &nextParams) {
     if (!results.isEmpty()) {
         beginInsertRows(QModelIndex(), m_items.size(), m_items.size() + results.size() - 1);
         m_items << results;
@@ -260,7 +263,7 @@ void SearchModel::onSearchCompleted(const SearchResultList &results, const QStri
         emit countChanged(rowCount());
     }
     
-    m_next = next;
+    m_next = nextParams;
     setStatus(Completed);
 }
 

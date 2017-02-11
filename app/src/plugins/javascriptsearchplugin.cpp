@@ -84,8 +84,9 @@ void JavaScriptSearchPlugin::initEngine() {
         }
         
         connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(m_global, SIGNAL(searchCompleted(QVariantList, QString)),
-                this, SLOT(onSearchCompleted(QVariantList, QString)));
+        connect(m_global, SIGNAL(searchCompleted(QVariantList)), this, SLOT(onSearchCompleted(QVariantList)));
+        connect(m_global, SIGNAL(searchCompleted(QVariantList, QVariantMap)),
+                this, SLOT(onSearchCompleted(QVariantList, QVariantMap)));
         connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
         
@@ -106,12 +107,12 @@ bool JavaScriptSearchPlugin::cancelCurrentOperation() {
     return m_engine->globalObject().property("cancelCurrentOperation").call(QScriptValue()).toBool();
 }
 
-void JavaScriptSearchPlugin::fetchMore(const QString &next) {
+void JavaScriptSearchPlugin::fetchMore(const QVariantMap &params) {
     initEngine();
     QScriptValue func = m_engine->globalObject().property("fetchMore");
 
     if (func.isFunction()) {
-        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << next);
+        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << m_engine->toScriptValue(params));
 
         if (result.isError()) {
             const QString errorString = result.toString();
@@ -172,7 +173,7 @@ void JavaScriptSearchPlugin::submitSettingsResponse(const QVariantMap &settings)
     }
 }
 
-void JavaScriptSearchPlugin::onSearchCompleted(const QVariantList &results, const QString &next) {
+void JavaScriptSearchPlugin::onSearchCompleted(const QVariantList &results, const QVariantMap &nextParams) {
     SearchResultList list;
     
     foreach (const QVariant &v, results) {
@@ -184,7 +185,7 @@ void JavaScriptSearchPlugin::onSearchCompleted(const QVariantList &results, cons
         }
     }
     
-    emit searchCompleted(list, next);
+    emit searchCompleted(list, nextParams);
 }
 
 void JavaScriptSearchPlugin::onSettingsRequest(const QString &title, const QVariantList &settings,

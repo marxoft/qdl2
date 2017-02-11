@@ -45,13 +45,13 @@ public:
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
-    virtual void fetchMore(const QString &next);
+    virtual void fetchMore(const QVariantMap &params);
     virtual void search(const QString &query);
     
     void submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
-    void onSearchCompleted(const QVariantList &results, const QString &next);
+    void onSearchCompleted(const QVariantList &results, const QVariantMap &nextParams = QVariantMap());
     void onSettingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
 
 private:
@@ -78,7 +78,8 @@ public:
 
 Q_SIGNALS:
     void error(const QString &errorString);
-    void searchCompleted(const QVariantList &results, const QString &next);
+    void searchCompleted(const QVariantList &results);
+    void searchCompleted(const QVariantList &results, const QVariantMap &nextParams);
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
 };
 

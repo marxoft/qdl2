@@ -88,7 +88,7 @@ public Q_SLOTS:
     bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:    
-    void onSearchCompleted(const SearchResultList &results, const QString &next);
+    void onSearchCompleted(const SearchResultList &results, const QVariantMap &nextParams = QVariantMap());
     void onSearchError(const QString &errorString);
     void onSearchSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
     
@@ -111,7 +111,7 @@ private:
     QString m_errorString;
     
     SearchResultList m_items;
-    QString m_next;
+    QVariantMap m_next;
     
     Status m_status;
     

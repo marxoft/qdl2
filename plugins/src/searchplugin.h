@@ -66,13 +66,14 @@ public Q_SLOTS:
     virtual bool cancelCurrentOperation() = 0;
     
     /*!
-     * This method can be re-implemented to fetch more results using the 'next' parameter passed in searchCompleted().
+     * This method can be re-implemented to fetch more results using the 'nextParams' parameter passed in
+     * searchCompleted().
      *
      * The base implementation does nothing.
      *
      * \sa search(), searchCompleted()
      */
-    virtual void fetchMore(const QString &) {}
+    virtual void fetchMore(const QVariantMap &) {}
     
     /*!
      * Pure virtual method.
@@ -93,9 +94,18 @@ Q_SIGNALS:
     /*!
      * This signal should be emitted when a search has been successfully completed.
      *
-     * The \a next parameter, if not empty, is used to retrieve further results.
+     * \sa search()
      */
-    void searchCompleted(const SearchResultList &results, const QString &next);
+    void searchCompleted(const SearchResultList &results);
+    
+    /*!
+     * This signal should be emitted when a search has been successfully completed.
+     *
+     * The \a nextParams parameter is used to retrieve further results by calling fetchMore().
+     *
+     * \sa search(), fetchMore()
+     */
+    void searchCompleted(const SearchResultList &results, const QVariantMap &nextParams);
 
     /*!
      * This signal should be emitted when some additional data is required to complete an operation.
