@@ -72,7 +72,7 @@ private Q_SLOTS:
     void closeCurrentPage();
     void setCurrentPage(int index);
     
-    void search(const QString &query, const QString &pluginName, const QString &pluginId);
+    void search(const QString &pluginName, const QString &pluginId);
     
     void showAddUrlsDialog();
     void showAddUrlsDialog(const QStringList &urls);

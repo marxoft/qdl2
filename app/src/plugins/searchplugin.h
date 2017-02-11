@@ -83,7 +83,7 @@ public Q_SLOTS:
      * 
      * \sa searchCompleted(), error()
      */
-    virtual void search(const QString &query) = 0;
+    virtual void search() = 0;
 
 Q_SIGNALS:
     /*!

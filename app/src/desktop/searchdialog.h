@@ -23,39 +23,28 @@ class SearchSelectionModel;
 class QComboBox;
 class QDialogButtonBox;
 class QFormLayout;
-class QLineEdit;
 
 class SearchDialog : public QDialog
 {
     Q_OBJECT
     
-    Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString pluginName READ pluginName)
     Q_PROPERTY(QString pluginId READ pluginId WRITE setPluginId)
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
-    
-    QString query() const;
-    
+        
     QString pluginName() const;
     QString pluginId() const;
 
-public Q_SLOTS:
-    void setQuery(const QString &text);
-    
+public Q_SLOTS:    
     void setPluginId(const QString &id);
     
     virtual void accept();
 
-private Q_SLOTS:
-    void onQueryChanged(const QString &text);
-
 private:
     SearchSelectionModel *m_selectionModel;
-    
-    QLineEdit *m_queryEdit;
-    
+        
     QComboBox *m_pluginSelector;
     
     QDialogButtonBox *m_buttonBox;

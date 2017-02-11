@@ -33,7 +33,7 @@ public:
     explicit SearchPage(QWidget *parent = 0);
    
 public Q_SLOTS:
-    void search(const QString &query, const QString &pluginId);
+    void search(const QString &pluginId);
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

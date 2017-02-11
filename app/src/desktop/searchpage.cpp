@@ -63,8 +63,8 @@ void SearchPage::closeEvent(QCloseEvent *event) {
     Page::closeEvent(event);
 }
 
-void SearchPage::search(const QString &query, const QString &pluginId) {
-    m_model->search(query, pluginId);
+void SearchPage::search(const QString &pluginId) {
+    m_model->search(pluginId);
 }
 
 void SearchPage::addUrl(const QModelIndex &index) {

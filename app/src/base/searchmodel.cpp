@@ -166,7 +166,7 @@ int SearchModel::match(int start, const QByteArray &role, const QVariant &value,
     return idxs.isEmpty() ? -1 : idxs.first().row();
 }
 
-void SearchModel::search(const QString &query, const QString &pluginId) {
+void SearchModel::search(const QString &pluginId) {
     if (status() == Active) {
         return;
     }
@@ -175,12 +175,11 @@ void SearchModel::search(const QString &query, const QString &pluginId) {
         delete m_plugin;
     }
     
-    m_query = query;
     m_pluginId = pluginId;
     
     if (SearchPlugin *p = plugin()) {
         setStatus(Active);
-        p->search(query);
+        p->search();
     }
 }
 
@@ -209,7 +208,7 @@ void SearchModel::reload() {
     
     if (SearchPlugin *p = plugin()) {
         setStatus(Active);
-        p->search(m_query);
+        p->search();
     }
 }
 

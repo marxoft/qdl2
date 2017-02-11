@@ -20,13 +20,11 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <QLineEdit>
 #include <QPushButton>
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
     m_selectionModel(new SearchSelectionModel(this)),
-    m_queryEdit(new QLineEdit(this)),
     m_pluginSelector(new QComboBox(this)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this)),
     m_layout(new QFormLayout(this))
@@ -36,23 +34,11 @@ SearchDialog::SearchDialog(QWidget *parent) :
     m_pluginSelector->setModel(m_selectionModel);
     m_pluginSelector->setCurrentIndex(qMax(0, m_pluginSelector->findData(Settings::defaultSearchPlugin())));
     
-    m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        
-    m_layout->addRow(tr("&Query:"), m_queryEdit);
     m_layout->addRow(tr("&Service:"), m_pluginSelector);
     m_layout->addRow(m_buttonBox);
     
-    connect(m_queryEdit, SIGNAL(textChanged(QString)), this, SLOT(onQueryChanged(QString)));
     connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-}
-
-QString SearchDialog::query() const {
-    return m_queryEdit->text();
-}
-
-void SearchDialog::setQuery(const QString &text) {
-    m_queryEdit->setText(text);
 }
 
 QString SearchDialog::pluginName() const {
@@ -70,8 +56,4 @@ void SearchDialog::setPluginId(const QString &id) {
 void SearchDialog::accept() {
     Settings::setDefaultSearchPlugin(pluginId());
     QDialog::accept();
-}
-
-void SearchDialog::onQueryChanged(const QString &text) {
-    m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(!text.isEmpty());
 }

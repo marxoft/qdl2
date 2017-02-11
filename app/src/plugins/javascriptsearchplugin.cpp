@@ -126,12 +126,12 @@ void JavaScriptSearchPlugin::fetchMore(const QVariantMap &params) {
     }
 }
 
-void JavaScriptSearchPlugin::search(const QString &query) {
+void JavaScriptSearchPlugin::search() {
     initEngine();
     QScriptValue func = m_engine->globalObject().property("search");
 
     if (func.isFunction()) {
-        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << query);
+        const QScriptValue result = func.call(QScriptValue());
 
         if (result.isError()) {
             const QString errorString = result.toString();

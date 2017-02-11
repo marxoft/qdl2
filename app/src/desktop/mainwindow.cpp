@@ -583,16 +583,15 @@ void MainWindow::setCurrentPage(int index) {
     m_stack->setCurrentIndex(index);
 }
 
-void MainWindow::search(const QString &query, const QString &pluginName, const QString &pluginId) {
+void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     SearchPage *page = new SearchPage(m_stack);
     m_stack->addWidget(page);
     const int index = m_stack->indexOf(page);
     m_tabs->addTab(tr("Search - %1").arg(pluginName));
     m_stack->setCurrentIndex(index);
     m_tabs->setCurrentIndex(index);
-    m_tabs->setTabToolTip(index, tr("Search - %1 - %2").arg(query).arg(pluginName));
     m_tabs->show();
-    page->search(query, pluginId);
+    page->search(pluginId);
 }
 
 void MainWindow::showAddUrlsDialog() {
@@ -690,7 +689,7 @@ void MainWindow::showSearchDialog() {
     SearchDialog dialog(this);
     
     if (dialog.exec() == QDialog::Accepted) {
-        search(dialog.query(), dialog.pluginName(), dialog.pluginId());
+        search(dialog.pluginName(), dialog.pluginId());
     }
 }
 

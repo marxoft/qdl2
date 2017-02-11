@@ -80,7 +80,7 @@ public:
                                   int flags = Qt::MatchFlags(Qt::MatchExactly | Qt::MatchWrap)) const;    
 
 public Q_SLOTS:
-    void search(const QString &query, const QString &pluginId);
+    void search(const QString &pluginId);
     void cancel();
     void clear();
     void reload();
@@ -107,7 +107,6 @@ private:
     SearchPlugin *m_plugin;
     QString m_pluginId;
     
-    QString m_query;
     QString m_errorString;
     
     SearchResultList m_items;
