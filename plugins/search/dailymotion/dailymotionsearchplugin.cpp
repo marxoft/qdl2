@@ -34,7 +34,8 @@ const QString DailymotionSearchPlugin::CONFIG_FILE(QDesktopServices::storageLoca
                                          + "/.config/qdl2/plugins/qdl2-dailymotionsearch");
 #endif
 
-const QString DailymotionSearchPlugin::FIELDS("id,description,thumbnail_360_url,title,url");
+const QString DailymotionSearchPlugin::PLAYLIST_FIELDS("id,description,name,thumbnail_360_url");
+const QString DailymotionSearchPlugin::VIDEO_FIELDS("id,description,thumbnail_360_url,title");
 
 DailymotionSearchPlugin::DailymotionSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -59,12 +60,15 @@ void DailymotionSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->list(params.value("path").toString(), params.value("filters").toMap());
 }
 
-void DailymotionSearchPlugin::search(const QString &query) {
+void DailymotionSearchPlugin::search() {
     m_filters.clear();
-    m_filters["search"] = query;
     const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
+        QVariantMap searchQuery;
+        searchQuery["type"] = "text";
+        searchQuery["label"] = tr("Search query");
+        searchQuery["key"] = "searchQuery";
         QVariantMap searchType;
         QVariantMap videos;
         videos["label"] = tr("Videos");
@@ -94,24 +98,28 @@ void DailymotionSearchPlugin::search(const QString &query) {
         familyFilter["label"] = tr("Enable family filter");
         familyFilter["key"] = "familyFilterEnabled";
         familyFilter["value"] = false;
-        emit settingsRequest(tr("Choose search options"), QVariantList() << searchType << searchOrder << familyFilter,
-                             "submitSettings");
+        emit settingsRequest(tr("Choose search options"), QVariantList() << searchQuery << searchType << searchOrder
+                             << familyFilter, "submitSettings");
         return;
     }
     
+    const QString type = settings.value("searchType", "/videos").toString();
+    m_filters["search"] = settings.value("searchQuery").toString();
     m_filters["sort"] = settings.value("searchOrder", "relevance").toString();
     m_filters["family_filter"] = settings.value("familyFilterEnabled", false).toBool();
     m_filters["limit"] = 20;
-    m_filters["fields"] = FIELDS;
-    request()->list(settings.value("searchType", "/videos").toString(), m_filters);
+    m_filters["fields"] = (type == "/playlists" ? PLAYLIST_FIELDS : VIDEO_FIELDS);
+    request()->list(type, m_filters);
 }
 
 void DailymotionSearchPlugin::submitSettings(const QVariantMap &settings) {
+    const QString type = settings.value("searchType", "/videos").toString();
+    m_filters["search"] = settings.value("searchQuery").toString();
     m_filters["sort"] = settings.value("searchOrder", "relevance").toString();
     m_filters["family_filter"] = settings.value("familyFilterEnabled", false).toBool();
     m_filters["limit"] = 20;
-    m_filters["fields"] = FIELDS;
-    request()->list(settings.value("searchType", "/videos").toString(), m_filters);
+    m_filters["fields"] = (type == "/playlists" ? PLAYLIST_FIELDS : VIDEO_FIELDS);
+    request()->list(type, m_filters);
 }
 
 QDailymotion::ResourcesRequest* DailymotionSearchPlugin::request() {
@@ -128,11 +136,15 @@ void DailymotionSearchPlugin::onRequestFinished() {
         SearchResultList results;
         const QVariantMap result = m_request->result().toMap();
         const QVariantList list = result.value("list").toList();
+        const QString path = m_request->url().path();
+        const QString baseUrl = (path.startsWith("/playlists") ? QString("https://www.dailymotion.com/playlist/") :
+                                 QString("https://www.dailymotion.com/video/"));
         
         foreach (const QVariant &v, list) {
             const QVariantMap item = v.toMap();
-            const QString title = item.value("title").toString();
-            const QString url = item.value("url").toString();
+            const QString title = (item.contains("title") ? item.value("title").toString()
+                                   : item.value("name").toString());
+            const QString url = baseUrl + item.value("id").toString();
             const QString description =
                 QString("<a href=\"%1\"><img src=\"%2\" width=\"480\" height=\"270\" /></a><p>%3")
                 .arg(url).arg(item.value("thumbnail_360_url").toString())
@@ -144,7 +156,7 @@ void DailymotionSearchPlugin::onRequestFinished() {
         if (result.value("has_more", false).toBool()) {
             m_filters["page"] = m_filters.value("page", 1).toInt() + 1;
             QVariantMap params;
-            params["path"] = m_request->url().path();
+            params["path"] = path;
             params["filters"] = m_filters;
             emit searchCompleted(results, params);
         }

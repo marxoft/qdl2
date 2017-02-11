@@ -12,6 +12,12 @@
         },
         
         {
+            "type": "text",
+            "label": "Search query",
+            "key": "searchQuery"
+        },
+        
+        {
             "type": "list",
             "label": "Search type",
             "key": "searchType",

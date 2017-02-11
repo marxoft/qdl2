@@ -42,7 +42,7 @@ public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search(const QString &query);
+    virtual void search();
 
     void submitSettings(const QVariantMap &settings);
 
@@ -51,7 +51,8 @@ private Q_SLOTS:
     
 private:    
     static const QString CONFIG_FILE;
-    static const QString FIELDS;
+    static const QString PLAYLIST_FIELDS;
+    static const QString VIDEO_FIELDS;
     
     QDailymotion::ResourcesRequest* request();
     

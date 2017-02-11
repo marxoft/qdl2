@@ -59,11 +59,15 @@ void YouTubeSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->list("/search", QStringList() << "snippet", params);
 }
 
-void YouTubeSearchPlugin::search(const QString &query) {
-    m_params["q"] = query;
+void YouTubeSearchPlugin::search() {
+    m_params.clear();
     const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
+        QVariantMap searchQuery;
+        searchQuery["type"] = "text";
+        searchQuery["label"] = tr("Search query");
+        searchQuery["key"] = "searchQuery";
         QVariantMap searchType;
         QVariantMap videos;
         videos["label"] = tr("Videos");
@@ -112,11 +116,12 @@ void YouTubeSearchPlugin::search(const QString &query) {
         safeSearch["key"] = "safeSearch";
         safeSearch["value"] = "none";
         safeSearch["options"] = QVariantList() << none << moderate << strict;
-        emit settingsRequest(tr("Choose search options"), QVariantList() << searchType << searchOrder << safeSearch,
-                             "submitSettings");
+        emit settingsRequest(tr("Choose search options"), QVariantList() << searchQuery << searchType << searchOrder
+                             << safeSearch, "submitSettings");
         return;
     }
     
+    m_params["q"] = settings.value("searchQuery").toString();
     m_params["type"] = settings.value("searchType", "video").toString();
     m_params["order"] = settings.value("searchOrder", "relevance").toString();
     m_params["safeSearch"] = settings.value("safeSearch", "none").toString();
@@ -125,6 +130,7 @@ void YouTubeSearchPlugin::search(const QString &query) {
 }
 
 void YouTubeSearchPlugin::submitSettings(const QVariantMap &settings) {
+    m_params["q"] = settings.value("searchQuery").toString();
     m_params["type"] = settings.value("searchType", "video").toString();
     m_params["order"] = settings.value("searchOrder", "relevance").toString();
     m_params["safeSearch"] = settings.value("safeSearch", "none").toString();
@@ -157,7 +163,7 @@ void YouTubeSearchPlugin::onRequestFinished() {
             const QVariantMap id = item.value("id").toMap();
             QString url;
             
-            if (id.value("kind") == "playlist") {
+            if (id.value("kind") == "youtube#playlist") {
                 url = QString("https://www.youtube.com/playlist?list=" + id.value("playlistId").toString());
             }
             else {
