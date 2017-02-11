@@ -68,6 +68,8 @@ private:
     QYouTube::StreamsRequest *m_streamsRequest;
 
     UrlResultList m_results;
+    QVariantMap m_filters;
+    QVariantMap m_params;
     QVariantList m_streams;
 };
 

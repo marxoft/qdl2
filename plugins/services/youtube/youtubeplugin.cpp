@@ -62,19 +62,18 @@ void YouTubePlugin::checkUrl(const QString &url) {
     }
 
     m_results.clear();
+    m_filters.clear();
+    m_params.clear();
     const QString id = url.section(QRegExp("v=|list=|/"), -1).section(QRegExp("&|\\?"), 0, 0);
     
     if (url.contains("list=")) {
-        QVariantMap filters;
-        filters["playlistId"] = id;
-        QVariantMap params;
-        params["maxResults"] = 50;
-        m_resourcesRequest->list("/playlistItems", QStringList() << "snippet", filters, params);
+        m_filters["playlistId"] = id;
+        m_params["maxResults"] = 50;
+        m_resourcesRequest->list("/playlistItems", QStringList() << "snippet", m_filters, m_params);
     }
     else {
-        QVariantMap filters;
-        filters["id"] = id;
-        m_resourcesRequest->list("/videos", QStringList() << "snippet", filters);
+        m_filters["id"] = id;
+        m_resourcesRequest->list("/videos", QStringList() << "snippet", m_filters);
     }
 }
 
@@ -109,6 +108,8 @@ bool YouTubePlugin::cancelCurrentOperation() {
     }
 
     m_results.clear();
+    m_filters.clear();
+    m_params.clear();
     m_streams.clear();
     emit currentOperationCanceled();
     return true;
@@ -140,11 +141,8 @@ void YouTubePlugin::onResourcesRequestFinished() {
             emit urlChecked(m_results, m_results.first().fileName.section(".", 0, -2));
         }
         else {
-            QVariantMap filters;
-            filters["nextPageToken"] = nextPageToken;
-            QVariantMap params;
-            params["maxResults"] = 50;
-            m_resourcesRequest->list("/playlistItems", QStringList() << "snippet", filters, params);
+            m_filters["pageToken"] = nextPageToken;
+            m_resourcesRequest->list("/playlistItems", QStringList() << "snippet", m_filters, m_params);
         }
     }
     else if (m_resourcesRequest->status() == QYouTube::ResourcesRequest::Failed) {
