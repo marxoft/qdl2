@@ -23,6 +23,7 @@ SUBDIRS = \
     publishtome \
     rapidgator \
     sendvid \
+    soundcloud \
     spankbang \
     tezfiles \
     txxx \

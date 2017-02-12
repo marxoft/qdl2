@@ -1,0 +1,33 @@
+{
+    "type": "qt",
+    "name": "SoundCloud",
+    "icon": "qdl2-soundcloud.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)soundcloud\\.com/\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default audio format",
+            "key": "useDefaultAudioFormat",
+            "value": true
+        },
+        
+        {
+            "type": "list",
+            "label": "Default audio format",
+            "key": "audioFormat",
+            "value": "original",
+            "options": [
+                {
+                    "label": "Original",
+                    "value": "original"
+                },
+
+                {
+                    "label": "128kb MP3",
+                    "value": "mp3"
+                }
+            ]
+        }
+    ]
+}
