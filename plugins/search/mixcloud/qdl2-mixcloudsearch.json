@@ -1,0 +1,20 @@
+{
+    "type": "js",
+    "name": "Mixcloud",
+    "icon": "qdl2-mixcloudsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "searchQuery"
+        }
+    ]
+}
