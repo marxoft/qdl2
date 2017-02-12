@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
     bigfile \
+    dailymotion \
     datafile \
     depfile \
     depositfiles \
@@ -30,6 +31,7 @@ SUBDIRS = \
     upstore \
     vbox7 \
     vidlox \
+    vimeo \
     wenoo \
     xhamster \
     xvideos \
