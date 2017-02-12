@@ -16,6 +16,7 @@ SUBDIRS = \
     imgbox \
     keeptoshare \
     mediafire \
+    mixcloud \
     onefichier \
     openload \
     pornhub \
