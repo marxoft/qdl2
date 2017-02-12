@@ -1,0 +1,38 @@
+{
+    "type": "qt",
+    "name": "SoundCloud",
+    "icon": "qdl2-soundcloudsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "searchQuery"
+        },
+        
+        {
+            "type": "list",
+            "label": "Search type",
+            "key": "searchType",
+            "value": "/tracks",
+            "options": [
+                {
+                    "label": "Sets",
+                    "value": "/playlists"
+                },
+                
+                {
+                    "label": "Tracks",
+                    "value": "/tracks"
+                }
+            ]
+        }
+    ]
+}
