@@ -1,0 +1,58 @@
+{
+    "type": "qt",
+    "name": "Vimeo",
+    "icon": "qdl2-vimeosearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "searchQuery"
+        },
+        
+        {
+            "type": "list",
+            "label": "Search order",
+            "key": "searchOrder",
+            "value": "relevant",
+            "options": [
+                {
+                    "label": "Date",
+                    "value": "date"
+                },
+                
+                {
+                    "label": "Duration",
+                    "value": "duration"
+                },
+                
+                {
+                    "label": "Likes",
+                    "value": "likes"
+                },
+ 
+                {
+                    "label": "Relevance",
+                    "value": "relevant"
+                },
+                
+                {
+                    "label": "Title",
+                    "value": "alphabetical"
+                },
+                
+                {
+                    "label": "Views",
+                    "value": "plays"
+                }
+            ]
+        }
+    ]
+}
