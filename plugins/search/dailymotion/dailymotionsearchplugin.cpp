@@ -17,6 +17,7 @@
 
 #include "dailymotionsearchplugin.h"
 #include <qdailymotion/resourcesrequest.h>
+#include <QDateTime>
 #include <QSettings>
 #include <QUrl>
 #if QT_VERSION >= 0x050000
@@ -34,8 +35,10 @@ const QString DailymotionSearchPlugin::CONFIG_FILE(QDesktopServices::storageLoca
                                          + "/.config/qdl2/plugins/qdl2-dailymotionsearch");
 #endif
 
-const QString DailymotionSearchPlugin::PLAYLIST_FIELDS("id,description,name,thumbnail_360_url");
-const QString DailymotionSearchPlugin::VIDEO_FIELDS("id,description,thumbnail_360_url,title");
+const QString DailymotionSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='270' src='%2' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
+
+const QString DailymotionSearchPlugin::PLAYLIST_FIELDS("id,created_time,description,name,thumbnail_360_url");
+const QString DailymotionSearchPlugin::VIDEO_FIELDS("id,created_time,description,duration,thumbnail_360_url,title");
 
 DailymotionSearchPlugin::DailymotionSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -145,12 +148,15 @@ void DailymotionSearchPlugin::onRequestFinished() {
             const QString title = (item.contains("title") ? item.value("title").toString()
                                    : item.value("name").toString());
             const QString url = baseUrl + item.value("id").toString();
-            const QString description =
-                QString("<a href=\"%1\"><img src=\"%2\" width=\"480\" height=\"270\" /></a><p>%3")
-                .arg(url).arg(item.value("thumbnail_360_url").toString())
-                .arg(item.value("description").toString());
+            const QString thumbnailUrl = item.value("thumbnail_360_url").toString();
+            const QString date = QDateTime::fromTime_t(item.value("created_time").toUInt()).toString("dd MMM yyyy");
+            const int secs = item.value("duration", 0).toInt();
+            const QString duration = (secs > 0 ? QString("%1:%2").arg(secs / 60, 2, 10, QChar('0'))
+                                      .arg(secs % 60, 2, 10, QChar('0')) : QString("--:--"));
+            const QString description = item.value("description").toString();
+            const QString html = HTML.arg(url).arg(thumbnailUrl).arg(date).arg(duration).arg(description);
                 
-            results << SearchResult(title, description, url);
+            results << SearchResult(title, html, url);
         }
                 
         if (result.value("has_more", false).toBool()) {

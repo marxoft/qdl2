@@ -49,11 +49,12 @@ public Q_SLOTS:
 private Q_SLOTS:
     void onRequestFinished();
     
-private:    
+private:
     static const QString CONFIG_FILE;
+    static const QString HTML;
     static const QString PLAYLIST_FIELDS;
     static const QString VIDEO_FIELDS;
-    
+        
     QDailymotion::ResourcesRequest* request();
     
     QDailymotion::ResourcesRequest *m_request;

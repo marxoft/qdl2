@@ -17,6 +17,7 @@
 
 #include "youtubesearchplugin.h"
 #include <qyoutube/resourcesrequest.h>
+#include <QDateTime>
 #include <QSettings>
 #if QT_VERSION >= 0x050000
 #include <QStandardPaths>
@@ -35,6 +36,8 @@ const QString YouTubeSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation
 const QString YouTubeSearchPlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
 const QString YouTubeSearchPlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
 const QString YouTubeSearchPlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
+
+const QString YouTubeSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='360' src='%2' /></a><p>Date: %3</p><p>%4</p>");
 
 YouTubeSearchPlugin::YouTubeSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -170,12 +173,14 @@ void YouTubeSearchPlugin::onRequestFinished() {
                 url = QString("https://www.youtube.com/watch?v=" + id.value("videoId").toString());
             }
             
-            const QString description =
-                QString("<a href=\"%1\"><img src=\"%2\" width=\"480\" height=\"360\" /></a><p>%3")
-                .arg(url).arg(snippet.value("thumbnails").toMap().value("high").toMap().value("url").toString())
-                .arg(snippet.value("description").toString());
+            const QString thumbnailUrl = snippet.value("thumbnails").toMap().value("high").toMap().value("url")
+                .toString();
+            const QString date = QDateTime::fromString(snippet.value("publishedAt").toString(), Qt::ISODate)
+                .toString("dd MMM yyyy");
+            const QString description = snippet.value("description").toString();
+            const QString html = HTML.arg(url).arg(thumbnailUrl).arg(date).arg(description);
                 
-            results << SearchResult(title, description, url);
+            results << SearchResult(title, html, url);
         }
         
         const QString token = result.value("nextPageToken").toString();

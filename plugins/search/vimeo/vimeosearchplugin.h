@@ -52,11 +52,11 @@ private Q_SLOTS:
 private:    
     static const QString CONFIG_FILE;
     static const QString BASE_URL;
-    static const QString IMAGE_URL;
+    static const QString HTML;
     static const QString CLIENT_ID;
     static const QString CLIENT_SECRET;
     static const QString CLIENT_TOKEN;
-    
+        
     QVimeo::ResourcesRequest* request();
     
     QVimeo::ResourcesRequest *m_request;

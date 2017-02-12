@@ -17,6 +17,7 @@
 
 #include "vimeosearchplugin.h"
 #include <qvimeo/resourcesrequest.h>
+#include <QDateTime>
 #include <QSettings>
 #if QT_VERSION >= 0x050000
 #include <QStandardPaths>
@@ -33,7 +34,8 @@ const QString VimeoSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(Q
                                          + "/.config/qdl2/plugins/qdl2-vimeosearch");
 #endif
 const QString VimeoSearchPlugin::BASE_URL("https://vimeo.com");
-const QString VimeoSearchPlugin::IMAGE_URL("https://i.vimeocdn.com/video/%1_640x360.jpg");
+
+const QString VimeoSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='270' src='https://i.vimeocdn.com/video/%2_640x360.jpg' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
 
 const QString VimeoSearchPlugin::CLIENT_ID("0bf284bf5a0e46630f5097a590a76ef976a94322");
 const QString VimeoSearchPlugin::CLIENT_SECRET("7nnZ1OPS13hjKAVhzuXx/4AIdKxmgDNasHkj5QraWWkrNsd6mxYWZG73AKaFUdLzoNWhGA75jSffs+JyAFfi0MiFi1OXnzHsxaL0HCIFpxk0GpZlXcScWmJTHvGGtVv1");
@@ -134,12 +136,16 @@ void VimeoSearchPlugin::onRequestFinished() {
             const QVariantMap item = v.toMap();
             const QString title = item.value("name").toString();
             const QString url = BASE_URL + item.value("uri").toString();
-            const QString description =
-                QString("<a href=\"%1\"><img src=\"%2\" width=\"480\" height=\"270\" /></a><p>%3")
-                .arg(url).arg(IMAGE_URL.arg(item.value("pictures").toMap().value("uri").toString().section("/", -1)))
-                .arg(item.value("description").toString());
+            const QString thumbnailId = item.value("pictures").toMap().value("uri").toString().section("/", -1);
+            const QString date = QDateTime::fromString(item.value("created_time").toString(), Qt::ISODate)
+                .toString("dd MMM yyyy");
+            const int secs = item.value("duration", 0).toInt();
+            const QString duration = (secs > 0 ? QString("%1:%2").arg(secs / 60, 2, 10, QChar('0'))
+                                      .arg(secs % 60, 2, 10, QChar('0')) : QString("--:--"));
+            const QString description = item.value("description").toString();
+            const QString html = HTML.arg(url).arg(thumbnailId).arg(date).arg(duration).arg(description);
                 
-            results << SearchResult(title, description, url);
+            results << SearchResult(title, html, url);
         }
         
         if (!result.value("paging").toMap().value("next").isNull()) {

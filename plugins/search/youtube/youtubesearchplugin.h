@@ -54,6 +54,7 @@ private:
     static const QString API_KEY;
     static const QString CLIENT_ID;
     static const QString CLIENT_SECRET;
+    static const QString HTML;
     
     QYouTube::ResourcesRequest* request();
     

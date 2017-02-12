@@ -52,7 +52,8 @@ private Q_SLOTS:
 private:    
     static const QString CONFIG_FILE;
     static const QString CLIENT_ID;
-    
+    static const QString HTML;
+        
     QSoundCloud::ResourcesRequest* request();
     
     QSoundCloud::ResourcesRequest *m_request;

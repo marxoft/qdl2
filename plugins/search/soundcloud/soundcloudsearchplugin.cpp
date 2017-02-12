@@ -17,6 +17,7 @@
 
 #include "soundcloudsearchplugin.h"
 #include <qsoundcloud/resourcesrequest.h>
+#include <QDateTime>
 #include <QSettings>
 #include <QUrl>
 #if QT_VERSION >= 0x050000
@@ -35,6 +36,8 @@ const QString SoundCloudSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocat
 #endif
 
 const QString SoundCloudSearchPlugin::CLIENT_ID("9b7cb759c6d41b14af05855f94bc743c");
+
+const QString SoundCloudSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='300' height='300' src='%2-t300x300.jpg' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
 
 SoundCloudSearchPlugin::SoundCloudSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -119,12 +122,17 @@ void SoundCloudSearchPlugin::onRequestFinished() {
             const QVariantMap item = v.toMap();
             const QString title = item.value("title").toString();
             const QString url = item.value("permalink_url").toString();
-            const QString description =
-                QString("<a href=\"%1\"><img src=\"%2-t300x300.jpg\" width=\"300\" height=\"300\" /></a><p>%3")
-                .arg(url).arg(item.value("artwork_url").toString().section("-", 0, -2))
-                .arg(item.value("description").toString());
-                
-            results << SearchResult(title, description, url);
+            const QString thumbnailUrl = item.value("artwork_url").toString();
+            const QString date = QDateTime::fromString(item.value("created_at").toString(),
+                                                       "yyyy/MM/dd HH:mm:ss +0000").toString("dd MMM yyyy");
+            const int secs = item.value("duration", 1000).toInt() / 1000;
+            const QString duration = (secs > 0 ? QString("%1:%2").arg(secs / 60, 2, 10, QChar('0'))
+                                      .arg(secs % 60, 2, 10, QChar('0')) : QString("--:--"));
+            const QString description = item.value("description").toString();
+            const QString html = HTML.arg(url).arg(thumbnailUrl.section("-", 0, -2)).arg(date).arg(duration)
+                .arg(description);
+            
+            results << SearchResult(title, html, url);
         }
         
         const QString next = result.value("next_href").toString();
