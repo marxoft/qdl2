@@ -110,7 +110,6 @@ bool YouTubePlugin::cancelCurrentOperation() {
     m_results.clear();
     m_filters.clear();
     m_params.clear();
-    m_streams.clear();
     emit currentOperationCanceled();
     return true;
 }
@@ -152,9 +151,9 @@ void YouTubePlugin::onResourcesRequestFinished() {
 
 void YouTubePlugin::onStreamsRequestFinished() {
     if (m_streamsRequest->status() == QYouTube::StreamsRequest::Ready) {
-        m_streams = m_streamsRequest->result().toList();
+        const QVariantList streams = m_streamsRequest->result().toList();
         
-        if (m_streams.isEmpty()) {
+        if (streams.isEmpty()) {
             emit error(tr("No streams found"));
             return;
         }
@@ -165,8 +164,8 @@ void YouTubePlugin::onStreamsRequestFinished() {
             const QString format = settings.value("videoFormat", "18").toString();
 
             for (int i = 0; i < VIDEO_FORMATS.indexOf(format); i++) {
-                for (int j = 0; j < m_streams.size(); j++) {
-                    const QVariantMap stream = m_streams.at(j).toMap();
+                for (int j = 0; j < streams.size(); j++) {
+                    const QVariantMap stream = streams.at(j).toMap();
 
                     if (stream.value("id") == format) {
                         emit downloadRequest(QNetworkRequest(stream.value("url").toString()));
@@ -184,9 +183,10 @@ void YouTubePlugin::onStreamsRequestFinished() {
             list["type"] = "list";
             list["label"] = tr("Video format");
             list["key"] = "videoFormat";
+            list["value"] = streams.first().toMap().value("url");
             
-            for (int i = 0; i < m_streams.size(); i++) {
-                const QVariantMap stream = m_streams.at(i).toMap();
+            for (int i = 0; i < streams.size(); i++) {
+                const QVariantMap stream = streams.at(i).toMap();
                 QVariantMap option;
                 option["label"] = QString("%1P %2").arg(stream.value("height").toString())
                                                    .arg(stream.value("ext").toString().toUpper());

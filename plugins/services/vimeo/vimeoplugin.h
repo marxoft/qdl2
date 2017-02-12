@@ -66,7 +66,6 @@ private:
     QVimeo::StreamsRequest *m_streamsRequest;
 
     UrlResultList m_results;
-    QVariantList m_streams;
 };
 
 #endif // VIMEOPLUGIN_H

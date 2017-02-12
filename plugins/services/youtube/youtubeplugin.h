@@ -70,7 +70,6 @@ private:
     UrlResultList m_results;
     QVariantMap m_filters;
     QVariantMap m_params;
-    QVariantList m_streams;
 };
 
 #endif // YOUTUBEPLUGIN_H

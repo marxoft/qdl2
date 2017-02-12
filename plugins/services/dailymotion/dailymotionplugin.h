@@ -64,7 +64,6 @@ private:
 
     UrlResultList m_results;
     QVariantMap m_filters;
-    QVariantList m_streams;
 };
 
 #endif // DAILYMOTIONPLUGIN_H

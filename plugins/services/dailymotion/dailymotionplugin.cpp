@@ -103,7 +103,6 @@ bool DailymotionPlugin::cancelCurrentOperation() {
 
     m_results.clear();
     m_filters.clear();
-    m_streams.clear();
     return true;
 }
 
@@ -148,9 +147,9 @@ void DailymotionPlugin::onResourcesRequestFinished() {
 
 void DailymotionPlugin::onStreamsRequestFinished() {
     if (m_streamsRequest->status() == QDailymotion::StreamsRequest::Ready) {
-        m_streams = m_streamsRequest->result().toList();
+        const QVariantList streams = m_streamsRequest->result().toList();
         
-        if (m_streams.isEmpty()) {
+        if (streams.isEmpty()) {
             emit error(tr("No streams found"));
             return;
         }
@@ -161,8 +160,8 @@ void DailymotionPlugin::onStreamsRequestFinished() {
             const QString format = settings.value("videoFormat", "2160").toString();
 
             for (int i = 0; i < VIDEO_FORMATS.indexOf(format); i++) {
-                for (int j = 0; j < m_streams.size(); j++) {
-                    const QVariantMap stream = m_streams.at(j).toMap();
+                for (int j = 0; j < streams.size(); j++) {
+                    const QVariantMap stream = streams.at(j).toMap();
 
                     if (stream.value("id") == format) {
                         emit downloadRequest(QNetworkRequest(stream.value("url").toString()));
@@ -180,10 +179,10 @@ void DailymotionPlugin::onStreamsRequestFinished() {
             list["type"] = "list";
             list["label"] = tr("Video format");
             list["key"] = "videoFormat";
-            list["value"] = m_streams.first().toMap().value("id");
+            list["value"] = streams.first().toMap().value("url");
             
-            for (int i = 0; i < m_streams.size(); i++) {
-                const QVariantMap stream = m_streams.at(i).toMap();
+            for (int i = 0; i < streams.size(); i++) {
+                const QVariantMap stream = streams.at(i).toMap();
                 QVariantMap option;
                 option["label"] = QString("%1P").arg(stream.value("height").toString());
                 option["value"] = stream.value("url");
