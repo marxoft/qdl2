@@ -46,7 +46,7 @@ function getResults(url) {
                 var response = JSON.parse(request.responseText);
                 var results = [];
                 
-                for (var i = 1; i < response.data.length; i++) {
+                for (var i = 0; i < response.data.length; i++) {
                     try {
                         var item = response.data[i];
                         var title = item.name;
