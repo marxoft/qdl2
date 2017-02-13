@@ -61,7 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu(new QMenu(tr("&File"), this)),
     m_transferMenu(new QMenu(tr("&Download"), this)),
     m_packageMenu(new QMenu(tr("&Package"), this)),
-    m_editMenu(new QMenu(tr("&Edit"), this)),
+    m_viewMenu(new QMenu(tr("&View"), this)),
+    m_toolsMenu(new QMenu(tr("&Tools"), this)),
     m_helpMenu(new QMenu(tr("&Help"), this)),
     m_transferPriorityMenu(new QMenu(tr("&Priority"), this)),
     m_packageCategoryMenu(new QMenu(tr("&Category"), this)),
@@ -77,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_searchAction(new QAction(QIcon::fromTheme("edit-find"), tr("&Search for content"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
-    m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
     m_quitAction(new QAction(QIcon::fromTheme("application-exit"), tr("&Quit"), this)),
     m_transferPropertiesAction(new QAction(QIcon::fromTheme("document-properties"), tr("&Properties"), this)),
     m_transferCustomCommandAction(new QAction(QIcon::fromTheme("system-run"), tr("Set &custom command"), this)),
@@ -91,11 +91,15 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packagePauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause"), this)),
     m_packageCancelAction(new QAction(QIcon::fromTheme("edit-delete"), tr("&Remove"), this)),
     m_packageCancelDeleteAction(new QAction(QIcon::fromTheme("edit-delete"), tr("Remove and &delete files"), this)),
+    m_closePageAction(new QAction(QIcon::fromTheme("view-close"), tr("&Close tab"), this)),
+    m_transfersAction(new QAction(tr("Downloads"), this)),
+    m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
     m_settingsAction(new QAction(QIcon::fromTheme("preferences-desktop"), tr("&Preferences"), this)),
     m_aboutAction(new QAction(QIcon::fromTheme("help-about"), tr("&About"), this)),
     m_transferPriorityGroup(new QActionGroup(this)),
     m_packageCategoryGroup(new QActionGroup(this)),
     m_packagePriorityGroup(new QActionGroup(this)),
+    m_pageGroup(new QActionGroup(this)),
     m_concurrentTransfersGroup(new QActionGroup(this)),
     m_actionSelector(new QComboBox(this)),
     m_activeLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
@@ -122,7 +126,8 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addMenu(m_fileMenu);
     menuBar()->addMenu(m_transferMenu);
     menuBar()->addMenu(m_packageMenu);
-    menuBar()->addMenu(m_editMenu);
+    menuBar()->addMenu(m_viewMenu);
+    menuBar()->addMenu(m_toolsMenu);
     menuBar()->addMenu(m_helpMenu);
 
     m_addUrlsAction->setShortcut(tr("Ctrl+N"));
@@ -131,7 +136,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
     m_searchAction->setShortcut(tr("Ctrl+S"));
     m_searchAction->setEnabled(!SearchPluginManager::instance()->plugins().isEmpty());
-    m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_quitAction->setShortcut(tr("Ctrl+Q"));
 
     m_fileMenu->addAction(m_addUrlsAction);
@@ -143,8 +147,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_queueAction);
     m_fileMenu->addAction(m_pauseAction);
-    m_fileMenu->addSeparator();
-    m_fileMenu->addAction(m_pluginsAction);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_quitAction);
 
@@ -173,23 +175,34 @@ MainWindow::MainWindow(QWidget *parent) :
 
     for (int i = TransferItem::HighestPriority; i <= TransferItem::LowestPriority; i++) {
         QAction *transferAction =
-        m_transferPriorityMenu->addAction(TransferItem::priorityString(TransferItem::Priority(i)),
-                                          this, SLOT(setCurrentTransferPriority()));
+            m_transferPriorityMenu->addAction(TransferItem::priorityString(TransferItem::Priority(i)));
         transferAction->setData(i);
         transferAction->setCheckable(true);
         m_transferPriorityGroup->addAction(transferAction);
 
         QAction *packageAction =
-        m_packagePriorityMenu->addAction(TransferItem::priorityString(TransferItem::Priority(i)),
-                                         this, SLOT(setCurrentPackagePriority()));
+            m_packagePriorityMenu->addAction(TransferItem::priorityString(TransferItem::Priority(i)));
         packageAction->setData(i);
         packageAction->setCheckable(true);
         m_packagePriorityGroup->addAction(packageAction);
     }
+    
+    m_closePageAction->setShortcut(tr("Ctrl+W"));
+    m_closePageAction->setEnabled(false);
+    m_transfersAction->setCheckable(true);
+    m_transfersAction->setChecked(true);
+    
+    m_pageGroup->addAction(m_transfersAction);
+    m_pageGroup->setVisible(false);
+        
+    m_viewMenu->addAction(m_closePageAction);
+    m_viewMenu->addAction(m_transfersAction);
 
+    m_pluginsAction->setShortcut(tr("Ctrl+L"));
     m_settingsAction->setShortcut(tr("Ctrl+P"));
 
-    m_editMenu->addAction(m_settingsAction);
+    m_toolsMenu->addAction(m_pluginsAction);
+    m_toolsMenu->addAction(m_settingsAction);
 
     m_helpMenu->addAction(m_aboutAction);
 
@@ -230,8 +243,7 @@ MainWindow::MainWindow(QWidget *parent) :
     const int concurrent = Settings::maximumConcurrentTransfers();
 
     for (int i = 1; i <= MAX_CONCURRENT_TRANSFERS; i++) {
-        QAction *action = m_concurrentTransfersMenu->addAction(QString::number(i),
-                                                               this, SLOT(setMaximumConcurrentTransfers()));
+        QAction *action = m_concurrentTransfersMenu->addAction(QString::number(i));
         action->setData(i);
         action->setCheckable(true);
         action->setChecked(i == concurrent);
@@ -316,7 +328,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_searchAction, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
     connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
     connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
-    connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
     connect(m_quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 
     connect(m_transferPropertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentTransferProperties()));
@@ -332,9 +343,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_packagePauseAction, SIGNAL(triggered()), this, SLOT(pauseCurrentPackage()));
     connect(m_packageCancelAction, SIGNAL(triggered()), this, SLOT(cancelCurrentPackage()));
     connect(m_packageCancelDeleteAction, SIGNAL(triggered()), this, SLOT(cancelAndDeleteCurrentPackage()));
-
+    
+    connect(m_closePageAction, SIGNAL(triggered()), this, SLOT(closeCurrentPage()));
+    
+    connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
     connect(m_settingsAction, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
+    
     connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
+    
+    connect(m_transferPriorityGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentTransferPriority(QAction*)));
+    connect(m_packageCategoryGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackageCategory(QAction*)));
+    connect(m_packagePriorityGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackagePriority(QAction*)));
+    connect(m_pageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPage(QAction*)));
 
     connect(m_actionSelector, SIGNAL(activated(int)), Settings::instance(), SLOT(setNextAction(int)));
         
@@ -410,11 +430,9 @@ void MainWindow::setCurrentTransferCustomCommand() {
     }
 }
 
-void MainWindow::setCurrentTransferPriority() {
-    if (const QAction *action = m_transferPriorityGroup->checkedAction()) {
-        if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::TransferType) {
-            TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::PriorityRole);
-        }
+void MainWindow::setCurrentTransferPriority(QAction *action) {
+    if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::TransferType) {
+        TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::PriorityRole);
     }
 }
 
@@ -456,11 +474,9 @@ void MainWindow::cancelAndDeleteCurrentPackage() {
     }
 }
 
-void MainWindow::setCurrentPackageCategory() {
-    if (const QAction *action = m_packageCategoryGroup->checkedAction()) {
-        if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
-            TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::CategoryRole);
-        }
+void MainWindow::setCurrentPackageCategory(QAction *action) {
+    if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
+        TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::CategoryRole);
     }
 }
 
@@ -470,11 +486,9 @@ void MainWindow::setCurrentPackageSubfolder(bool enabled) {
     }
 }
 
-void MainWindow::setCurrentPackagePriority() {
-    if (const QAction *action = m_packagePriorityGroup->checkedAction()) {
-        if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
-            TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::PriorityRole);
-        }
+void MainWindow::setCurrentPackagePriority(QAction *action) {
+    if (m_view->currentIndex().data(TransferItem::ItemTypeRole) == TransferItem::PackageType) {
+        TransferModel::instance()->setData(m_view->currentIndex(), action->data(), TransferItem::PriorityRole);
     }
 }
 
@@ -494,7 +508,7 @@ void MainWindow::setMaximumConcurrentTransfers() {
 
 void MainWindow::setCategoryMenuActions() {
     m_packageCategoryMenu->clear();
-    QAction *categoryAction = m_packageCategoryMenu->addAction(tr("Default"), this, SLOT(setCurrentPackageCategory()));
+    QAction *categoryAction = m_packageCategoryMenu->addAction(tr("Default"));
     categoryAction->setData(QString());
     categoryAction->setCheckable(true);
     m_packageCategoryGroup->addAction(categoryAction);
@@ -502,7 +516,7 @@ void MainWindow::setCategoryMenuActions() {
     const CategoryList categories = Categories::get();
 
     for (int i = 0; i < categories.size(); i++) {
-        categoryAction = m_packageCategoryMenu->addAction(categories.at(i).name, this, SLOT(setCurrentPackageCategory()));
+        categoryAction = m_packageCategoryMenu->addAction(categories.at(i).name);
         categoryAction->setData(categoryAction->text());
         categoryAction->setCheckable(true);
         m_packageCategoryGroup->addAction(categoryAction);
@@ -570,6 +584,14 @@ void MainWindow::closePage(int index) {
             
             if (m_tabs->count() == 1) {
                 m_tabs->hide();
+                m_pageGroup->setVisible(false);
+            }
+            
+            if ((index >= 0) && (index < m_pageGroup->actions().size())) {
+                QAction *action = m_pageGroup->actions().at(index);
+                m_pageGroup->removeAction(action);
+                m_viewMenu->removeAction(action);
+                action->deleteLater();
             }
         }
     }
@@ -581,16 +603,30 @@ void MainWindow::closeCurrentPage() {
 
 void MainWindow::setCurrentPage(int index) {
     m_stack->setCurrentIndex(index);
+    
+    if ((index >= 0) && (index < m_pageGroup->actions().size())) {
+        m_pageGroup->actions().at(index)->setChecked(true);
+    }
+}
+
+void MainWindow::setCurrentPage(QAction *action) {
+    m_tabs->setCurrentIndex(m_pageGroup->actions().indexOf(action));
 }
 
 void MainWindow::search(const QString &pluginName, const QString &pluginId) {
+    const QString text = tr("Search - %1").arg(pluginName);
     SearchPage *page = new SearchPage(m_stack);
     m_stack->addWidget(page);
     const int index = m_stack->indexOf(page);
-    m_tabs->addTab(tr("Search - %1").arg(pluginName));
+    m_tabs->addTab(text);
     m_stack->setCurrentIndex(index);
     m_tabs->setCurrentIndex(index);
     m_tabs->show();
+    QAction *action = m_viewMenu->addAction(text);
+    action->setCheckable(true);
+    action->setChecked(true);
+    m_pageGroup->addAction(action);
+    m_pageGroup->setVisible(true);
     page->search(pluginId);
 }
 

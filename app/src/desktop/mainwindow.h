@@ -47,7 +47,7 @@ private Q_SLOTS:
     void cancelCurrentTransfer();
     void cancelAndDeleteCurrentTransfer();
     void setCurrentTransferCustomCommand();
-    void setCurrentTransferPriority();
+    void setCurrentTransferPriority(QAction *action);
     void showCurrentTransferProperties();
 
     void queueCurrentPackage();
@@ -55,8 +55,8 @@ private Q_SLOTS:
     void cancelCurrentPackage();
     void cancelAndDeleteCurrentPackage();
     void setCurrentPackageSubfolder(bool enabled);
-    void setCurrentPackageCategory();
-    void setCurrentPackagePriority();
+    void setCurrentPackageCategory(QAction *action);
+    void setCurrentPackagePriority(QAction *action);
     void showCurrentPackageProperties();
 
     void setMaximumConcurrentTransfers();
@@ -71,6 +71,7 @@ private Q_SLOTS:
     void closePage(int index);
     void closeCurrentPage();
     void setCurrentPage(int index);
+    void setCurrentPage(QAction *action);
     
     void search(const QString &pluginName, const QString &pluginId);
     
@@ -98,7 +99,8 @@ private:
     QMenu *m_fileMenu;
     QMenu *m_transferMenu;
     QMenu *m_packageMenu;
-    QMenu *m_editMenu;
+    QMenu *m_viewMenu;
+    QMenu *m_toolsMenu;
     QMenu *m_helpMenu;
 
     QMenu *m_transferPriorityMenu;
@@ -120,7 +122,6 @@ private:
     QAction *m_searchAction;
     QAction *m_queueAction;
     QAction *m_pauseAction;
-    QAction *m_pluginsAction;
     QAction *m_quitAction;
 
     QAction *m_transferPropertiesAction;
@@ -136,7 +137,11 @@ private:
     QAction *m_packagePauseAction;
     QAction *m_packageCancelAction;
     QAction *m_packageCancelDeleteAction;
-
+    
+    QAction *m_closePageAction;
+    QAction *m_transfersAction;
+    
+    QAction *m_pluginsAction;
     QAction *m_settingsAction;
 
     QAction *m_aboutAction;
@@ -144,6 +149,7 @@ private:
     QActionGroup *m_transferPriorityGroup;
     QActionGroup *m_packageCategoryGroup;
     QActionGroup *m_packagePriorityGroup;
+    QActionGroup *m_pageGroup;
     QActionGroup *m_concurrentTransfersGroup;
 
     QComboBox *m_actionSelector;
