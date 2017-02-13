@@ -603,6 +603,7 @@ void MainWindow::closeCurrentPage() {
 
 void MainWindow::setCurrentPage(int index) {
     m_stack->setCurrentIndex(index);
+    m_closePageAction->setEnabled(index > 0);
     
     if ((index >= 0) && (index < m_pageGroup->actions().size())) {
         m_pageGroup->actions().at(index)->setChecked(true);
