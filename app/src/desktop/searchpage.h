@@ -40,6 +40,7 @@ protected:
 
 private Q_SLOTS:
     void addUrl(const QModelIndex &index);
+    void copyUrl(const QModelIndex &index);
     void retrieveUrls(const QModelIndex &index);
     
     void showContextMenu(const QPoint &pos);

@@ -22,6 +22,8 @@
 #include "retrieveurlsdialog.h"
 #include "settings.h"
 #include "transfermodel.h"
+#include <QApplication>
+#include <QClipboard>
 #include <QHBoxLayout>
 #include <QListView>
 #include <QMenu>
@@ -88,6 +90,10 @@ void SearchPage::addUrl(const QModelIndex &index) {
     }
 }
 
+void SearchPage::copyUrl(const QModelIndex &index) {
+    QApplication::clipboard()->setText(index.data(SearchModel::UrlRole).toString());
+}
+
 void SearchPage::retrieveUrls(const QModelIndex &index) {
     RetrieveUrlsDialog retrieveDialog(this);
     retrieveDialog.setText(index.data(SearchModel::UrlRole).toString());
@@ -127,6 +133,7 @@ void SearchPage::showContextMenu(const QPoint &pos) {
     }
     
     QMenu menu(this);
+    QAction *copyAction = menu.addAction(QIcon::fromTheme("edit-copy"), tr("&Copy URL"));
     QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("&Add URL"));
     QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"));
     QAction *action = menu.exec(m_view->mapToGlobal(pos));
@@ -135,7 +142,10 @@ void SearchPage::showContextMenu(const QPoint &pos) {
         return;
     }
     
-    if (action == addAction) {
+    if (action == copyAction) {
+        copyUrl(index);
+    }
+    else if (action == addAction) {
         addUrl(index);
     }
     else if (action == retrieveAction) {
