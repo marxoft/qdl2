@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var VIDEO_FORMATS = ["1080", "720", "480", "240"];
+var MOBILE_COOKIE = "platform=mobile";
 
 var request = null;
 
@@ -39,7 +39,7 @@ function checkUrl(url) {
     }
 
     request.open("GET", url);
-    request.setRequestHeader("Cookie", "platform=mobile");
+    request.setRequestHeader("Cookie", MOBILE_COOKIE);
     request.send();
 }
 
@@ -48,59 +48,42 @@ function getDownloadRequest(url) {
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var page = request.responseText;
-                var format = settings.value("videoFormat", "1080");
-
+                var script = /var varObj =[^<]+/.exec(request.responseText)[0].trim();
+                var qitems = /var (qualityItems_\d+)/.exec(script)[1];
+                eval(script);
+                var formats = eval(qitems);
+                
+                if (!formats.length) {
+                    error(qsTr("No video formats found"));
+                    return;
+                }
+                
                 if (settings.value("useDefaultVideoFormat", true) == true) {
-                    for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
-                        try {
-                            var videoUrl = page.split("var player_quality_" + VIDEO_FORMATS[i] + "p = '")[1].split("'")[0];
-                            
-                            if (videoUrl) {
-                                if (videoUrl.substring(0, 1) == "/") {
-                                    videoUrl = "http:" + videoUrl;
-                                }
-                                
-                                downloadRequest({"url": videoUrl});
-                                return;
-                            }
-                        }
-                        catch(err) {
-                            continue;
+                    var format = settings.value("videoFormat", "quality1080p");
+                    
+                    for (var i = formats.length - 1; i > 0; i--) {
+                        if (formats[i].id == format) {
+                            downloadRequest({"url": formats[i].url});
+                            return;
                         }
                     }
+                    
+                    downloadRequest({"url": formats[0].url});
                 }
                 else {
+                    var list = {"type": "list", "label": qsTr("Video format"), "key": "format"};
                     var options = [];
-
-                    for (var i = 0; i < VIDEO_FORMATS.length; i++) {
-                        try {
-                            var videoUrl = page.split("var player_quality_" + VIDEO_FORMATS[i] + "p = '")[1].split("'")[0];
-                            
-                            if (videoUrl) {
-                                if (videoUrl.substring(0, 1) == "/") {
-                                    videoUrl = "http:" + videoUrl;
-                                }
-                                
-                                options.push({"label": VIDEO_FORMATS[i] + "P", "value": videoUrl});
-                            }
-                        }
-                        catch(err) {
-                            continue;
-                        }
+                    
+                    for (var i = formats.length - 1; i >= 0; i--) {
+                        options.push({"label": formats[i].text.toUpperCase(), "value": formats[i].url});
                     }
-
-                    if (options.length > 0) {
-                        settingsRequest(qsTr("Video format"), [{"type": "list", "label": qsTr("Video format"),
-                                                          "key": "url",
-                                                          "value": options[Math.max(0, options.indexOf(format))].value,
-                                                          "options": options}],
-                                        function (f) { downloadRequest({"url": f.url}); });
-                        return;
-                    }
+                    
+                    list["options"] = options;
+                    list["value"] = formats[formats.length - 1].url;
+                    settingsRequest(qsTr("Choose video format"), [list], function(s) {
+                        downloadRequest({"url": s.format});
+                    });
                 }
-
-                error(qsTr("Unknown error"));
             }
             catch(err) {
                 error(err);
@@ -109,13 +92,14 @@ function getDownloadRequest(url) {
     }
 
     request.open("GET", url);
-    request.setRequestHeader("Cookie", "platform=mobile");
+    request.setRequestHeader("Cookie", MOBILE_COOKIE);
     request.send();
 }
 
 function cancelCurrentOperation() {
     if (request) {
         request.abort();
+        request = null;
     }
 
     return true;
