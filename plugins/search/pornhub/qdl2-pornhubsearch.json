@@ -1,0 +1,53 @@
+{
+    "type": "qt",
+    "name": "Pornhub",
+    "icon": "qdl2-pornhubsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "searchQuery"
+        },
+        
+        {
+            "type": "list",
+            "label": "Search order",
+            "key": "searchOrder",
+            "value": "",
+            "options": [
+                {
+                    "label": "Date",
+                    "value": "mr"
+                },
+                
+                {
+                    "label": "Duration",
+                    "value": "lg"
+                },
+                
+                {
+                    "label": "Rating",
+                    "value": "tr"
+                },
+                
+                {
+                    "label": "Relevance",
+                    "value": ""
+                },
+                
+                {
+                    "label": "Views",
+                    "value": "mv"
+                }
+            ]
+        }
+    ]
+}
