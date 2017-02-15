@@ -23,7 +23,7 @@ function checkUrl(url) {
     var fileName = fragment.substring(0, fragment.lastIndexOf(".html"));
     
     if (fileName) {
-        urlChecked({"url": url, "fileName": fileName});
+        urlChecked(new UrlResult(url, fileName));
     }
     else {
         error("Filename not found");
@@ -41,7 +41,7 @@ function getDownloadRequest(url) {
                     var videoUrl = sources.pop();
                     
                     if (videoUrl.substring(videoUrl.length - 4) == ".mp4") {
-                        downloadRequest({"url": videoUrl});
+                        downloadRequest(new NetworkRequest(videoUrl));
                         return;
                     }
                 }

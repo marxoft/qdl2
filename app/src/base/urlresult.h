@@ -19,20 +19,60 @@
 #define URLRESULT_H
 
 #include <QList>
+#include <QMetaType>
 #include <QString>
 
+/*!
+ * Defines the result of a url check.
+ *
+ * \sa ServicePlugin
+ */
 struct UrlResult
 {
+    /*!
+     * Contructs a UrlResult with an empty url and fileName.
+     */
+    UrlResult() :
+        url(QString()),
+        fileName(QString())
+    {
+    }
+    
+    /*!
+     * Contructs a UrlResult with url \a u and fileName \a f.
+     */
     UrlResult(const QString &u, const QString &f) :
         url(u),
         fileName(f)
     {
     }
     
+    /*!
+     * Contructs a copy of \a other.
+     */
+    UrlResult(const UrlResult &other) :
+        url(other.url),
+        fileName(other.fileName)
+    {
+    }
+    
+    /*!
+     * The url of the result.
+     */
     QString url;
+    
+    /*!
+     * The filename of the result.
+     */
     QString fileName;
 };
 
+/*!
+ * Typedef for QList<UrlResult>.
+ */
 typedef QList<UrlResult> UrlResultList;
+
+Q_DECLARE_METATYPE(UrlResult)
+Q_DECLARE_METATYPE(UrlResultList)
 
 #endif // URLRESULT_H

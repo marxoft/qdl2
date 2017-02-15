@@ -26,7 +26,7 @@ function checkUrl(url) {
         if (request.readyState === 4) {
             try {
                 var response = JSON.parse(request.responseText);
-                urlChecked({"fileName": response.name + ".m4a", "url": url});
+                urlChecked(new UrlResult(url, response.name + ".m4a"));
             }
             catch(err) {
                 error(err);
@@ -50,7 +50,7 @@ function getDownloadRequest(url) {
                 var streamHost = /stream(\d+)\.mixcloud\.com/.exec(response)[0];
                 var streamUrl = "http://" + streamHost + previewUrl.split("mixcloud.com")[1]
                     .replace("/previews/", "/c/m4a/64/").replace(/\.mp3$/, ".m4a");
-                downloadRequest({"url": streamUrl});
+                downloadRequest(new NetworkRequest(streamUrl));
             }
             catch(err) {
                 error(err);

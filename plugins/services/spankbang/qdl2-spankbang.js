@@ -28,7 +28,7 @@ function checkUrl(url) {
                 var fileName = request.responseText.split("h1 title=\"")[1].split("\"")[0];
                 
                 if ((streamKey) && (streamId) && (fileName)) {
-                    urlChecked({"url": url, "fileName": fileName + ".mp4"});
+                    urlChecked(new UrlResult(url, fileName + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -73,7 +73,7 @@ function getDownloadRequest(url) {
 
                 if (settings.value("useDefaultVideoFormat", true) == true) {
                     var videoUrl = getVideoUrl(streamId, streamKey, formats[Math.max(0, formats.indexOf(format))]);
-                    downloadRequest({"url": videoUrl});
+                    downloadRequest(new NetworkRequest(videoUrl));
                 }
                 else {
                     var options = [];
@@ -87,7 +87,7 @@ function getDownloadRequest(url) {
                                                             "key": "url",
                                                             "value": options[Math.max(0, options.indexOf(format))].value,
                                                             "options": options}],
-                                    function (f) { downloadRequest({"url": f.url}); });
+                                    function (f) { downloadRequest(new NetworkRequest(f.url)); });
                 }
             }
             catch(err) {

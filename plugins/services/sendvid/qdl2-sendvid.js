@@ -28,7 +28,7 @@ function checkUrl(url) {
                 var fileName = request.responseText.split("og:title\" content=\"")[1].split("\"")[0];
                 
                 if (fileName) {
-                    urlChecked({"url": url, "fileName": fileName + ".mp4"});
+                    urlChecked(new UrlResult(url, fileName + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -57,7 +57,7 @@ function getDownloadRequest(url) {
                 var videoUrl = request.responseText.split("og:video\" content=\"")[1].split("\"")[0];
 
                 if (videoUrl) {
-                    downloadRequest({"url": videoUrl});
+                    downloadRequest(new NetworkRequest(videoUrl));
                 }
                 else {
                     error(qsTr("Unknown error"));

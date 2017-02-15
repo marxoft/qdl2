@@ -28,7 +28,7 @@ function checkUrl(url) {
                 var fileName = vars["new"].title;
                 
                 if (fileName) {
-                    urlChecked({"url": url, "fileName": fileName + ".flv"});
+                    urlChecked(new UrlResult(url, fileName + ".flv"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -60,7 +60,7 @@ function getDownloadRequest(url) {
                             var videoUrl = videoUrls[VIDEO_FORMATS[i]][0];
                             
                             if (videoUrl) {
-                                downloadRequest({"url": videoUrl});
+                                downloadRequest(new NetworkRequest(videoUrl));
                                 return;
                             }
                         }
@@ -92,7 +92,7 @@ function getDownloadRequest(url) {
                                                           "key": "url",
                                                           "value": options[Math.max(0, options.indexOf(format))].value,
                                                           "options": options}],
-                                        function (f) { downloadRequest({"url": f.url}); });
+                                        function (f) { downloadRequest(new NetworkRequest(f.url)); });
                     }
                     else {
                         error(qsTr("Unknown error"));

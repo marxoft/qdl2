@@ -52,7 +52,7 @@ function checkUrl(url) {
             
             try {
                 var fileName = /<meta name="og:title" content="([^"]+)">/.exec(response)[1];
-                urlChecked({"url": url, "fileName": fileName});
+                urlChecked(new UrlResult(url, fileName));
             }
             catch(err) {
                 error(err);
@@ -94,7 +94,7 @@ function getDownloadRequest(url) {
                 }
                 
                 var videoUrl = STREAM_URL + urlcode;
-                downloadRequest({"url": videoUrl});
+                downloadRequest(new NetworkRequest(videoUrl));
             }
             catch(err) {
                 error(err);

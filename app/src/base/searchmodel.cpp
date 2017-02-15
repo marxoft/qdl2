@@ -108,21 +108,11 @@ QVariant SearchModel::data(const QModelIndex &index, int role) const {
     
     switch (role) {
     case Qt::DecorationRole:
-        if (const ServicePluginConfig *config =
-            ServicePluginManager::instance()->getConfigByUrl(m_items.at(index.row()).url)) {
-            return QIcon(config->iconFilePath());
-        }
-        
-        return QVariant();
+        return QIcon(m_items.at(index.row()).iconFilePath);
     case NameRole:
         return m_items.at(index.row()).name;
     case IconFilePathRole:
-        if (const ServicePluginConfig *config =
-            ServicePluginManager::instance()->getConfigByUrl(m_items.at(index.row()).url)) {
-            return config->iconFilePath();
-        }
-        
-        return QVariant();
+        return m_items.at(index.row()).iconFilePath;
     case DescriptionRole:
         return m_items.at(index.row()).description;
     case UrlRole:
@@ -181,6 +171,9 @@ void SearchModel::search(const QString &pluginId) {
         setStatus(Active);
         p->search();
     }
+    else {
+        Logger::log("SearchModel::search(). No plugin acquired.");
+    }
 }
 
 void SearchModel::cancel() {
@@ -188,6 +181,9 @@ void SearchModel::cancel() {
         if (p->cancelCurrentOperation()) {
             setStatus(Canceled);
         }
+    }
+    else {
+        Logger::log("SearchModel::cancel(). No plugin acquired.");
     }
 }
 
@@ -209,6 +205,9 @@ void SearchModel::reload() {
     if (SearchPlugin *p = plugin()) {
         setStatus(Active);
         p->search();
+    }
+    else {
+        Logger::log("SearchModel::reload(). No plugin acquired.");
     }
 }
 
@@ -249,15 +248,33 @@ SearchPlugin* SearchModel::plugin() {
             connect(m_plugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
                     this, SLOT(onSearchSettingsRequest(QString, QVariantList, QByteArray)));
         }
+        else {
+            Logger::log("SearchModel::plugin(). No plugin acquired.");
+        }
     }
     
     return m_plugin;
 }
 
+static void setSearchResultIconFilePath(const SearchResult &result) {
+    if (const ServicePluginConfig *config = ServicePluginManager::instance()->getConfigByUrl(result.url)) {
+        result.iconFilePath = config->iconFilePath();
+    }
+    else {
+        result.iconFilePath = DEFAULT_ICON;
+    }
+}
+
 void SearchModel::onSearchCompleted(const SearchResultList &results, const QVariantMap &nextParams) {
     if (!results.isEmpty()) {
         beginInsertRows(QModelIndex(), m_items.size(), m_items.size() + results.size() - 1);
-        m_items << results;
+        
+        for (int i = 0; i < results.size(); i++) {
+            const SearchResult &result = results.at(i);
+            setSearchResultIconFilePath(result);
+            m_items << result;
+        }
+        
         endInsertRows();
         emit countChanged(rowCount());
     }
@@ -272,7 +289,7 @@ void SearchModel::onSearchError(const QString &errorString) {
 }
 
 void SearchModel::onSearchSettingsRequest(const QString &title, const QVariantList &settings,
-                                              const QByteArray &callback) {
+                                          const QByteArray &callback) {
     Logger::log("SearchModel::onSearchSettingsRequest()", Logger::MediumVerbosity);
     m_callback = callback;
     setStatus(AwaitingSettingsResponse);

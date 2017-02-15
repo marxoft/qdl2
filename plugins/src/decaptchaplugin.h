@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file decaptchaplugin.h
+ *
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,9 +27,8 @@ class QNetworkAccessManager;
 class QImage;
 
 /*!
-    \class DecaptchaPlugin
-    \brief The base class for decaptcha plugins.
-*/
+ * The base class for decaptcha plugins.
+ */
 class DecaptchaPlugin : public QObject
 {
     Q_OBJECT
@@ -39,61 +40,66 @@ public:
     }
 
     /*!
-        \brief Creates an instance of the plugin with the specified parent.
-    */
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
+     */
     virtual DecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
 
     /*!
-        \brief Allows the plugin to share an application QNetworkNetworkManager instance.
-        
-        The base implementation does nothing. If you choose to re-implement this function,
-        the plugin should not take ownership of the QNetworkAccessManager instance.
-        
-        The QNetworkAccessManager is guaranteed to remain valid for the lifetime of the 
-        plugin.
-    */
+     * Allows the plugin to share an application QNetworkNetworkManager instance.
+     * 
+     * The base implementation does nothing. If you choose to re-implement this function,
+     * the plugin should not take ownership of the QNetworkAccessManager instance.
+     * 
+     * The QNetworkAccessManager is guaranteed to remain valid for the lifetime of the plugin.
+     */
     virtual void setNetworkAccessManager(QNetworkAccessManager*) {}
 
 public Q_SLOTS:
     /*!
-        \brief Cancels the current operation.
-        
-        Should return \c true if successful.
-    */
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return \c true if the current operation (if any) has been successfully 
+     * canceled.
+     */
     virtual bool cancelCurrentOperation() = 0;
 
     /*!
-        \brief Retrieves a captcha response for the specified image.
-    */
+     * Pure virtual method.
+     * 
+     * This method must be re-implemented to retrieve a captcha response for \a image.
+     */
     virtual void getCaptchaResponse(const QImage &image) = 0;
 
     /*!
-        \brief Reports the specifed captcha response as incorrect.
-    */
+     * Pure virtual method.
+     * This method must be re-implemented to report the captcha response with id \a captchaId as incorrect.
+     */
     virtual void reportCaptchaResponse(const QString &captchaId) = 0;
 
 Q_SIGNALS:
     /*!
-        \brief This signal should be emitted when a captcha response is successfully retrieved.
-    */
+     * This signal should be emitted when a captcha response is successfully retrieved.
+     */
     void captchaResponse(const QString &captchaId, const QString &response);
 
     /*!
-        \brief This signal should be emitted when an incorrect captcha response has been successfully reported.
-    */
+     * This signal should be emitted when an incorrect captcha response has been successfully reported.
+     */
     void captchaResponseReported(const QString &captchaId);
 
     /*!
-        \brief This signal should be emitted when the plugin is unable to retrieve or report a captcha response.
-    */
+     * This signal should be emitted when the plugin is unable to retrieve or report a captcha response.
+     */
     void error(const QString &errorString);
 
     /*!
-        \brief This signal should be emitted when some additional data is required to complete an operation.
-                
-        The \a callback method will be called when the user submits the settings and should take a QVariantMap
-        as its sole argument.
-    */
+     * This signal should be emitted when some additional data is required to complete an operation.
+     *         
+     * The \a callback method will be called when the user submits the settings and should take a QVariantMap
+     * as its sole argument.
+     */
     void settingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
 };
 

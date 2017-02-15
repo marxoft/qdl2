@@ -34,7 +34,7 @@ function checkUrl(url) {
                     if ((links) && (links.length > 0)) {                        
                         for (var i = 0; i < links.length; i++) {
                             var link = links[i];
-                            results.push({"url": link, "fileName": link.substring(link.lastIndexOf("/") + 1) + ".jpg"});
+                            results.push(new UrlResult(link, link.substring(link.lastIndexOf("/") + 1) + ".jpg"));
                         }
 
                         if (!packageName) {
@@ -92,7 +92,7 @@ function checkUrl(url) {
                     var link = decodeURIComponent(request.responseText.split("og:image\" content=\"")[1].split("\"")[0]);
 
                     if (link) {
-                        urlChecked({"url": url, "fileName": link.substring(link.lastIndexOf("/") + 1)});
+                        urlChecked(new UrlResult(url, link.substring(link.lastIndexOf("/") + 1)));
                     }
                     else {
                         error(qsTr("File not found"));
@@ -117,7 +117,7 @@ function getDownloadRequest(url) {
                 var link = decodeURIComponent(request.responseText.split("og:image\" content=\"")[1].split("\"")[0]);
 
                 if (link) {
-                    downloadRequest({"url": link});
+                    downloadRequest(new NetworkRequest(link));
                 }
                 else {
                     error(qsTr("File not found"));

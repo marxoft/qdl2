@@ -19,8 +19,8 @@
 
 #include "serviceplugin.h"
 #include "javascriptpluginglobalobject.h"
-
-class QScriptEngine;
+#include <QNetworkRequest>
+#include <QScriptable>
 
 class JavaScriptServicePlugin : public ServicePlugin
 {
@@ -53,10 +53,8 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QScriptValue &callback);
-    void onDownloadRequest(const QVariantMap &request, const QString &method, const QString &data);
+    void onDownloadRequest(const QNetworkRequest &request, const QString &method, const QString &data);
     void onSettingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
-    void onUrlChecked(const QVariantMap &result);
-    void onUrlChecked(const QVariantList &results, const QString &packageName);
 
 private:
     void initEngine();
@@ -82,13 +80,58 @@ public:
 
 Q_SIGNALS:
     void captchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QScriptValue &callback);
-    void downloadRequest(const QVariantMap &request, const QString &method = QString("GET"),
+    void downloadRequest(const QNetworkRequest &request, const QString &method = QString("GET"),
                          const QString &data = QString());
     void error(const QString &errorString);
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
-    void urlChecked(const QVariantMap &result);
-    void urlChecked(const QVariantList &results, const QString &packageName);
+    void urlChecked(const UrlResult &result);
+    void urlChecked(const UrlResultList &results, const QString &packageName);
     void waitRequest(int msecs, bool isLongDelay);
+
+private:
+    static QScriptValue newNetworkRequest(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newUrlResult(QScriptContext *context, QScriptEngine *engine);
 };
+
+class JavaScriptNetworkRequest : public QObject, public QScriptable
+{
+    Q_OBJECT
+    
+    Q_PROPERTY(QString url READ url WRITE setUrl)
+    Q_PROPERTY(QVariantMap headers READ headers WRITE setHeaders)
+    
+public:
+    explicit JavaScriptNetworkRequest(QObject *parent = 0);
+    
+    QString url() const;
+    void setUrl(const QString &u);
+    
+    QVariantMap headers() const;
+    void setHeaders(const QVariantMap &h);
+
+public Q_SLOTS:
+    QVariant header(const QString &name) const;
+    void setHeader(const QString &name, const QVariant &value);
+};
+
+class JavaScriptUrlResult : public QObject, public QScriptable
+{
+    Q_OBJECT
+    
+    Q_PROPERTY(QString url READ url WRITE setUrl)
+    Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
+
+public:
+    explicit JavaScriptUrlResult(QObject *parent = 0);
+    
+    QString url() const;
+    void setUrl(const QString &u);
+    
+    QString fileName() const;
+    void setFileName(const QString &f);
+};
+
+Q_DECLARE_METATYPE(QNetworkRequest*)
+Q_DECLARE_METATYPE(UrlResult*)
 
 #endif // JAVASCRIPTSERVICEPLUGIN_H

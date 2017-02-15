@@ -49,7 +49,7 @@ function getResults(url) {
                 for (var i = 0; i < response.data.length; i++) {
                     try {
                         var item = response.data[i];
-                        var title = item.name;
+                        var name = item.name;
                         var url = item.url;
                         var thumbnailUrl = item.pictures.large;
                         var date = formatDate(item.created_time);
@@ -57,7 +57,7 @@ function getResults(url) {
                         var html = "<a href='" + url + "'><img width='300' height='300' src='" + thumbnailUrl
                             + "' /><p>Date: " + date + "</p><p>Duration: " + duration + "</p>";
                         
-                        results.push({"name": title, "description": html, "url": url});
+                        results.push(new SearchResult(name, html, url));
                     }
                     catch(err) {
                         print(err);

@@ -35,7 +35,7 @@ const QString VimeoSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(Q
 #endif
 const QString VimeoSearchPlugin::BASE_URL("https://vimeo.com");
 
-const QString VimeoSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='270' src='https://i.vimeocdn.com/video/%2_640x360.jpg' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
+const QString VimeoSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='320' height='180' src='https://i.vimeocdn.com/video/%2_320x180.jpg' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
 
 const QString VimeoSearchPlugin::CLIENT_ID("0bf284bf5a0e46630f5097a590a76ef976a94322");
 const QString VimeoSearchPlugin::CLIENT_SECRET("7nnZ1OPS13hjKAVhzuXx/4AIdKxmgDNasHkj5QraWWkrNsd6mxYWZG73AKaFUdLzoNWhGA75jSffs+JyAFfi0MiFi1OXnzHsxaL0HCIFpxk0GpZlXcScWmJTHvGGtVv1");

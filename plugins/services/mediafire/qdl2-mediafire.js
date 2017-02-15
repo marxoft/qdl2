@@ -52,7 +52,7 @@ function checkUrl(url) {
             else {
                 try {
                     var fileName = request.responseText.split("og:title\" content=\"")[1].split("\"")[0];
-                    urlChecked({"url": url, "fileName": fileName});
+                    urlChecked(new UrlResult(url, fileName));
                 }
                 catch(err) {
                     error(err);
@@ -88,8 +88,7 @@ function checkFolder(folderId) {
                     
                     for (var i = 0; i < files.length; i++) {
                         try {
-                            results.push({"url": files[i].links.normal_download,
-                                          "fileName": files[i].filename});
+                            results.push(new UrlResult(files[i].links.normal_download, files[i].filename));
                         }
                         catch(err) {
                             continue;
@@ -136,7 +135,7 @@ function getDownloadRequest(url) {
             var downloadUrl = FILE_REGEXP.exec(request.responseText);
             
             if (downloadUrl) {
-                downloadRequest({"url": downloadUrl[0]});
+                downloadRequest(new NetworkRequest(downloadUrl[0]));
             }
             else {
                 try {
@@ -177,7 +176,7 @@ function submitCaptchaResponse(challenge, response) {
             var downloadUrl = FILE_REGEXP.exec(request.responseText);
             
             if (downloadUrl) {
-                downloadRequest({"url": downloadUrl[0]});
+                downloadRequest(new NetworkRequest(downloadUrl[0]));
             }
             else {
                 try {

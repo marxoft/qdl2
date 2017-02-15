@@ -35,10 +35,10 @@ const QString DailymotionSearchPlugin::CONFIG_FILE(QDesktopServices::storageLoca
                                          + "/.config/qdl2/plugins/qdl2-dailymotionsearch");
 #endif
 
-const QString DailymotionSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='270' src='%2' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
+const QString DailymotionSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='320' height='180' src='%2' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
 
-const QString DailymotionSearchPlugin::PLAYLIST_FIELDS("id,created_time,description,name,thumbnail_360_url");
-const QString DailymotionSearchPlugin::VIDEO_FIELDS("id,created_time,description,duration,thumbnail_360_url,title");
+const QString DailymotionSearchPlugin::PLAYLIST_FIELDS("id,created_time,description,name,thumbnail_180_url");
+const QString DailymotionSearchPlugin::VIDEO_FIELDS("id,created_time,description,duration,thumbnail_180_url,title");
 
 DailymotionSearchPlugin::DailymotionSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -148,7 +148,7 @@ void DailymotionSearchPlugin::onRequestFinished() {
             const QString title = (item.contains("title") ? item.value("title").toString()
                                    : item.value("name").toString());
             const QString url = baseUrl + item.value("id").toString();
-            const QString thumbnailUrl = item.value("thumbnail_360_url").toString();
+            const QString thumbnailUrl = item.value("thumbnail_180_url").toString();
             const QString date = QDateTime::fromTime_t(item.value("created_time").toUInt()).toString("dd MMM yyyy");
             const int secs = item.value("duration", 0).toInt();
             const QString duration = (secs > 0 ? QString("%1:%2").arg(secs / 60, 2, 10, QChar('0'))

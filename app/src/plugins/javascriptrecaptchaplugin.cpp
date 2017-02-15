@@ -20,7 +20,6 @@
 #include <QFile>
 #include <QImage>
 #include <QNetworkAccessManager>
-#include <QScriptEngine>
 
 JavaScriptRecaptchaPlugin::JavaScriptRecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent) :
     RecaptchaPlugin(parent),

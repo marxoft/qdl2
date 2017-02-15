@@ -39,7 +39,7 @@ function checkUrl(url) {
                 var fileName = FILE_NAME_REGEXP.exec(request.responseText)[1];
                 
                 if (fileName) {
-                    urlChecked({"url": url, "fileName": fileName + ".mp4"});
+                    urlChecked(new UrlResult(url, fileName + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -77,7 +77,7 @@ function getDownloadRequest(url) {
                             var videoUrl = VIDEO_FORMAT_REGEXPS[i].exec(request.responseText)[1];
                             
                             if (videoUrl) {
-                                downloadRequest({"url": videoUrl});
+                                downloadRequest(new NetworkRequest(videoUrl));
                                 return;
                             }
                         }
@@ -107,7 +107,7 @@ function getDownloadRequest(url) {
                                                           "key": "url",
                                                           "value": options[Math.max(0, options.indexOf(format))].value,
                                                           "options": options}],
-                                        function (f) { downloadRequest({"url": f.url}); });
+                                        function (f) { downloadRequest(new NetworkRequest(f.url)); });
                         return;
                     }
                 }

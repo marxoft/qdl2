@@ -24,7 +24,7 @@ function checkUrl(url) {
             fileName = url.substring(url.lastIndexOf("/") + 1);
         }
         
-        urlChecked({"url": url, "fileName": fileName});
+        urlChecked(new UrlResult(url, fileName));
         return;
     }
     
@@ -47,7 +47,7 @@ function checkUrl(url) {
                 for (var i = 0; i < playlist.length; i++) {
                     var title = playlist[i].title;
                     var source = playlist[i].sources[0];
-                    results.push({"url": source.file, "fileName": title + "." + source.type});
+                    results.push(new UrlResult(source.file, title + "." + source.type));
                 }
                 
                 if (results.length > 0) {
@@ -90,7 +90,7 @@ function getDownloadRequest(url) {
                 var videoUrl = video.sources[0].file;
 
                 if (videoUrl) {
-                    downloadRequest({"url": videoUrl});
+                    downloadRequest(new NetworkRequest(videoUrl));
                 }
                 else {
                     error(qsTr("Unknown error"));

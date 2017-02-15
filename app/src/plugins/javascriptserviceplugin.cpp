@@ -19,8 +19,6 @@
 #include "pluginsettings.h"
 #include <QFile>
 #include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QScriptEngine>
 #include <QUrl>
 
 JavaScriptServicePlugin::JavaScriptServicePlugin(const QString &id, const QString &fileName, QObject *parent) :
@@ -87,13 +85,13 @@ void JavaScriptServicePlugin::initEngine() {
         
         connect(m_global, SIGNAL(captchaRequest(QString, QString, QScriptValue)),
                 this, SLOT(onCaptchaRequest(QString, QString, QScriptValue)));
-        connect(m_global, SIGNAL(downloadRequest(QVariantMap, QString, QString)),
-                this, SLOT(onDownloadRequest(QVariantMap, QString, QString)));
+        connect(m_global, SIGNAL(downloadRequest(QNetworkRequest, QString, QString)),
+                this, SLOT(onDownloadRequest(QNetworkRequest, QString, QString)));
         connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
         connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
-        connect(m_global, SIGNAL(urlChecked(QVariantMap)), this, SLOT(onUrlChecked(QVariantMap)));
-        connect(m_global, SIGNAL(urlChecked(QVariantList, QString)), this, SLOT(onUrlChecked(QVariantList, QString)));
+        connect(m_global, SIGNAL(urlChecked(UrlResult)), this, SIGNAL(urlChecked(UrlResult)));
+        connect(m_global, SIGNAL(urlChecked(UrlResultList, QString)), this, SIGNAL(urlChecked(UrlResultList, QString)));
         connect(m_global, SIGNAL(waitRequest(int, bool)), this, SIGNAL(waitRequest(int, bool)));
         
         m_engine->installTranslatorFunctions();
@@ -208,19 +206,9 @@ void JavaScriptServicePlugin::onCaptchaRequest(const QString &recaptchaPluginId,
     emit captchaRequest(recaptchaPluginId, recaptchaKey, "submitCaptchaResponse");
 }
 
-void JavaScriptServicePlugin::onDownloadRequest(const QVariantMap &request, const QString &method, const QString &data) {
-    QNetworkRequest req(request.value("url").toUrl());
-
-    if (request.contains("headers")) {
-        QMapIterator<QString, QVariant> iterator(request.value("headers").toMap());
-        
-        while (iterator.hasNext()) {
-            iterator.next();
-            req.setRawHeader(iterator.key().toUtf8(), iterator.value().toByteArray());
-        }
-    }
-
-    emit downloadRequest(req, method.toUtf8(), data.toUtf8());
+void JavaScriptServicePlugin::onDownloadRequest(const QNetworkRequest &request, const QString &method,
+                                                const QString &data) {
+    emit downloadRequest(request, method.toUtf8(), data.toUtf8());
 }
 
 void JavaScriptServicePlugin::onSettingsRequest(const QString &title, const QVariantList &settings,
@@ -229,35 +217,131 @@ void JavaScriptServicePlugin::onSettingsRequest(const QString &title, const QVar
     emit settingsRequest(title, settings, "submitSettingsResponse");
 }
 
-void JavaScriptServicePlugin::onUrlChecked(const QVariantMap &result) {
-    if ((!result.contains("url")) || (!result.contains("fileName"))) {
-        emit error(tr("URL result is invalid"));
-        return;
-    }
-
-    emit urlChecked(UrlResult(result.value("url").toString(), result.value("fileName").toString()));
-}
-
-void JavaScriptServicePlugin::onUrlChecked(const QVariantList &results, const QString &packageName) {
-    if (results.isEmpty()) {
-        emit error(tr("URL list is empty"));
-        return;
-    }
-
-    UrlResultList list;
-
-    foreach (const QVariant &var, results) {
-        const QVariantMap result = var.toMap();
-
-        if ((result.contains("url")) && (result.contains("fileName"))) {
-            list << UrlResult(result.value("url").toString(), result.value("fileName").toString());
-        }
-    }
-
-    emit urlChecked(list, packageName);
-}
-
 JavaScriptServicePluginGlobalObject::JavaScriptServicePluginGlobalObject(QScriptEngine *engine) :
     JavaScriptPluginGlobalObject(engine)
 {
+    QScriptValue request = engine->newQObject(new JavaScriptNetworkRequest(engine));
+    engine->setDefaultPrototype(qMetaTypeId<QNetworkRequest>(), request);
+    engine->setDefaultPrototype(qMetaTypeId<QNetworkRequest*>(), request);
+    engine->globalObject().setProperty("NetworkRequest", engine->newFunction(newNetworkRequest));
+    QScriptValue result = engine->newQObject(new JavaScriptUrlResult(engine));
+    engine->setDefaultPrototype(qMetaTypeId<UrlResult>(), result);
+    engine->setDefaultPrototype(qMetaTypeId<UrlResult*>(), result);
+    engine->globalObject().setProperty("UrlResult", engine->newFunction(newUrlResult));
+    qScriptRegisterSequenceMetaType<UrlResultList>(engine);
+}
+
+QScriptValue JavaScriptServicePluginGlobalObject::newNetworkRequest(QScriptContext *context, QScriptEngine *engine) {
+    switch (context->argumentCount()) {
+    case 0:
+        return engine->toScriptValue(QNetworkRequest());
+    case 1:
+        return engine->toScriptValue(QNetworkRequest(context->argument(0).toString()));
+    default:
+        return context->throwError(QScriptContext::SyntaxError,
+                                   QObject::tr("NetworkRequest constructor requires either 0 or 1 arguments."));
+    }
+}
+
+QScriptValue JavaScriptServicePluginGlobalObject::newUrlResult(QScriptContext *context, QScriptEngine *engine) {
+    switch (context->argumentCount()) {
+    case 0:
+        return engine->toScriptValue(UrlResult());
+    case 2:
+        return engine->toScriptValue(UrlResult(context->argument(0).toString(), context->argument(1).toString()));
+    default:
+        return context->throwError(QScriptContext::SyntaxError,
+                                   QObject::tr("UrlResult constructor requires either 0 or 2 arguments."));
+    }
+}
+
+JavaScriptNetworkRequest::JavaScriptNetworkRequest(QObject *parent) :
+    QObject(parent)
+{
+}
+
+QString JavaScriptNetworkRequest::url() const {
+    if (const QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        return request->url().toString();
+    }
+    
+    return QString();
+}
+
+void JavaScriptNetworkRequest::setUrl(const QString &u) {
+    if (QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        request->setUrl(u);
+    }
+}
+
+QVariantMap JavaScriptNetworkRequest::headers() const {
+    if (const QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        QVariantMap h;
+        
+        foreach (const QByteArray &header, request->rawHeaderList()) {
+            h[QString::fromUtf8(header)] = QString::fromUtf8(request->rawHeader(header));
+        }
+        
+        return h;
+    }
+    
+    return QVariantMap();
+}
+
+void JavaScriptNetworkRequest::setHeaders(const QVariantMap &h) {
+    if (QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        QMapIterator<QString, QVariant> iterator(h);
+        
+        while (iterator.hasNext()) {
+            iterator.next();
+            request->setRawHeader(iterator.key().toUtf8(), iterator.value().toByteArray());
+        }
+    }
+}
+
+QVariant JavaScriptNetworkRequest::header(const QString &name) const {
+    if (const QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        return request->rawHeader(name.toUtf8());
+    }
+    
+    return QVariant();
+}
+
+void JavaScriptNetworkRequest::setHeader(const QString &name, const QVariant &value) {
+    if (QNetworkRequest* request = qscriptvalue_cast<QNetworkRequest*>(thisObject())) {
+        request->setRawHeader(name.toUtf8(), value.toByteArray());
+    }
+}
+
+JavaScriptUrlResult::JavaScriptUrlResult(QObject *parent) :
+    QObject(parent)
+{
+}
+
+QString JavaScriptUrlResult::url() const {
+    if (const UrlResult* result = qscriptvalue_cast<UrlResult*>(thisObject())) {
+        return result->url;
+    }
+    
+    return QString();
+}
+
+void JavaScriptUrlResult::setUrl(const QString &u) {
+    if (UrlResult* result = qscriptvalue_cast<UrlResult*>(thisObject())) {
+        result->url = u;
+    }
+}
+
+QString JavaScriptUrlResult::fileName() const {
+    if (const UrlResult* result = qscriptvalue_cast<UrlResult*>(thisObject())) {
+        return result->fileName;
+    }
+    
+    return QString();
+}
+
+void JavaScriptUrlResult::setFileName(const QString &f) {
+    if (UrlResult* result = qscriptvalue_cast<UrlResult*>(thisObject())) {
+        result->fileName = f;
+    }
 }

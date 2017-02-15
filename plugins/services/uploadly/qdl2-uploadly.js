@@ -22,7 +22,7 @@ var request = null;
 
 function checkUrl(url) {
     if (FILE_FORMATS.indexOf(url.substring(url.lastIndexOf(".") + 1)) != -1) {
-        urlChecked({"url": url, "fileName": url.substring(url.lastIndexOf("/") + 1)});
+        urlChecked(new UrlResult(url, url.substring(url.lastIndexOf("/") + 1)));
         return;
     }
     
@@ -69,7 +69,7 @@ function checkUrl(url) {
                         }
 
                         if ((url) && (fileName)) {
-                            results.push({"url": url, "fileName": fileName});
+                            results.push(new UrlResult(url, fileName));
                         }
                     }
                 }
@@ -92,7 +92,7 @@ function checkUrl(url) {
                         }
 
                         if ((url) && (fileName)) {
-                            results.push({"url": url, "fileName": fileName});
+                            results.push(new UrlResult(url, fileName));
                         }
                     }
                 }
@@ -122,7 +122,7 @@ function checkUrl(url) {
 
 function getDownloadRequest(url) {
     if (FILE_FORMATS.indexOf(url.substring(url.lastIndexOf(".") + 1)) != -1) {
-        downloadRequest({"url": url});
+        downloadRequest(new NetworkRequest(url));
         return;
     }
 

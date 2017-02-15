@@ -21,7 +21,6 @@
 #include <QFile>
 #include <QImage>
 #include <QNetworkAccessManager>
-#include <QScriptEngine>
 
 JavaScriptDecaptchaPlugin::JavaScriptDecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent) :
     DecaptchaPlugin(parent),

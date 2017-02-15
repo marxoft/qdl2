@@ -19,7 +19,6 @@
 #include "pluginsettings.h"
 #include <QFile>
 #include <QNetworkAccessManager>
-#include <QScriptEngine>
 
 JavaScriptSearchPlugin::JavaScriptSearchPlugin(const QString &id, const QString &fileName, QObject *parent) :
     SearchPlugin(parent),
@@ -84,9 +83,9 @@ void JavaScriptSearchPlugin::initEngine() {
         }
         
         connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(m_global, SIGNAL(searchCompleted(QVariantList)), this, SLOT(onSearchCompleted(QVariantList)));
-        connect(m_global, SIGNAL(searchCompleted(QVariantList, QVariantMap)),
-                this, SLOT(onSearchCompleted(QVariantList, QVariantMap)));
+        connect(m_global, SIGNAL(searchCompleted(SearchResultList)), this, SIGNAL(searchCompleted(SearchResultList)));
+        connect(m_global, SIGNAL(searchCompleted(SearchResultList, QVariantMap)),
+                this, SIGNAL(searchCompleted(SearchResultList, QVariantMap)));
         connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
                 this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
         
@@ -173,21 +172,6 @@ void JavaScriptSearchPlugin::submitSettingsResponse(const QVariantMap &settings)
     }
 }
 
-void JavaScriptSearchPlugin::onSearchCompleted(const QVariantList &results, const QVariantMap &nextParams) {
-    SearchResultList list;
-    
-    foreach (const QVariant &v, results) {
-        const QVariantMap result = v.toMap();
-        
-        if ((result.contains("name")) && (result.contains("url"))) {
-            list << SearchResult(result.value("name").toString(), result.value("description").toString(),
-                                 result.value("url").toString());
-        }
-    }
-    
-    emit searchCompleted(list, nextParams);
-}
-
 void JavaScriptSearchPlugin::onSettingsRequest(const QString &title, const QVariantList &settings,
                                                 const QScriptValue &callback) {
     m_callback = callback;
@@ -197,4 +181,69 @@ void JavaScriptSearchPlugin::onSettingsRequest(const QString &title, const QVari
 JavaScriptSearchPluginGlobalObject::JavaScriptSearchPluginGlobalObject(QScriptEngine *engine) :
     JavaScriptPluginGlobalObject(engine)
 {
+    QScriptValue result = engine->newQObject(new JavaScriptSearchResult(engine));
+    engine->setDefaultPrototype(qMetaTypeId<SearchResult>(), result);
+    engine->setDefaultPrototype(qMetaTypeId<SearchResult*>(), result);
+    engine->globalObject().setProperty("SearchResult", engine->newFunction(newSearchResult));
+    qScriptRegisterSequenceMetaType<SearchResultList>(engine);
+}
+
+QScriptValue JavaScriptSearchPluginGlobalObject::newSearchResult(QScriptContext *context, QScriptEngine *engine) {
+    switch (context->argumentCount()) {
+    case 0:
+        return engine->toScriptValue(SearchResult());
+    case 3:
+        return engine->toScriptValue(SearchResult(context->argument(0).toString(), context->argument(1).toString(),
+                                                  context->argument(2).toString()));
+    default:
+        return context->throwError(QScriptContext::SyntaxError,
+                                   QObject::tr("SearchResult constructor requires either 0 or 3 arguments."));
+    }
+}
+
+JavaScriptSearchResult::JavaScriptSearchResult(QObject *parent) :
+    QObject(parent)
+{
+}
+
+QString JavaScriptSearchResult::name() const {
+    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        return result->name;
+    }
+    
+    return QString();
+}
+
+void JavaScriptSearchResult::setName(const QString &n) {
+    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        result->name = n;
+    }
+}
+
+QString JavaScriptSearchResult::description() const {
+    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        return result->description;
+    }
+    
+    return QString();
+}
+
+void JavaScriptSearchResult::setDescription(const QString &d) {
+    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        result->description = d;
+    }
+}
+
+QString JavaScriptSearchResult::url() const {
+    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        return result->url;
+    }
+    
+    return QString();
+}
+
+void JavaScriptSearchResult::setUrl(const QString &u) {
+    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
+        result->url = u;
+    }
 }

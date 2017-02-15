@@ -18,7 +18,7 @@ function checkUrl(url) {
     try {
         var fragment = url.substring(url.lastIndexOf("/") + 1);
         var fileName = decodeURIComponent(fragment.substring(0, fragment.search(/[\?&]/)));
-        urlChecked({"fileName": fileName, "url": url});
+        urlChecked(new UrlResult(url, fileName));
     }
     catch(err) {
         error(err);

@@ -1,4 +1,6 @@
-/*
+/*!
+ * \file recaptchaplugin.h
+ *
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,9 +27,8 @@ class QImage;
 class QNetworkAccessManager;
 
 /*!
-    \class RecaptchaPlugin
-    \brief The base class for recaptcha plugins.
-*/
+ * The base class for recaptcha plugins.
+ */
 class RecaptchaPlugin : public QObject
 {
     Q_OBJECT
@@ -39,51 +40,54 @@ public:
     }
 
     /*!
-        \brief Creates an instance of the plugin with the specified parent.
-    */
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
+     */
     virtual RecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
 
     /*!
-        \brief Allows the plugin to share an application QNetworkNetworkManager instance.
-        
-        The base implementation does nothing. If you choose to re-implement this function,
-        the plugin should not take ownership of the QNetworkAccessManager instance.
-        
-        The QNetworkAccessManager is guaranteed to remain valid for the lifetime of the 
-        plugin.
-    */
+     * Allows the plugin to share an application QNetworkNetworkManager instance.
+     * 
+     * The base implementation does nothing. If you choose to re-implement this function,
+     * the plugin should not take ownership of the QNetworkAccessManager instance.
+     * 
+     * The QNetworkAccessManager is guaranteed to remain valid for the lifetime of the plugin.
+     */
     virtual void setNetworkAccessManager(QNetworkAccessManager*) {}
 
 public Q_SLOTS:
     /*!
-        \brief Cancels the current operation.
-        
-        Should return \c true if successful.
-    */
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return \c true if the current operation (if any) has been successfully 
+     * canceled.
+     */
     virtual bool cancelCurrentOperation() = 0;
 
     /*!
-        \brief Retrives a captcha image for the specified key.
-    */
+     * Pure virtual method.
+     * This method must be re-implemented to retrieve a captcha image for the \a captchaKey.
+     */
     virtual void getCaptcha(const QString &captchaKey) = 0;
 
 Q_SIGNALS:
     /*!
-        \brief This signal should be emitted when a captcha image is successfully retrieved.
-    */
+     * This signal should be emitted when a captcha image is successfully retrieved.
+     */
     void captcha(const QString &captchaChallenge, const QImage &captchaImage);
 
     /*!
-        \brief This signal should be emitted when the plugin is unable to retrieve a captcha image.
-    */
+     * This signal should be emitted when the plugin is unable to retrieve a captcha image.
+     */
     void error(const QString &errorString);
 
     /*!
-        \brief This signal should be emitted when some additional data is required to complete an operation.
-                
-        The \a callback method will be called when the user submits the settings and should take a QVariantMap
-        as its sole argument.
-    */
+     * This signal should be emitted when some additional data is required to complete an operation.
+     *         
+     * The \a callback method will be called when the user submits the settings and should take a QVariantMap
+     * as its sole argument.
+     */
     void settingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
 };
 

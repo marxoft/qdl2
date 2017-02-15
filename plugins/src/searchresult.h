@@ -21,19 +21,46 @@
 #define SEARCHRESULT_H
 
 #include <QList>
+#include <QMetaType>
 #include <QString>
 
 /*!
- * Defines the result of a url search.
+ * Defines the result of a content search.
  *
  * \sa SearchPlugin
  */
 struct SearchResult
 {
+    /*!
+     * Contructs a SearchResult with an empty name, description and url.
+     */
+    SearchResult() :
+        name(QString()),
+        description(QString()),
+        url(QString()),
+        iconFilePath(QString())
+    {
+    }
+    
+    /*!
+     * Contructs a SearchResult with name \a n, description \a d and url \a u.
+     */
     SearchResult(const QString &n, const QString &d, const QString &u) :
         name(n),
         description(d),
-        url(u)
+        url(u),
+        iconFilePath(QString())
+    {
+    }
+    
+    /*!
+     * Contructs a copy of \a other.
+     */
+    SearchResult(const SearchResult &other) :
+        name(other.name),
+        description(other.description),
+        url(other.url),
+        iconFilePath(other.iconFilePath)
     {
     }
     
@@ -53,11 +80,21 @@ struct SearchResult
      * The url of the search result.
      */
     QString url;
+    
+    /*!
+     * \internal
+     *
+     * For internal use.
+     */
+    mutable QString iconFilePath;
 };
 
 /*!
  * Typedef for QList<SearchResult>.
  */
 typedef QList<SearchResult> SearchResultList;
+
+Q_DECLARE_METATYPE(SearchResult)
+Q_DECLARE_METATYPE(SearchResultList)
 
 #endif // SEARCHRESULT_H

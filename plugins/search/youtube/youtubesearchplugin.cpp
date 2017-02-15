@@ -37,7 +37,7 @@ const QString YouTubeSearchPlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_
 const QString YouTubeSearchPlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
 const QString YouTubeSearchPlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
 
-const QString YouTubeSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='480' height='360' src='%2' /></a><p>Date: %3</p><p>%4</p>");
+const QString YouTubeSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='320' height='180' src='%2' /></a><p>Date: %3</p><p>%4</p>");
 
 YouTubeSearchPlugin::YouTubeSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
@@ -173,7 +173,7 @@ void YouTubeSearchPlugin::onRequestFinished() {
                 url = QString("https://www.youtube.com/watch?v=" + id.value("videoId").toString());
             }
             
-            const QString thumbnailUrl = snippet.value("thumbnails").toMap().value("high").toMap().value("url")
+            const QString thumbnailUrl = snippet.value("thumbnails").toMap().value("medium").toMap().value("url")
                 .toString();
             const QString date = QDateTime::fromString(snippet.value("publishedAt").toString(), Qt::ISODate)
                 .toString("dd MMM yyyy");

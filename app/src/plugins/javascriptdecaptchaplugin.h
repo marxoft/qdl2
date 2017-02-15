@@ -20,8 +20,6 @@
 #include "decaptchaplugin.h"
 #include "javascriptpluginglobalobject.h"
 
-class QScriptEngine;
-
 class JavaScriptDecaptchaPlugin : public DecaptchaPlugin
 {
     Q_OBJECT

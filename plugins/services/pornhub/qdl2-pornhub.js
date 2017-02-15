@@ -26,7 +26,7 @@ function checkUrl(url) {
                 var fileName = request.responseText.split("twitter:title\" content=\"")[1].split("\"")[0];
                 
                 if (fileName) {
-                    urlChecked({"url": url, "fileName": fileName + ".mp4"});
+                    urlChecked(new UrlResult(url, fileName + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -63,7 +63,7 @@ function getDownloadRequest(url) {
                     
                     for (var i = formats.length - 1; i > 0; i--) {
                         if (formats[i].id == format) {
-                            downloadRequest({"url": formats[i].url});
+                            downloadRequest(new NetworkRequest(formats[i].url));
                             return;
                         }
                     }
@@ -81,7 +81,7 @@ function getDownloadRequest(url) {
                     list["options"] = options;
                     list["value"] = formats[formats.length - 1].url;
                     settingsRequest(qsTr("Choose video format"), [list], function(s) {
-                        downloadRequest({"url": s.format});
+                        downloadRequest(new NetworkRequest(s.format));
                     });
                 }
             }

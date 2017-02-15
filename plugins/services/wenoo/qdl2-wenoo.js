@@ -39,7 +39,7 @@ function checkUrl(url) {
                         fileName += ".mp4";
                     }
                     
-                    urlChecked({"url": url, "fileName": fileName});
+                    urlChecked(new UrlResult(url, fileName));
                 }
                 else {
                     error("File not found");
@@ -73,7 +73,7 @@ function getDownloadRequest(url) {
                 }
                 
                 if (downloadUrl) {
-                    downloadRequest({"url": downloadUrl});
+                    downloadRequest(new NetworkRequest(downloadUrl));
                 }
                 else {
                     error("Unknown error");

@@ -19,8 +19,7 @@
 
 #include "searchplugin.h"
 #include "javascriptpluginglobalobject.h"
-
-class QScriptEngine;
+#include <QScriptable>
 
 class JavaScriptSearchPlugin : public SearchPlugin
 {
@@ -51,7 +50,6 @@ public Q_SLOTS:
     void submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
-    void onSearchCompleted(const QVariantList &results, const QVariantMap &nextParams = QVariantMap());
     void onSettingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
 
 private:
@@ -78,9 +76,35 @@ public:
 
 Q_SIGNALS:
     void error(const QString &errorString);
-    void searchCompleted(const QVariantList &results);
-    void searchCompleted(const QVariantList &results, const QVariantMap &nextParams);
+    void searchCompleted(const SearchResultList &results);
+    void searchCompleted(const SearchResultList &results, const QVariantMap &nextParams);
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
+
+private:
+    static QScriptValue newSearchResult(QScriptContext *context, QScriptEngine *engine);
 };
+
+class JavaScriptSearchResult : public QObject, public QScriptable
+{
+    Q_OBJECT
+    
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString description READ description WRITE setDescription)
+    Q_PROPERTY(QString url READ url WRITE setUrl)
+
+public:
+    explicit JavaScriptSearchResult(QObject *parent = 0);
+    
+    QString name() const;
+    void setName(const QString &n);
+    
+    QString description() const;
+    void setDescription(const QString &d);
+    
+    QString url() const;
+    void setUrl(const QString &u);
+};
+
+Q_DECLARE_METATYPE(SearchResult*)
 
 #endif // JAVASCRIPTSEARCHPLUGIN_H

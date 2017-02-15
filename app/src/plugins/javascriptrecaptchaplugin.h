@@ -20,8 +20,6 @@
 #include "recaptchaplugin.h"
 #include "javascriptpluginglobalobject.h"
 
-class QScriptEngine;
-
 class JavaScriptRecaptchaPlugin : public RecaptchaPlugin
 {
     Q_OBJECT

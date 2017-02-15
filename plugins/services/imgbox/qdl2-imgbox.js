@@ -30,7 +30,7 @@ function checkUrl(url) {
                         var results = [];
                         
                         for (var i = 0; i < ids.length; i++) {
-                            results.push({"url": "http://imgbox.com/" + ids[i], "fileName": ids[i]});
+                            results.push(new UrlResult("http://imgbox.com/" + ids[i], ids[i]));
                         }
 
                         try {
@@ -73,7 +73,7 @@ function checkUrl(url) {
                             fileName = link.substring(link.lastIndexOf("/") + 1);
                         }
                         
-                        urlChecked({"url": url, "fileName": fileName});
+                        urlChecked(new UrlResult(url, fileName));
                     }
                     else {
                         error(qsTr("File not found"));
@@ -99,7 +99,7 @@ function getDownloadRequest(url) {
                 var link = container.split("src=\"")[1].split("\"")[0];
 
                 if (link) {
-                    downloadRequest({"url": link});
+                    downloadRequest(new NetworkRequest(link));
                 }
                 else {
                     error(qsTr("File not found"));

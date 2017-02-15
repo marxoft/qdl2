@@ -24,7 +24,7 @@ function checkUrl(url) {
                 var title = /html5player\.setVideoTitle\('([^']+)'\)/.exec(request.responseText)[1];
 
                 if (title) {
-                    urlChecked({"url": url, "fileName": title + ".mp4"});
+                    urlChecked(new UrlResult(url, title + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -53,10 +53,10 @@ function getDownloadRequest(url) {
 
                     if (settings.value("useDefaultVideoFormat", true) == true) {
                         if ((format == "mp4") && (highUrl)) {
-                            downloadRequest({"url": highUrl});
+                            downloadRequest(new NetworkRequest(highUrl));
                         }
                         else if (lowUrl) {
-                            downloadRequest({"url": lowUrl});
+                            downloadRequest(new NetworkRequest(lowUrl));
                         }
                     }
                     else {
@@ -66,7 +66,7 @@ function getDownloadRequest(url) {
                         formatList["options"] = [{"label": "MP4", "value": highUrl},
                                                  {"label": "3GP", "value": lowUrl}];
                         settingsRequest(qsTr("Video format"), [formatList],
-                                        function (f) { downloadRequest({"url": f.url}); });
+                                        function (f) { downloadRequest(new NetworkRequest(f.url)); });
                     }
                 }
                 else {
