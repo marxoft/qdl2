@@ -39,11 +39,15 @@ typedef QList<DecaptchaPluginPair> DecaptchaPluginList;
 class DecaptchaPluginManager : public QObject
 {
     Q_OBJECT
+    
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     ~DecaptchaPluginManager();
 
     static DecaptchaPluginManager* instance();
+    
+    int count() const;
 
     DecaptchaPluginList plugins() const;
 
@@ -55,6 +59,9 @@ public Q_SLOTS:
     DecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
 
     int load();
+
+Q_SIGNALS:
+    void countChanged(int count);
 
 private:
     DecaptchaPluginManager();

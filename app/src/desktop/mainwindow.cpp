@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_widget(new QWidget(this)),
     m_tabs(new QTabBar(m_widget)),
     m_stack(new QStackedWidget(m_widget)),
-    m_view(new QTreeView(m_widget)),
+    m_view(new QTreeView(m_stack)),
     m_layout(new QVBoxLayout(m_widget))
 {
     setWindowTitle("QDL");
@@ -135,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
     m_searchAction->setShortcut(tr("Ctrl+S"));
-    m_searchAction->setEnabled(!SearchPluginManager::instance()->plugins().isEmpty());
+    m_searchAction->setEnabled(SearchPluginManager::instance()->count() > 0);
     m_quitAction->setShortcut(tr("Ctrl+Q"));
 
     m_fileMenu->addAction(m_addUrlsAction);

@@ -45,6 +45,10 @@ SearchPluginManager* SearchPluginManager::instance() {
     return self ? self : self = new SearchPluginManager;
 }
 
+int SearchPluginManager::count() const {
+    return m_plugins.size();
+}
+
 SearchPluginList SearchPluginManager::plugins() const {
     return m_plugins;
 }
@@ -163,6 +167,7 @@ int SearchPluginManager::load() {
 
     if (count > 0) {
         qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);
+        emit countChanged(m_plugins.size());
     }
 
     m_lastLoaded = QDateTime::currentDateTime();

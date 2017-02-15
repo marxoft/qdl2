@@ -45,6 +45,10 @@ DecaptchaPluginManager* DecaptchaPluginManager::instance() {
     return self ? self : self = new DecaptchaPluginManager;
 }
 
+int DecaptchaPluginManager::count() const {
+    return m_plugins.size();
+}
+
 DecaptchaPluginList DecaptchaPluginManager::plugins() const {
     return m_plugins;
 }
@@ -163,6 +167,7 @@ int DecaptchaPluginManager::load() {
 
     if (count > 0) {
         qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);
+        emit countChanged(m_plugins.size());
     }
 
     m_lastLoaded = QDateTime::currentDateTime();

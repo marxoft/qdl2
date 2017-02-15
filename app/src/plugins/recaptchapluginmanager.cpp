@@ -45,6 +45,10 @@ RecaptchaPluginManager* RecaptchaPluginManager::instance() {
     return self ? self : self = new RecaptchaPluginManager;
 }
 
+int RecaptchaPluginManager::count() const {
+    return m_plugins.size();
+}
+
 RecaptchaPluginList RecaptchaPluginManager::plugins() const {
     return m_plugins;
 }
@@ -163,6 +167,7 @@ int RecaptchaPluginManager::load() {
 
     if (count > 0) {
         qSort(m_plugins.begin(), m_plugins.end(), displayNameLessThan);
+        emit countChanged(m_plugins.size());
     }
 
     m_lastLoaded = QDateTime::currentDateTime();

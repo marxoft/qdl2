@@ -39,11 +39,15 @@ typedef QList<ServicePluginPair> ServicePluginList;
 class ServicePluginManager : public QObject
 {
     Q_OBJECT
+    
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     ~ServicePluginManager();
 
     static ServicePluginManager* instance();
+    
+    int count() const;
 
     ServicePluginList plugins() const;
 
@@ -60,6 +64,9 @@ public Q_SLOTS:
     bool urlIsSupported(const QString &url) const;
 
     int load();
+
+Q_SIGNALS:
+    void countChanged(int count);
 
 private:
     ServicePluginManager();

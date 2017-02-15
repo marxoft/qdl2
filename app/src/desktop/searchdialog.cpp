@@ -20,7 +20,6 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <QPushButton>
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),

@@ -39,11 +39,15 @@ typedef QList<RecaptchaPluginPair> RecaptchaPluginList;
 class RecaptchaPluginManager : public QObject
 {
     Q_OBJECT
+    
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     ~RecaptchaPluginManager();
 
     static RecaptchaPluginManager* instance();
+    
+    int count() const;
 
     RecaptchaPluginList plugins() const;
 
@@ -55,6 +59,9 @@ public Q_SLOTS:
     RecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
 
     int load();
+
+Q_SIGNALS:
+    void countChanged(int count);
 
 private:
     RecaptchaPluginManager();

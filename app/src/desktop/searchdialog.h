@@ -33,7 +33,7 @@ class SearchDialog : public QDialog
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
-        
+    
     QString pluginName() const;
     QString pluginId() const;
 

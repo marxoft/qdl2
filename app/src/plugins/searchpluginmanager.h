@@ -39,11 +39,15 @@ typedef QList<SearchPluginPair> SearchPluginList;
 class SearchPluginManager : public QObject
 {
     Q_OBJECT
+    
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     ~SearchPluginManager();
 
     static SearchPluginManager* instance();
+    
+    int count() const;
 
     SearchPluginList plugins() const;
 
@@ -55,6 +59,9 @@ public Q_SLOTS:
     SearchPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
 
     int load();
+
+Q_SIGNALS:
+    void countChanged(int count);
 
 private:
     SearchPluginManager();
