@@ -502,6 +502,29 @@ void Transfer::setPluginName(const QString &n) {
     }
 }
 
+void Transfer::updatePluginInfo() {
+    if (usePlugins()) {
+        if (const ServicePluginConfig *config = ServicePluginManager::instance()->getConfigByUrl(url())) {
+            const QString path = config->iconFilePath();
+            
+            if (!path.isEmpty()) {
+                setPluginIconPath(path);
+            }
+            else {
+                setPluginIconPath(DEFAULT_ICON);
+            }
+            
+            setPluginId(config->id());
+            setPluginName(config->displayName());
+            return;
+        }
+    }
+    
+    setPluginIconPath(DEFAULT_ICON);
+    setPluginId(QString());
+    setPluginName(QString());
+}
+
 bool Transfer::usePlugins() const {
     return m_usePlugins;
 }
@@ -510,6 +533,7 @@ void Transfer::setUsePlugins(bool enabled) {
     if (enabled != usePlugins()) {
         m_usePlugins = enabled;
         emit dataChanged(this, UsePluginsRole);
+        updatePluginInfo();
     }
 }
 
@@ -739,22 +763,7 @@ void Transfer::setUrl(const QString &u) {
     if (u != url()) {
         m_url = u;
         emit dataChanged(this, UrlRole);
-        
-        if (const ServicePluginConfig *config = ServicePluginManager::instance()->getConfigByUrl(u)) {
-            setPluginId(config->id());
-            setPluginName(config->displayName());
-            
-            if (!config->iconFilePath().isEmpty()) {
-                setPluginIconPath(config->iconFilePath());
-            }
-            else {
-                setPluginIconPath(DEFAULT_ICON);
-            }
-        }
-        else {
-            setPluginId(QString());
-            setPluginIconPath(DEFAULT_ICON);
-        }
+        updatePluginInfo();
     }
 }
 

@@ -193,6 +193,7 @@ private:
     void setPluginIconPath(const QString &p);
     void setPluginId(const QString &i);
     void setPluginName(const QString &n);
+    void updatePluginInfo();
     
     void setSize(qint64 s);
     void setSpeed(int s);
