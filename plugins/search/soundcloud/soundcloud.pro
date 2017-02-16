@@ -11,7 +11,7 @@ HEADERS += soundcloudsearchplugin.h
 SOURCES += soundcloudsearchplugin.cpp
 
 maemo5 {
-    LIBS += -L/usr/lib -lqsoundcloud
+    LIBS += -L/opt/lib -lqsoundcloud
     CONFIG += link_prl
     PKGCONFIG += libqsoundcloud
 
