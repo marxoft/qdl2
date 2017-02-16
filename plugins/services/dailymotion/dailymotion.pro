@@ -11,7 +11,7 @@ HEADERS += dailymotionplugin.h
 SOURCES += dailymotionplugin.cpp
 
 maemo5 {
-    LIBS += -L/usr/lib -lqdailymotion
+    LIBS += -L/opt/lib -lqdailymotion
     CONFIG += link_prl
     PKGCONFIG += libqdailymotion
 

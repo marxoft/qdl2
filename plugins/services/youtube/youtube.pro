@@ -11,7 +11,7 @@ HEADERS += youtubeplugin.h
 SOURCES += youtubeplugin.cpp
 
 maemo5 {
-    LIBS += -L/usr/lib -lqyoutube
+    LIBS += -L/opt/lib -lqyoutube
     CONFIG += link_prl
     PKGCONFIG += libqyoutube
 
