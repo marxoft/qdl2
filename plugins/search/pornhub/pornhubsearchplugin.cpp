@@ -26,6 +26,7 @@
 #include <QUrlQuery>
 #else
 #include <QDesktopServices>
+#include <QtPlugin>
 #endif
 
 #if QT_VERSION >= 0x050000
