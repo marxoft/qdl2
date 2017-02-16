@@ -11,7 +11,7 @@ HEADERS += vimeosearchplugin.h
 SOURCES += vimeosearchplugin.cpp
 
 maemo5 {
-    LIBS += -L/usr/lib -lqvimeo
+    LIBS += -L/opt/lib -lqvimeo
     CONFIG += link_prl
     PKGCONFIG += libqvimeo
 
