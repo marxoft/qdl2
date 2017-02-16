@@ -1,3 +1,9 @@
+qdl-plugins-pornhub (0.1.2) unstable; urgency=low
+
+  * Fix video format detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 16 Feb 2017 23:41:32 +0000
+
 qdl-plugins-pornhub (0.1.1) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.
