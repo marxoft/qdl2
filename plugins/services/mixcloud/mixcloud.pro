@@ -28,7 +28,7 @@ maemo5 {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     mixcloud_deployment.pkg_prerules += vendorinfo
 
-    DEPLOYMENT.display_name = QDL2 Plugins Mixcloud
+    DEPLOYMENT.display_name = QDL Plugins Mixcloud
     DEPLOYMENT += \
         mixcloud_deployment \
         config \

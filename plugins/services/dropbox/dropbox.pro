@@ -28,7 +28,7 @@ maemo5 {
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     dropbox_deployment.pkg_prerules += vendorinfo
 
-    DEPLOYMENT.display_name = QDL2 Plugins Dropbox
+    DEPLOYMENT.display_name = QDL Plugins Dropbox
     DEPLOYMENT += \
         dropbox_deployment \
         config \
