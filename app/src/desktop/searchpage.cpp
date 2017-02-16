@@ -16,12 +16,12 @@
 
 #include "searchpage.h"
 #include "addurlsdialog.h"
-#include "urlcheckdialog.h"
 #include "browser.h"
 #include "pluginsettingsdialog.h"
 #include "retrieveurlsdialog.h"
 #include "settings.h"
 #include "transfermodel.h"
+#include "urlcheckdialog.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QHBoxLayout>

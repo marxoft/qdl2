@@ -659,9 +659,15 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
         const QStringList urls = addDialog.urls();
 
         if (!urls.isEmpty()) {
-            UrlCheckDialog checkDialog(this);
-            checkDialog.addUrls(urls);
-            checkDialog.exec();
+            if (addDialog.usePlugins()) {
+                UrlCheckDialog checkDialog(this);
+                checkDialog.addUrls(urls);
+                checkDialog.exec();
+            }
+            else {
+                TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                  addDialog.postData());
+            }
         }
     }
 }
