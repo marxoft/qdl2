@@ -9,14 +9,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-
-
-
-
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	# qmake PREFIX=/usr# Uncomment this line for use without Qt Creator
 
 	touch configure-stamp
 
@@ -26,20 +21,12 @@ build: build-stamp
 build-stamp: configure-stamp  
 	dh_testdir
 
-	# Add here commands to compile the package.
-	qmake
-	$(MAKE) # Uncomment this line for use without Qt Creator
-	#docbook-to-man debian/qdl-plugins-imgbox.sgml > qdl.1
-
 	touch $@
 
 clean: 
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
-
-	# Add here commands to clean up after the build process.
-	#$(MAKE) clean
 
 	dh_clean 
 
@@ -49,9 +36,10 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	# Add here commands to install the package into debian/qdl-plugins-imgbox.
-	$(MAKE) INSTALL_ROOT="$(CURDIR)"/debian/qdl-plugins-imgbox install
-
+	mkdir -p debian/qdl-plugins-imgbox/opt/qdl2/plugins/services
+	mkdir -p debian/qdl-plugins-imgbox/opt/qdl2/plugins/icons
+	cp qdl2-imgbox.js qdl2-imgbox.json debian/qdl-plugins-imgbox/opt/qdl2/plugins/services
+	cp qdl2-imgbox.jpg debian/qdl-plugins-imgbox/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -83,7 +71,7 @@ binary-arch: build install
 #	dh_perl
 #	dh_makeshlibs
 	dh_installdeb
-	# dh_shlibdeps # Uncomment this line for use without Qt Creator
+#	dh_shlibdeps # Uncomment this line for use without Qt Creator
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

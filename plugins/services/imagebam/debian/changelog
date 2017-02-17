@@ -1,3 +1,9 @@
+qdl-plugins-imagebam (0.0.3) unstable; urgency=low
+
+  * Use UrlResult and NetworkRequest prototypes.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 17 Feb 2017 17:45:12 +0000
+
 qdl-plugins-imagebam (0.0.2) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.

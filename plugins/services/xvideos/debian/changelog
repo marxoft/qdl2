@@ -1,3 +1,9 @@
+qdl-plugins-xvideos (0.2.2) unstable; urgency=low
+
+  * Use UrlResult and NetworkRequest prototypes.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 17 Feb 2017 18:22:15 +0000
+
 qdl-plugins-xvideos (0.2.1) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.
