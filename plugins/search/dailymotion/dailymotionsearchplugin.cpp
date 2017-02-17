@@ -160,7 +160,7 @@ void DailymotionSearchPlugin::onRequestFinished() {
         }
                 
         if (result.value("has_more", false).toBool()) {
-            m_filters["page"] = m_filters.value("page", 1).toInt() + 1;
+            m_filters["page"] = qMax(2, m_filters.value("page", 1).toInt() + 1);
             QVariantMap params;
             params["path"] = path;
             params["filters"] = m_filters;

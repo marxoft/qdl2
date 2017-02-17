@@ -149,7 +149,7 @@ void VimeoSearchPlugin::onRequestFinished() {
         }
         
         if (!result.value("paging").toMap().value("next").isNull()) {
-            m_filters["page"] = m_filters.value("page", 1).toInt() + 1;
+            m_filters["page"] = qMax(2, m_filters.value("page", 1).toInt() + 1);
             emit searchCompleted(results, m_filters);
         }
         else {
