@@ -2,6 +2,6 @@
     "type": "js",
     "version": 1,
     "name": "Dropbox",
-    "icon": "qdl2-dropbox.png",
+    "icon": "qdl2-dropbox.jpg",
     "regExp": "http(s|)://(www\\.|)dropbox\\.com/s(h|)/\\w{15}/.+"
 }

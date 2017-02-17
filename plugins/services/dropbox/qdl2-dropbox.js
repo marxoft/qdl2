@@ -41,7 +41,7 @@ function getDownloadRequest(url, settings) {
         }
         
         url = url.substring(0, i) + fragment;
-        downloadRequest({"url": url});
+        downloadRequest(new NetworkRequest(url));
     }
     catch(err) {
         error(err);
