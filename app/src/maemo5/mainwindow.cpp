@@ -28,6 +28,9 @@
 #include "qdl.h"
 #include "recaptchapluginmanager.h"
 #include "retrieveurlsdialog.h"
+#include "searchdialog.h"
+#include "searchpage.h"
+#include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "settingsdialog.h"
@@ -45,19 +48,33 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QTreeView>
+#include <QStackedWidget>
+#include <QTabBar>
 #include <QToolBar>
+#include <QTreeView>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_transferMenu(new QMenu(tr("Download"), this)),
     m_packageMenu(new QMenu(tr("Package"), this)),
+    m_concurrentAction(new ValueSelectorAction(tr("Maximum concurrent DLs"), this)),
+    m_nextAction(new ValueSelectorAction(tr("After current DLs"), this)),
+    m_queueAction(new QAction(tr("Start all DLs"), this)),
+    m_pauseAction(new QAction(tr("Pause all DLs"), this)),
+    m_searchAction(new QAction(tr("Search"), this)),
+    m_settingsAction(new QAction(tr("Settings"), this)),
+    m_pluginsAction(new QAction(tr("Load plugins"), this)),
+    m_aboutAction(new QAction(tr("About"), this)),
+    m_closePageAction(new QAction(tr("Close tab"), this)),
+    m_firstPageAction(new QAction(tr("First tab"), this)),
+    m_lastPageAction(new QAction(tr("Last tab"), this)),
+    m_nextPageAction(new QAction(tr("Next tab"), this)),
+    m_previousPageAction(new QAction(tr("Previous tab"), this)),
     m_addUrlsAction(new QAction(QIcon::fromTheme("general_add"), tr("Add URLs"), this)),
     m_importUrlsAction(new QAction(QIcon::fromTheme("general_toolbar_folder"), tr("Import URLs"), this)),
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("general_search"), tr("Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("general_share"), tr("Clipboard URLs"), this)),
-    m_queueAction(new QAction(QIcon("/etc/hildon/theme/mediaplayer/Play.png"), tr("Start all DLs"), this)),
-    m_pauseAction(new QAction(QIcon("/etc/hildon/theme/mediaplayer/Pause.png"), tr("Pause all DLs"), this)),
     m_propertiesAction(new QAction(QIcon::fromTheme("general_information"), tr("Properties"), this)),
     m_transferQueueAction(new QAction(tr("Start"), this)),
     m_transferPauseAction(new QAction(tr("Pause"), this)),
@@ -67,35 +84,55 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packagePauseAction(new QAction(tr("Pause"), this)),
     m_packageCancelAction(new QAction(tr("Remove"), this)),
     m_packageCancelDeleteAction(new QAction(tr("Remove and delete files"), this)),
-    m_settingsAction(new QAction(tr("Settings"), this)),
-    m_pluginsAction(new QAction(tr("Load plugins"), this)),
-    m_aboutAction(new QAction(tr("About"), this)),
-    m_concurrentAction(new ValueSelectorAction(tr("Maximum concurrent DLs"), this)),
-    m_nextAction(new ValueSelectorAction(tr("After current DLs"), this)),
-    m_view(new QTreeView(this)),
+    m_widget(new QWidget(this)),
+    m_tabs(new QTabBar(m_widget)),
+    m_stack(new QStackedWidget(m_widget)),
+    m_view(new QTreeView(m_stack)),
     m_toolBar(new QToolBar(this)),
     m_activeLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
-    m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this))
+    m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this)),
+    m_layout(new QVBoxLayout(m_widget))
 {
     setWindowTitle("QDL");
-    setCentralWidget(m_view);
+    setCentralWidget(m_widget);
     addToolBar(Qt::BottomToolBarArea, m_toolBar);
+    addAction(m_searchAction);
+    addAction(m_pluginsAction);
+    addAction(m_closePageAction);
+    addAction(m_firstPageAction);
+    addAction(m_lastPageAction);
+    addAction(m_nextPageAction);
+    addAction(m_previousPageAction);
 
     menuBar()->addAction(m_concurrentAction);
     menuBar()->addAction(m_nextAction);
     menuBar()->addAction(m_queueAction);
     menuBar()->addAction(m_pauseAction);
+    menuBar()->addAction(m_searchAction);
     menuBar()->addAction(m_settingsAction);
     menuBar()->addAction(m_pluginsAction);
     menuBar()->addAction(m_aboutAction);
-
+    
+    m_concurrentAction->setModel(new ConcurrentTransfersModel(m_concurrentAction));
+    m_concurrentAction->setValue(Settings::maximumConcurrentTransfers());
+    m_nextAction->setModel(new ActionModel(m_nextAction));
+    m_nextAction->setValue(Settings::nextAction());
+    m_searchAction->setShortcut(tr("Ctrl+S"));
+    m_searchAction->setEnabled(SearchPluginManager::instance()->count() > 0);
+    m_pluginsAction->setShortcut(tr("Ctrl+L"));
+    
+    m_closePageAction->setShortcut(tr("Ctrl+W"));
+    m_firstPageAction->setShortcut(tr("Ctrl+Up"));
+    m_lastPageAction->setShortcut(tr("Ctrl+Down"));
+    m_nextPageAction->setShortcut(tr("Ctrl+Right"));
+    m_previousPageAction->setShortcut(tr("Ctrl+Left"));
+    
     m_addUrlsAction->setShortcut(tr("Ctrl+N"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
     m_propertiesAction->setShortcut(tr("Ctrl+I"));
     m_propertiesAction->setEnabled(false);
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
-    m_pluginsAction->setShortcut(tr("Ctrl+L"));
 
     m_transferMenu->addAction(m_transferQueueAction);
     m_transferMenu->addAction(m_transferPauseAction);
@@ -106,11 +143,38 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packageMenu->addAction(m_packagePauseAction);
     m_packageMenu->addAction(m_packageCancelAction);
     m_packageMenu->addAction(m_packageCancelDeleteAction);
+    
+    m_tabs->setTabsClosable(true);
+    m_tabs->setSelectionBehaviorOnRemove(QTabBar::SelectLeftTab);
+    m_tabs->setExpanding(false);
+    m_tabs->setStyleSheet("QTabBar::tab { height: 40px; }");
+    m_tabs->addTab(tr("Downloads"));
+    m_tabs->hide();
+    
+    if (QWidget *button = m_tabs->tabButton(0, QTabBar::RightSide)) {
+        button->hide();
+    }
+    
+    m_stack->addWidget(m_view);
+    
+    m_view->setModel(TransferModel::instance());
+    m_view->setSelectionBehavior(QTreeView::SelectRows);
+    m_view->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_view->setEditTriggers(QTreeView::NoEditTriggers);
+    m_view->setExpandsOnDoubleClick(true);
+    m_view->setItemsExpandable(true);
+    m_view->setUniformRowHeights(true);
+    m_view->setAllColumnsShowFocus(true);
 
-    m_concurrentAction->setModel(new ConcurrentTransfersModel(m_concurrentAction));
-    m_concurrentAction->setValue(Settings::maximumConcurrentTransfers());
-    m_nextAction->setModel(new ActionModel(m_nextAction));
-    m_nextAction->setValue(Settings::nextAction());
+    QHeaderView *header = m_view->header();
+    
+    if (!header->restoreState(Settings::transferViewHeaderState())) {
+        const QFontMetrics fm = header->fontMetrics();
+        header->resizeSection(0, 200);
+        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)"));
+        header->resizeSection(3, fm.width("999.99KB/s"));
+        header->hideSection(1); // Hide priority column
+    }
 
     QLabel *speedIcon = new QLabel(m_toolBar);
     speedIcon->setPixmap(QIcon::fromTheme("general_received").pixmap(m_toolBar->iconSize()));
@@ -139,25 +203,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_toolBar->addWidget(spacer2);
     m_toolBar->addWidget(m_speedLabel);
     m_toolBar->addWidget(speedIcon);
-
-    m_view->setModel(TransferModel::instance());
-    m_view->setSelectionBehavior(QTreeView::SelectRows);
-    m_view->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_view->setEditTriggers(QTreeView::NoEditTriggers);
-    m_view->setExpandsOnDoubleClick(true);
-    m_view->setItemsExpandable(true);
-    m_view->setUniformRowHeights(true);
-    m_view->setAllColumnsShowFocus(true);
-
-    QHeaderView *header = m_view->header();
     
-    if (!header->restoreState(Settings::transferViewHeaderState())) {
-        const QFontMetrics fm = header->fontMetrics();
-        header->resizeSection(0, 200);
-        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)"));
-        header->resizeSection(3, fm.width("999.99KB/s"));
-        header->hideSection(1); // Hide priority column
-    }
+    m_layout->addWidget(m_tabs);
+    m_layout->addWidget(m_stack);
+    m_layout->setContentsMargins(0, 0, 0, 0);
     
     connect(Settings::instance(), SIGNAL(maximumConcurrentTransfersChanged(int)),
             this, SLOT(onMaximumConcurrentTransfersChanged(int)));
@@ -170,13 +219,27 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_transferMenu, SIGNAL(aboutToShow()), this, SLOT(setTransferMenuActions()));
     connect(m_packageMenu, SIGNAL(aboutToShow()), this, SLOT(setPackageMenuActions()));
+    
+    
+    connect(m_concurrentAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setMaximumConcurrentTransfers(QVariant)));
+    connect(m_nextAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setNextAction(QVariant)));
+    connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
+    connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
+    connect(m_searchAction, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
+    connect(m_settingsAction, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
+    connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
+    connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
+    
+    connect(m_closePageAction, SIGNAL(triggered()), this, SLOT(closeCurrentPage()));
+    connect(m_firstPageAction, SIGNAL(triggered()), this, SLOT(showFirstPage()));
+    connect(m_lastPageAction, SIGNAL(triggered()), this, SLOT(showLastPage()));
+    connect(m_nextPageAction, SIGNAL(triggered()), this, SLOT(showNextPage()));
+    connect(m_previousPageAction, SIGNAL(triggered()), this, SLOT(showPreviousPage()));
 
     connect(m_addUrlsAction, SIGNAL(triggered()), this, SLOT(showAddUrlsDialog()));
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
-    connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
-    connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
     connect(m_propertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentItemProperties()));
     
     connect(m_transferQueueAction, SIGNAL(triggered()), this, SLOT(queueCurrentTransfer()));
@@ -188,13 +251,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_packagePauseAction, SIGNAL(triggered()), this, SLOT(pauseCurrentPackage()));
     connect(m_packageCancelAction, SIGNAL(triggered()), this, SLOT(cancelCurrentPackage()));
     connect(m_packageCancelDeleteAction, SIGNAL(triggered()), this, SLOT(cancelAndDeleteCurrentPackage()));
-
-    connect(m_settingsAction, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
-    connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
-    connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
-
-    connect(m_concurrentAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setMaximumConcurrentTransfers(QVariant)));
-    connect(m_nextAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setNextAction(QVariant)));
+    
+    connect(m_tabs, SIGNAL(currentChanged(int)), this, SLOT(setCurrentPage(int)));
+    connect(m_tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(closePage(int)));
 
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
@@ -340,6 +399,72 @@ void MainWindow::showContextMenu(const QPoint &pos) {
     }
 }
 
+void MainWindow::closePage(int index) {
+    if (index > 0) {
+        if (QWidget *page = m_stack->widget(index)) {
+            m_stack->removeWidget(page);
+            m_tabs->removeTab(index);
+            page->close();
+            
+            if (m_tabs->count() == 1) {
+                m_tabs->hide();
+            }
+        }
+    }
+}
+
+void MainWindow::closeCurrentPage() {
+    closePage(m_tabs->currentIndex());
+}
+
+void MainWindow::setCurrentPage(int index) {
+    m_stack->setCurrentIndex(index);
+    m_closePageAction->setEnabled(index > 0);
+}
+
+void MainWindow::showFirstPage() {
+    m_tabs->setCurrentIndex(0);
+}
+
+void MainWindow::showLastPage() {
+    m_tabs->setCurrentIndex(m_tabs->count() - 1);
+}
+
+void MainWindow::showNextPage() {
+    m_tabs->setCurrentIndex(m_tabs->currentIndex() + 1);
+}
+
+void MainWindow::showPreviousPage() {
+    m_tabs->setCurrentIndex(m_tabs->currentIndex() - 1);
+}
+
+void MainWindow::search(const QString &pluginName, const QString &pluginId) {
+    SearchPage *page = new SearchPage(m_stack);
+    m_stack->addWidget(page);
+    const int index = m_stack->indexOf(page);
+    m_tabs->addTab(pluginName);
+    m_stack->setCurrentIndex(index);
+    m_tabs->setCurrentIndex(index);
+    m_tabs->show();
+    page->search(pluginId);
+}
+
+void MainWindow::showSearchDialog() {
+    SearchDialog dialog(this);
+    
+    if (dialog.exec() == QDialog::Accepted) {
+        search(dialog.pluginName(), dialog.pluginId());
+    }
+}
+
+void MainWindow::showSettingsDialog() {
+    SettingsDialog(this).exec();
+}
+
+void MainWindow::showAboutDialog() {
+    AboutDialog(this).exec();
+}
+
 void MainWindow::showAddUrlsDialog() {
     AddUrlsDialog addDialog(this);
 
@@ -368,9 +493,15 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
         const QStringList urls = addDialog.urls();
 
         if (!urls.isEmpty()) {
-            UrlCheckDialog checkDialog(this);
-            checkDialog.addUrls(urls);
-            checkDialog.exec();
+            if (addDialog.usePlugins()) {
+                UrlCheckDialog checkDialog(this);
+                checkDialog.addUrls(urls);
+                checkDialog.exec();
+            }
+            else {
+                TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
+                                                  addDialog.postData());
+            }
         }
     }
 }
@@ -431,14 +562,6 @@ void MainWindow::showClipboardUrlsDialog() {
     ClipboardUrlsDialog(this).exec();
 }
 
-void MainWindow::showSettingsDialog() {
-    SettingsDialog(this).exec();
-}
-
-void MainWindow::showAboutDialog() {
-    AboutDialog(this).exec();
-}
-
 void MainWindow::showCaptchaDialog(TransferItem *t) {
     QPointer<TransferItem> transfer(t);
     CaptchaDialog dialog(this);
@@ -490,14 +613,21 @@ void MainWindow::showPluginSettingsDialog(TransferItem *t) {
 }
 
 void MainWindow::loadPlugins() {
-    const int count = DecaptchaPluginManager::instance()->load() + RecaptchaPluginManager::instance()->load()
-                      + ServicePluginManager::instance()->load();
+    const int decaptcha = DecaptchaPluginManager::instance()->load();
+    const int recaptcha = RecaptchaPluginManager::instance()->load();
+    const int search = SearchPluginManager::instance()->load();
+    const int services = ServicePluginManager::instance()->load();
+    const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
-        QMaemo5InformationBox::information(this, tr("%1 new plugins found").arg(count));
+        QMessageBox::information(this, tr("Load plugins"), tr("%1 new plugins found").arg(count));
+        
+        if (search > 0) {
+            m_searchAction->setEnabled(true);
+        }
     }
     else {
-        QMaemo5InformationBox::information(this, tr("No new plugins found"));
+        QMessageBox::information(this, tr("Load plugins"), tr("No new plugins found"));
     }
 }
 

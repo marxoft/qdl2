@@ -18,10 +18,11 @@
 #include "archivepasswordsdialog.h"
 #include "categoriesdialog.h"
 #include "concurrenttransfersmodel.h"
-#include "decaptchadialog.h"
+#include "decaptchapluginsdialog.h"
 #include "networkproxydialog.h"
-#include "recaptchadialog.h"
-#include "servicesdialog.h"
+#include "recaptchapluginsdialog.h"
+#include "searchpluginsdialog.h"
+#include "servicepluginsdialog.h"
 #include "settings.h"
 #include "valueselector.h"
 #include <QCheckBox>
@@ -53,6 +54,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_servicesButton(new QPushButton(tr("Services"), m_container)),
     m_recaptchaButton(new QPushButton(tr("Recaptcha"), m_container)),
     m_decaptchaButton(new QPushButton(tr("Decaptcha"), m_container)),
+    m_searchButton(new QPushButton(tr("Search"), m_container)),
     m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, Qt::Vertical, this)),
     m_vbox(new QVBoxLayout(m_container)),
     m_layout(new QHBoxLayout(this))
@@ -101,6 +103,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_vbox->addWidget(m_servicesButton);
     m_vbox->addWidget(m_recaptchaButton);
     m_vbox->addWidget(m_decaptchaButton);
+    m_vbox->addWidget(m_searchButton);
     m_vbox->setContentsMargins(0, 0, 0, 0);
 
     m_layout->addWidget(m_scrollArea);
@@ -113,6 +116,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(m_servicesButton, SIGNAL(clicked()), this, SLOT(showServicesDialog()));
     connect(m_recaptchaButton, SIGNAL(clicked()), this, SLOT(showRecaptchaDialog()));
     connect(m_decaptchaButton, SIGNAL(clicked()), this, SLOT(showDecaptchaDialog()));
+    connect(m_searchButton, SIGNAL(clicked()), this, SLOT(showSearchDialog()));
     connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
@@ -152,13 +156,17 @@ void SettingsDialog::showCategoriesDialog() {
 }
 
 void SettingsDialog::showServicesDialog() {
-    ServicesDialog(this).exec();
+    ServicePluginsDialog(this).exec();
 }
 
 void SettingsDialog::showRecaptchaDialog() {
-    RecaptchaDialog(this).exec();
+    RecaptchaPluginsDialog(this).exec();
 }
 
 void SettingsDialog::showDecaptchaDialog() {
-    DecaptchaDialog(this).exec();
+    DecaptchaPluginsDialog(this).exec();
+}
+
+void SettingsDialog::showSearchDialog() {
+    SearchPluginsDialog(this).exec();
 }

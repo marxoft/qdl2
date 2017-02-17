@@ -17,13 +17,14 @@
 #include "clipboardurlsdialog.h"
 #include "addurlsdialog.h"
 #include "clipboardurlmodel.h"
+#include "itemdelegate.h"
 #include "retrieveurlsdialog.h"
 #include "transfermodel.h"
 #include "urlcheckdialog.h"
 #include <QDialogButtonBox>
-#include <QHBoxLayout>
 #include <QListView>
 #include <QMenu>
+#include <QVBoxLayout>
 
 static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
     return index.row() < other.row();
@@ -32,23 +33,20 @@ static bool rowLessThan(const QModelIndex &index, const QModelIndex &other) {
 ClipboardUrlsDialog::ClipboardUrlsDialog(QWidget *parent) :
     QDialog(parent),
     m_view(new QListView(this)),
-    m_buttonBox(new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, this)),
-    m_layout(new QHBoxLayout(this))
+    m_layout(new QVBoxLayout(this))
 {
     setWindowTitle(tr("Clipboard URLs"));
     setMinimumHeight(360);
 
     m_view->setModel(ClipboardUrlModel::instance());
+    m_view->setItemDelegate(new ItemDelegate(m_view));
     m_view->setSelectionMode(QListView::MultiSelection);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
     m_view->setUniformItemSizes(true);
 
     m_layout->addWidget(m_view);
-    m_layout->addWidget(m_buttonBox, Qt::AlignBottom);
 
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
-    connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
 void ClipboardUrlsDialog::addUrls() {

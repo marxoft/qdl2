@@ -14,20 +14,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "servicesdialog.h"
+#include "searchpluginsdialog.h"
 #include "plugindialog.h"
-#include "servicepluginconfigmodel.h"
+#include "searchpluginconfigmodel.h"
 #include <QHBoxLayout>
 #include <QListView>
 #include <QMaemo5InformationBox>
 
-ServicesDialog::ServicesDialog(QWidget *parent) :
+SearchPluginsDialog::SearchPluginsDialog(QWidget *parent) :
     QDialog(parent),
-    m_model(new ServicePluginConfigModel(this)),
+    m_model(new SearchPluginConfigModel(this)),
     m_view(new QListView(this)),
     m_layout(new QHBoxLayout(this))
 {
-    setWindowTitle(tr("Services"));
+    setWindowTitle(tr("Search"));
     setMinimumHeight(360);
 
     m_view->setModel(m_model);
@@ -38,9 +38,9 @@ ServicesDialog::ServicesDialog(QWidget *parent) :
     connect(m_view, SIGNAL(clicked(QModelIndex)), this, SLOT(showPluginDialog(QModelIndex)));
 }
 
-void ServicesDialog::showPluginDialog(const QModelIndex &index) {
-    const QString id = index.data(ServicePluginConfigModel::IdRole).toString();
-    const QVariantList settings = index.data(ServicePluginConfigModel::SettingsRole).toList();
+void SearchPluginsDialog::showPluginDialog(const QModelIndex &index) {
+    const QString id = index.data(SearchPluginConfigModel::IdRole).toString();
+    const QVariantList settings = index.data(SearchPluginConfigModel::SettingsRole).toList();
 
     if ((id.isEmpty()) || (settings.isEmpty())) {
         QMaemo5InformationBox::information(this, tr("No settings for this plugin"));
@@ -48,6 +48,6 @@ void ServicesDialog::showPluginDialog(const QModelIndex &index) {
     }
 
     PluginDialog dialog(id, settings, this);
-    dialog.setWindowTitle(index.data(ServicePluginConfigModel::DisplayNameRole).toString());
+    dialog.setWindowTitle(index.data(SearchPluginConfigModel::DisplayNameRole).toString());
     dialog.exec();
 }

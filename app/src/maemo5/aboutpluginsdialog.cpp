@@ -43,6 +43,7 @@ AboutPluginsDialog::AboutPluginsDialog(QWidget *parent) :
     m_view->setUniformItemSizes(true);
     m_view->setSelectionMode(QListView::NoSelection);
     
+    m_tabBar->setStyleSheet("QTabBar::tab { height: 40px; }");
     m_tabBar->addTab(tr("Services"));
     m_tabBar->addTab(tr("Recaptcha"));
     m_tabBar->addTab(tr("Decaptcha"));

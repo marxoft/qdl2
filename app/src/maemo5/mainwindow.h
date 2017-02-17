@@ -23,7 +23,10 @@ class TransferItem;
 class ValueSelectorAction;
 class QLabel;
 class QModelIndex;
+class QStackedWidget;
+class QTabBar;
 class QTreeView;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -56,14 +59,25 @@ private Q_SLOTS:
 
     void showContextMenu(const QPoint &pos);
     
+    void closePage(int index);
+    void closeCurrentPage();
+    void setCurrentPage(int index);
+    void showFirstPage();
+    void showLastPage();
+    void showNextPage();
+    void showPreviousPage();
+    
+    void search(const QString &pluginName, const QString &pluginId);
+    
+    void showSearchDialog();
+    void showSettingsDialog();
+    void showAboutDialog();
     void showAddUrlsDialog();
     void showAddUrlsDialog(const QStringList &urls);
     void showImportUrlsDialog();
     void showRetrieveUrlsDialog();
     void showRetrieveUrlsDialog(const QStringList &urls);
     void showClipboardUrlsDialog();
-    void showSettingsDialog();
-    void showAboutDialog();
     
     void showCaptchaDialog(TransferItem *transfer);
     void showPluginSettingsDialog(TransferItem *transfer);
@@ -79,13 +93,26 @@ private Q_SLOTS:
 private:
     QMenu *m_transferMenu;
     QMenu *m_packageMenu;
-
+    
+    ValueSelectorAction *m_concurrentAction;
+    ValueSelectorAction *m_nextAction;
+    QAction *m_queueAction;
+    QAction *m_pauseAction;
+    QAction *m_searchAction;
+    QAction *m_settingsAction;
+    QAction *m_pluginsAction;
+    QAction *m_aboutAction;
+    
+    QAction *m_closePageAction;
+    QAction *m_firstPageAction;
+    QAction *m_lastPageAction;
+    QAction *m_nextPageAction;
+    QAction *m_previousPageAction;
+    
     QAction *m_addUrlsAction;
     QAction *m_importUrlsAction;
     QAction *m_retrieveUrlsAction;
     QAction *m_clipboardUrlsAction;
-    QAction *m_queueAction;
-    QAction *m_pauseAction;
     QAction *m_propertiesAction;
         
     QAction *m_transferQueueAction;
@@ -97,20 +124,21 @@ private:
     QAction *m_packagePauseAction;
     QAction *m_packageCancelAction;
     QAction *m_packageCancelDeleteAction;
-
-    QAction *m_settingsAction;
-    QAction *m_pluginsAction;
-    QAction *m_aboutAction;
-
-    ValueSelectorAction *m_concurrentAction;
-    ValueSelectorAction *m_nextAction;
-
+    
+    QWidget *m_widget;
+    
+    QTabBar *m_tabs;
+    
+    QStackedWidget *m_stack;
+    
     QTreeView *m_view;
-
+    
     QToolBar *m_toolBar;
-
+    
     QLabel *m_activeLabel;
     QLabel *m_speedLabel;
+    
+    QVBoxLayout *m_layout;
 };
 
 #endif // MAINWINDOW_H

@@ -14,55 +14,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "decaptchadialog.h"
-#include "decaptchapluginconfigmodel.h"
+#include "recaptchapluginsdialog.h"
 #include "plugindialog.h"
-#include "settings.h"
-#include <QAction>
+#include "recaptchapluginconfigmodel.h"
 #include <QHBoxLayout>
 #include <QListView>
 #include <QMaemo5InformationBox>
-#include <QMenu>
 
-DecaptchaDialog::DecaptchaDialog(QWidget *parent) :
+RecaptchaPluginsDialog::RecaptchaPluginsDialog(QWidget *parent) :
     QDialog(parent),
-    m_model(new DecaptchaPluginConfigModel(this)),
+    m_model(new RecaptchaPluginConfigModel(this)),
     m_view(new QListView(this)),
     m_layout(new QHBoxLayout(this))
 {
-    setWindowTitle(tr("Decaptcha"));
+    setWindowTitle(tr("Recaptcha"));
     setMinimumHeight(360);
 
     m_view->setModel(m_model);
     m_view->setUniformItemSizes(true);
-    m_view->setContextMenuPolicy(Qt::CustomContextMenu);
     
     m_layout->addWidget(m_view);
 
     connect(m_view, SIGNAL(clicked(QModelIndex)), this, SLOT(showPluginDialog(QModelIndex)));
-    connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
 }
 
-void DecaptchaDialog::showContextMenu(const QPoint &pos) {
-    if (!m_view->currentIndex().isValid()) {
-        return;
-    }
-
-    const QString id = m_view->currentIndex().data(DecaptchaPluginConfigModel::IdRole).toString();
-
-    QMenu menu(this);
-    QAction *action = menu.addAction(tr("Use this decaptcha plugin"));
-    action->setCheckable(true);
-    action->setChecked(Settings::decaptchaPlugin() == id);
-
-    if (menu.exec(mapToGlobal(pos))) {
-        Settings::setDecaptchaPlugin(action->isChecked() ? id : QString());
-    }
-}
-
-void DecaptchaDialog::showPluginDialog(const QModelIndex &index) {
-    const QString id = index.data(DecaptchaPluginConfigModel::IdRole).toString();
-    const QVariantList settings = index.data(DecaptchaPluginConfigModel::SettingsRole).toList();
+void RecaptchaPluginsDialog::showPluginDialog(const QModelIndex &index) {
+    const QString id = index.data(RecaptchaPluginConfigModel::IdRole).toString();
+    const QVariantList settings = index.data(RecaptchaPluginConfigModel::SettingsRole).toList();
 
     if ((id.isEmpty()) || (settings.isEmpty())) {
         QMaemo5InformationBox::information(this, tr("No settings for this plugin"));
@@ -70,6 +48,6 @@ void DecaptchaDialog::showPluginDialog(const QModelIndex &index) {
     }
 
     PluginDialog dialog(id, settings, this);
-    dialog.setWindowTitle(index.data(DecaptchaPluginConfigModel::DisplayNameRole).toString());
+    dialog.setWindowTitle(index.data(RecaptchaPluginConfigModel::DisplayNameRole).toString());
     dialog.exec();
 }

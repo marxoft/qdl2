@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,34 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIPBOARDURLSDIALOG_H
-#define CLIPBOARDURLSDIALOG_H
+#include "itemdelegate.h"
 
-#include <QDialog>
-
-class QListView;
-class QVBoxLayout;
-
-class ClipboardUrlsDialog : public QDialog
+ItemDelegate::ItemDelegate(QObject *parent) :
+    QStyledItemDelegate(parent)
 {
-    Q_OBJECT
+}
 
-public:
-    explicit ClipboardUrlsDialog(QWidget *parent = 0);
-
-private Q_SLOTS:    
-    void showContextMenu(const QPoint &pos);
-    
-private:
-    void addUrls();
-    void removeUrls();
-    void retrieveUrls();
-    
-    QStringList selectedUrls() const;
-    
-    QListView *m_view;
-    
-    QVBoxLayout *m_layout;
-};
-
-#endif // CLIPBOARDURLSDIALOG_H
+QSize ItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &) const {
+    return QSize(option.rect.width(), 70);
+}

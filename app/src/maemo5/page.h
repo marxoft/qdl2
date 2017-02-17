@@ -14,34 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIPBOARDURLSDIALOG_H
-#define CLIPBOARDURLSDIALOG_H
+#ifndef PAGE_H
+#define PAGE_H
 
-#include <QDialog>
+#include <QWidget>
 
-class QListView;
-class QVBoxLayout;
-
-class ClipboardUrlsDialog : public QDialog
+class Page : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ClipboardUrlsDialog(QWidget *parent = 0);
-
-private Q_SLOTS:    
-    void showContextMenu(const QPoint &pos);
-    
-private:
-    void addUrls();
-    void removeUrls();
-    void retrieveUrls();
-    
-    QStringList selectedUrls() const;
-    
-    QListView *m_view;
-    
-    QVBoxLayout *m_layout;
+    explicit Page(QWidget *parent = 0);
 };
 
-#endif // CLIPBOARDURLSDIALOG_H
+#endif // PAGE_H

@@ -48,6 +48,7 @@ private Q_SLOTS:
     void showServicesDialog();
     void showRecaptchaDialog();
     void showDecaptchaDialog();
+    void showSearchDialog();
 
 private:
     ConcurrentTransfersModel *m_concurrentModel;
@@ -75,6 +76,7 @@ private:
     QPushButton *m_servicesButton;
     QPushButton *m_recaptchaButton;
     QPushButton *m_decaptchaButton;
+    QPushButton *m_searchButton;
 
     QDialogButtonBox *m_buttonBox;
 

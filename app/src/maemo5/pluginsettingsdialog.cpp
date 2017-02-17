@@ -131,6 +131,10 @@ void PluginSettingsDialog::addLineEdit(const QString &label, const QString &key,
     if (isPassword) {
         edit->setEchoMode(QLineEdit::Password);
     }
+    
+    if (!focusWidget()) {
+        edit->setFocus();
+    }
 
     m_vbox->addWidget(new QLabel(label, m_container));
     m_vbox->addWidget(edit);

@@ -14,20 +14,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "recaptchadialog.h"
+#include "servicepluginsdialog.h"
 #include "plugindialog.h"
-#include "recaptchapluginconfigmodel.h"
+#include "servicepluginconfigmodel.h"
 #include <QHBoxLayout>
 #include <QListView>
 #include <QMaemo5InformationBox>
 
-RecaptchaDialog::RecaptchaDialog(QWidget *parent) :
+ServicePluginsDialog::ServicePluginsDialog(QWidget *parent) :
     QDialog(parent),
-    m_model(new RecaptchaPluginConfigModel(this)),
+    m_model(new ServicePluginConfigModel(this)),
     m_view(new QListView(this)),
     m_layout(new QHBoxLayout(this))
 {
-    setWindowTitle(tr("Recaptcha"));
+    setWindowTitle(tr("Services"));
     setMinimumHeight(360);
 
     m_view->setModel(m_model);
@@ -38,9 +38,9 @@ RecaptchaDialog::RecaptchaDialog(QWidget *parent) :
     connect(m_view, SIGNAL(clicked(QModelIndex)), this, SLOT(showPluginDialog(QModelIndex)));
 }
 
-void RecaptchaDialog::showPluginDialog(const QModelIndex &index) {
-    const QString id = index.data(RecaptchaPluginConfigModel::IdRole).toString();
-    const QVariantList settings = index.data(RecaptchaPluginConfigModel::SettingsRole).toList();
+void ServicePluginsDialog::showPluginDialog(const QModelIndex &index) {
+    const QString id = index.data(ServicePluginConfigModel::IdRole).toString();
+    const QVariantList settings = index.data(ServicePluginConfigModel::SettingsRole).toList();
 
     if ((id.isEmpty()) || (settings.isEmpty())) {
         QMaemo5InformationBox::information(this, tr("No settings for this plugin"));
@@ -48,6 +48,6 @@ void RecaptchaDialog::showPluginDialog(const QModelIndex &index) {
     }
 
     PluginDialog dialog(id, settings, this);
-    dialog.setWindowTitle(index.data(RecaptchaPluginConfigModel::DisplayNameRole).toString());
+    dialog.setWindowTitle(index.data(ServicePluginConfigModel::DisplayNameRole).toString());
     dialog.exec();
 }

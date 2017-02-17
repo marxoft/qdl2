@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,32 +14,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RECAPTCHADIALOG_H
-#define RECAPTCHADIALOG_H
+#ifndef SEARCHDIALOG_H
+#define SEARCHDIALOG_H
 
 #include <QDialog>
 
-class RecaptchaPluginConfigModel;
-class QHBoxLayout;
+class SearchSelectionModel;
 class QListView;
-class QModelIndex;
+class QVBoxLayout;
 
-class RecaptchaDialog : public QDialog
+class SearchDialog : public QDialog
 {
     Q_OBJECT
+    
+    Q_PROPERTY(QString pluginName READ pluginName)
+    Q_PROPERTY(QString pluginId READ pluginId WRITE setPluginId)
 
 public:
-    explicit RecaptchaDialog(QWidget *parent = 0);
+    explicit SearchDialog(QWidget *parent = 0);
+    
+    QString pluginName() const;
+    QString pluginId() const;
 
-private Q_SLOTS:
-    void showPluginDialog(const QModelIndex &index);
+public Q_SLOTS:    
+    void setPluginId(const QString &id);
+    
+    virtual void accept();
 
 private:
-    RecaptchaPluginConfigModel *m_model;
-
+    SearchSelectionModel *m_model;
+        
     QListView *m_view;
-
-    QHBoxLayout *m_layout;
+        
+    QVBoxLayout *m_layout;
 };
 
-#endif // RECAPTCHADIALOG_H
+#endif // SEARCHDIALOG_H

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DECAPTCHADIALOG_H
-#define DECAPTCHADIALOG_H
+#ifndef DECAPTCHAPLUGINSDIALOG_H
+#define DECAPTCHAPLUGINSDIALOG_H
 
 #include <QDialog>
 
@@ -24,12 +24,12 @@ class QHBoxLayout;
 class QListView;
 class QModelIndex;
 
-class DecaptchaDialog : public QDialog
+class DecaptchaPluginsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit DecaptchaDialog(QWidget *parent = 0);
+    explicit DecaptchaPluginsDialog(QWidget *parent = 0);
 
 private Q_SLOTS:
     void showContextMenu(const QPoint &pos);
@@ -43,4 +43,4 @@ private:
     QHBoxLayout *m_layout;
 };
 
-#endif // DECAPTCHADIALOG_H
+#endif // DECAPTCHAPLUGINSDIALOG_H

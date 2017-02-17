@@ -112,6 +112,20 @@ void Settings::setDefaultCategory(const QString &category) {
     }
 }
 
+QString Settings::defaultSearchPlugin() {
+    return value("Plugins/defaultSearchPlugin").toString();
+}
+
+void Settings::setDefaultSearchPlugin(const QString &pluginId) {
+    if (pluginId != defaultSearchPlugin()) {
+        setValue("Plugins/defaultSearchPlugin", pluginId);
+
+        if (self) {
+            emit self->defaultSearchPluginChanged(pluginId);
+        }
+    }
+}
+
 QString Settings::defaultServicePlugin() {
     return value("Plugins/defaultServicePlugin").toString();
 }
@@ -398,6 +412,14 @@ void Settings::setNetworkProxy() {
     }
 
     QNetworkProxy::setApplicationProxy(proxy);
+}
+
+QByteArray Settings::searchPageState() {
+    return value("MainWindow/searchPageState").toByteArray();
+}
+
+void Settings::setSearchPageState(const QByteArray &state) {
+    setValue("MainWindow/searchPageState", state);
 }
 
 QByteArray Settings::transferViewHeaderState() {

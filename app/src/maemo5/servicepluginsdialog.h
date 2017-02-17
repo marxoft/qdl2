@@ -14,34 +14,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIPBOARDURLSDIALOG_H
-#define CLIPBOARDURLSDIALOG_H
+#ifndef SERVICEPLUGINSDIALOG_H
+#define SERVICEPLUGINSDIALOG_H
 
 #include <QDialog>
 
+class ServicePluginConfigModel;
+class QHBoxLayout;
 class QListView;
-class QVBoxLayout;
+class QModelIndex;
 
-class ClipboardUrlsDialog : public QDialog
+class ServicePluginsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ClipboardUrlsDialog(QWidget *parent = 0);
+    explicit ServicePluginsDialog(QWidget *parent = 0);
 
-private Q_SLOTS:    
-    void showContextMenu(const QPoint &pos);
-    
+private Q_SLOTS:
+    void showPluginDialog(const QModelIndex &index);
+
 private:
-    void addUrls();
-    void removeUrls();
-    void retrieveUrls();
-    
-    QStringList selectedUrls() const;
-    
+    ServicePluginConfigModel *m_model;
+
     QListView *m_view;
-    
-    QVBoxLayout *m_layout;
+
+    QHBoxLayout *m_layout;
 };
 
-#endif // CLIPBOARDURLSDIALOG_H
+#endif // SERVICEPLUGINSDIALOG_H

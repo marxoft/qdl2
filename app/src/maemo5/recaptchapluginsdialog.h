@@ -14,32 +14,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SERVICESDIALOG_H
-#define SERVICESDIALOG_H
+#ifndef RECAPTCHAPLUGINSDIALOG_H
+#define RECAPTCHAPLUGINSDIALOG_H
 
 #include <QDialog>
 
-class ServicePluginConfigModel;
+class RecaptchaPluginConfigModel;
 class QHBoxLayout;
 class QListView;
 class QModelIndex;
 
-class ServicesDialog : public QDialog
+class RecaptchaPluginsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ServicesDialog(QWidget *parent = 0);
+    explicit RecaptchaPluginsDialog(QWidget *parent = 0);
 
 private Q_SLOTS:
     void showPluginDialog(const QModelIndex &index);
 
 private:
-    ServicePluginConfigModel *m_model;
+    RecaptchaPluginConfigModel *m_model;
 
     QListView *m_view;
 
     QHBoxLayout *m_layout;
 };
 
-#endif // SERVICESDIALOG_H
+#endif // RECAPTCHAPLUGINSDIALOG_H

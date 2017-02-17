@@ -31,6 +31,8 @@ class Settings : public QObject
                NOTIFY customCommandEnabledChanged)
     Q_PROPERTY(QString decaptchaPlugin READ decaptchaPlugin WRITE setDecaptchaPlugin NOTIFY decaptchaPluginChanged)
     Q_PROPERTY(QString defaultCategory READ defaultCategory WRITE setDefaultCategory NOTIFY defaultCategoryChanged)
+    Q_PROPERTY(QString defaultSearchPlugin READ defaultSearchPlugin WRITE setDefaultSearchPlugin
+               NOTIFY defaultSearchPluginChanged)
     Q_PROPERTY(QString defaultServicePlugin READ defaultServicePlugin WRITE setDefaultServicePlugin
                NOTIFY defaultServicePluginChanged)
     Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins NOTIFY usePluginsChanged)
@@ -59,6 +61,7 @@ class Settings : public QObject
                NOTIFY networkProxyUsernameChanged)
     Q_PROPERTY(QString networkProxyPassword READ networkProxyPassword WRITE setNetworkProxyPassword
                NOTIFY networkProxyPasswordChanged)
+    Q_PROPERTY(QByteArray searchPageState READ searchPageState WRITE setSearchPageState)
     Q_PROPERTY(QByteArray transferViewHeaderState READ transferViewHeaderState WRITE setTransferViewHeaderState)
 
 public:
@@ -74,6 +77,8 @@ public:
     static QString decaptchaPlugin();
 
     static QString defaultCategory();
+    
+    static QString defaultSearchPlugin();
 
     static QString defaultServicePlugin();
     static bool usePlugins();
@@ -101,6 +106,7 @@ public:
     static QString networkProxyUsername();
     static QString networkProxyPassword();
     
+    static QByteArray searchPageState();
     static QByteArray transferViewHeaderState();
 
 public Q_SLOTS:    
@@ -112,6 +118,8 @@ public Q_SLOTS:
     static void setDecaptchaPlugin(const QString &pluginId);
     
     static void setDefaultCategory(const QString &category);
+    
+    static void setDefaultSearchPlugin(const QString &pluginId);
 
     static void setDefaultServicePlugin(const QString &pluginId);
     static void setUsePlugins(bool enabled);
@@ -141,6 +149,7 @@ public Q_SLOTS:
     static void setNetworkProxyPassword(const QString &password);
     static void setNetworkProxy();
     
+    static void setSearchPageState(const QByteArray &state);
     static void setTransferViewHeaderState(const QByteArray &state);
 
 Q_SIGNALS:
@@ -149,6 +158,7 @@ Q_SIGNALS:
     void customCommandEnabledChanged(bool enabled);
     void decaptchaPluginChanged(const QString &pluginId);
     void defaultCategoryChanged(const QString &category);
+    void defaultSearchPluginChanged(const QString &pluginId);
     void defaultServicePluginChanged(const QString &pluginId);
     void usePluginsChanged(bool enabled);
     void downloadPathChanged(const QString &path);
