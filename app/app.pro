@@ -105,22 +105,29 @@ maemo5 {
         src/maemo5/archiveextractor.h \
         src/maemo5/archivepasswordmodel.h \
         src/maemo5/archivepasswordsdialog.h \
+        src/maemo5/browser.h \
         src/maemo5/captchadialog.h \
         src/maemo5/categoriesdialog.h \
         src/maemo5/clipboardurlmodel.h \
         src/maemo5/clipboardurlsdialog.h \
-        src/maemo5/decaptchadialog.h \
+        src/maemo5/decaptchapluginsdialog.h \
         src/maemo5/definitions.h \
+        src/maemo5/imagecache.h \
+        src/maemo5/itemdelegate.h \
         src/maemo5/mainwindow.h \
         src/maemo5/networkproxydialog.h \
         src/maemo5/package.h \
         src/maemo5/packagepropertiesdialog.h \
+        src/maemo5/page.h \
         src/maemo5/plugindialog.h \
         src/maemo5/pluginsettingsdialog.h \
         src/maemo5/qdl.h \
-        src/maemo5/recaptchadialog.h \
+        src/maemo5/recaptchapluginsdialog.h \
         src/maemo5/retrieveurlsdialog.h \
-        src/maemo5/servicesdialog.h \
+        src/maemo5/searchdialog.h \
+        src/maemo5/searchpage.h \
+        src/maemo5/searchpluginsdialog.h \
+        src/maemo5/servicepluginsdialog.h \
         src/maemo5/settings.h \
         src/maemo5/settingsdialog.h \
         src/maemo5/textinputdialog.h \
@@ -137,22 +144,29 @@ maemo5 {
         src/maemo5/archiveextractor.cpp \
         src/maemo5/archivepasswordmodel.cpp \
         src/maemo5/archivepasswordsdialog.cpp \
+        src/maemo5/browser.cpp \
         src/maemo5/captchadialog.cpp \
         src/maemo5/categoriesdialog.cpp \
         src/maemo5/clipboardurlmodel.cpp \
         src/maemo5/clipboardurlsdialog.cpp \
-        src/maemo5/decaptchadialog.cpp \
+        src/maemo5/decaptchapluginsdialog.cpp \
+        src/maemo5/imagecache.cpp \
+        src/maemo5/itemdelegate.cpp \
         src/maemo5/main.cpp \
         src/maemo5/mainwindow.cpp \
         src/maemo5/networkproxydialog.cpp \
         src/maemo5/package.cpp \
         src/maemo5/packagepropertiesdialog.cpp \
+        src/maemo5/page.cpp \
         src/maemo5/plugindialog.cpp \
         src/maemo5/pluginsettingsdialog.cpp \
         src/maemo5/qdl.cpp \
-        src/maemo5/recaptchadialog.cpp \
+        src/maemo5/recaptchapluginsdialog.cpp \
         src/maemo5/retrieveurlsdialog.cpp \
-        src/maemo5/servicesdialog.cpp \
+        src/maemo5/searchdialog.cpp \
+        src/maemo5/searchpage.cpp \
+        src/maemo5/searchpluginsdialog.cpp \
+        src/maemo5/servicepluginsdialog.cpp \
         src/maemo5/settings.cpp \
         src/maemo5/settingsdialog.cpp \
         src/maemo5/textinputdialog.cpp \
@@ -190,7 +204,7 @@ maemo5 {
     TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
     TARGET.EPOCSTACKSIZE = 0x14000
     
-    VERSION = 2.3.1
+    VERSION = 2.4.0
     ICON = desktop/symbian/qdl2.svg
     
     MMP_RULES += "DEBUGGABLE_UDEBONLY"
