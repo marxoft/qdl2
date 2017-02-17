@@ -1,3 +1,9 @@
+qdl-plugins-soundcloud (0.1.1) unstable; urgency=low
+
+  * Use qsoundcloud library.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Fri, 17 Feb 2017 00:02:12 +0000
+
 qdl-plugins-soundcloud (0.1.0) unstable; urgency=low
 
   * Fixes and changes to base plugin class.
