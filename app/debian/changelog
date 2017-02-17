@@ -1,3 +1,12 @@
+qdl (2.4.0) unstable; urgency=low
+
+  * Add search plugin API for content searches.
+  * Bug fix: Pausing downloads has no effect if status is 'Connecting'.
+  * Bug fix: Plugins used in some instances where 'Use plugins' is not enabled.
+  * Minor UI improvements.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 16 Feb 2017 19:56:23 +0000
+
 qdl (2.3.0) unstable; urgency=low
 
   * Add improved logging (use '-v' option with value 1-5).
