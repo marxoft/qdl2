@@ -113,7 +113,7 @@ void PluginDialog::addSpinBox(const QString &label, const QString &key, int mini
 }
 
 void PluginDialog::addValueSelector(const QString &label, const QString &key, const QVariantList &options,
-                               const QVariant &value) {
+                                    const QVariant &value) {
     ValueSelector *selector = new ValueSelector(label, m_container);
     SelectionModel *model = new SelectionModel(selector);
     selector->setProperty("key", key);
