@@ -14,24 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var CONFIG_URL = "http://www.porntrex.com/media/nuevo/config.php";
-var FILE_NAME_REGEXP = /<title><\!\[CDATA\[(.+)\]\]><\/title>/
-var VIDEO_ID_REGEXP = /\/video\/(\d+)/;
-var VIDEO_FORMATS = ["filehd", "file"];
-var VIDEO_FORMAT_NAMES = ["HD", "SD"];
-var VIDEO_FORMAT_REGEXPS = [/<filehd>(.+)<\/filehd>/, /<file>(.+)<\/file>/];
-
+var FILE_NAME_REGEXP = /<title>(.+)<\/title>/
+var VIDEO_FORMATS = ["video_alt_url3", "video_alt_url2", "video_alt_url", "video_url"];
 var request = null;
 
 function checkUrl(url) {
-    try {
-        var id = VIDEO_ID_REGEXP.exec(url)[1];
-    }
-    catch(err) {
-        error(qsTr("Cannot parse video id from URL"));
-        return;
-    }
-    
     request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
@@ -52,67 +39,51 @@ function checkUrl(url) {
     }
     
     
-    request.open("GET", CONFIG_URL + "?key=" + id);
+    request.open("GET", url);
     request.send();
 }
 
 function getDownloadRequest(url) {
-    try {
-        var id = VIDEO_ID_REGEXP.exec(url)[1];
-    }
-    catch(err) {
-        error(qsTr("Cannot parse video id from URL"));
-        return;
-    }
-    
     request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var format = settings.value("videoFormat", "filehd");
-
+                var response = request.responseText;
+                var formats = [];
+                
+                for (var i = 0; i < VIDEO_FORMATS.length; i++) {
+                    var re = new RegExp(VIDEO_FORMATS[i] + ": '([^']+).+" + VIDEO_FORMATS[i] + "_text: '([^']+)");
+                    var f = re.exec(response);
+                    
+                    if (f) {
+                        formats.push({"label": f[2].toUpperCase(), "value": f[1]});
+                    }
+                }
+                
+                if (!formats.length) {
+                    error(qsTr("No video formats found"));
+                    return;
+                }
+                
                 if (settings.value("useDefaultVideoFormat", true) == true) {
-                    for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
-                        try {
-                            var videoUrl = VIDEO_FORMAT_REGEXPS[i].exec(request.responseText)[1];
-                            
-                            if (videoUrl) {
-                                downloadRequest(new NetworkRequest(videoUrl));
-                                return;
-                            }
-                        }
-                        catch(err) {
-                            continue;
+                    var format = settings.value("videoFormat", "1080P");
+                    
+                    for (var i = 0; i < formats.length; i++) {
+                        if (formats[i].label == format) {
+                            downloadRequest(new NetworkRequest(formats[i].value));
+                            return;
                         }
                     }
+                    
+                    downloadRequest(new NetworkRequest(formats[0].value));
                 }
                 else {
-                    var options = [];
-
-                    for (var i = 0; i < VIDEO_FORMATS.length; i++) {
-                        try {
-                            var videoUrl = VIDEO_FORMAT_REGEXPS[i].exec(request.responseText)[1];
-                            
-                            if (videoUrl) {
-                                options.push({"label": VIDEO_FORMAT_NAMES[i], "value": videoUrl});
-                            }
-                        }
-                        catch(err) {
-                            continue;
-                        }
-                    }
-
-                    if (options.length > 0) {
-                        settingsRequest(qsTr("Video format"), [{"type": "list", "label": qsTr("Video format"),
-                                                          "key": "url",
-                                                          "value": options[Math.max(0, options.indexOf(format))].value,
-                                                          "options": options}],
-                                        function (f) { downloadRequest(new NetworkRequest(f.url)); });
-                        return;
-                    }
+                    var list = {"type": "list", "label": qsTr("Video format"), "key": "url", "value": formats[0].value,
+                               "options": formats};
+                    settingsRequest(qsTr("Choose video format"), [list], function(f) {
+                        downloadRequest(new NetworkRequest(f.url));
+                    });
                 }
-
-                error(qsTr("Unknown error"));
             }
             catch(err) {
                 error(err);
@@ -120,13 +91,14 @@ function getDownloadRequest(url) {
         }
     }
 
-    request.open("GET", CONFIG_URL + "?key=" + id);
+    request.open("GET", url);
     request.send();
 }
 
 function cancelCurrentOperation() {
     if (request) {
         request.abort();
+        request = null;
     }
 
     return true;

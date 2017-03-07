@@ -2,7 +2,7 @@
     "type": "js",
     "name": "PornTrex",
     "icon": "qdl2-porntrex.jpg",
-    "version": 1,
+    "version": 2,
     "regExp": "http(s|)://www\\.porntrex\\.com/video/\\d+",
     "settings": [
         {
@@ -16,16 +16,26 @@
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "filehd",
+            "value": "1080P",
             "options": [
                 {
-                    "label": "HD",
-                    "value": "filehd"
+                    "label": "1080P",
+                    "value": "1080P"
                 },
 
                 {
-                    "label": "SD",
-                    "value": "file"
+                    "label": "720P",
+                    "value": "720P"
+                },
+                
+                {
+                    "label": "480P",
+                    "value": "480P"
+                },
+                
+                {
+                    "label": "360P",
+                    "value": "360P"
                 }
             ]
         }
