@@ -68,7 +68,7 @@ function getDownloadRequest(url) {
                         }
                     }
                     
-                    downloadRequest({"url": formats[0].url});
+                    downloadRequest(new NetworkRequest(formats[0].url));
                 }
                 else {
                     var list = {"type": "list", "label": qsTr("Video format"), "key": "format"};
