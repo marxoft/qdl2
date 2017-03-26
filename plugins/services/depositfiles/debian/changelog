@@ -1,3 +1,9 @@
+qdl-plugins-depositfiles (0.2.2) unstable; urgency=low
+
+  * Fix redirect handling and file URL detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sun, 26 Mar 2017 16:02:41 +0000
+
 qdl-plugins-depositfiles (0.2.1) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.

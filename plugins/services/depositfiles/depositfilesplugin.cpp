@@ -29,8 +29,11 @@
 #include <QDesktopServices>
 #include <QtPlugin>
 #endif
+#ifdef DEPOSITFILES_DEBUG
+#include <QDebug>
+#endif
 
-const QRegExp DepositFilesPlugin::FILE_REGEXP("http(s|)://fileshare\\d+\\.(depositfiles|dfiles)\\.\\w+/[^'\"]+");
+const QRegExp DepositFilesPlugin::FILE_REGEXP("(http(s|):|)//fileshare\\d+\\.(depositfiles|dfiles)\\.\\w+/[^'\"]+");
 const QString DepositFilesPlugin::LOGIN_URL("https://depositfiles.com/api/user/login");
 const QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php");
 const QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
@@ -56,7 +59,10 @@ DepositFilesPlugin::DepositFilesPlugin(QObject *parent) :
 QString DepositFilesPlugin::getRedirect(const QNetworkReply *reply) {
     QString redirect = QString::fromUtf8(reply->rawHeader("Location"));
     
-    if (redirect.startsWith("/")) {
+    if (redirect.startsWith("//")) {
+        redirect.prepend(reply->url().scheme() + ":");
+    }
+    else if (redirect.startsWith("/")) {
         redirect.prepend(reply->url().scheme() + "://" + reply->url().authority());
     }
     
@@ -98,6 +104,9 @@ bool DepositFilesPlugin::cancelCurrentOperation() {
 }
 
 void DepositFilesPlugin::checkUrl(const QString &url) {
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::checkUrl(). URL:" << url;
+#endif
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -107,6 +116,9 @@ void DepositFilesPlugin::checkUrl(const QString &url) {
 }
 
 void DepositFilesPlugin::getDownloadRequest(const QString &url) {
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::getDownloadRequest(). URL:" << url;
+#endif
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
     QSettings settings(CONFIG_FILE, QSettings::IniFormat);
@@ -161,6 +173,9 @@ void DepositFilesPlugin::submitCaptchaResponse(const QString &challenge, const Q
     url.addQueryItem("response", response);
     url.addQueryItem("acpuzzle", "1");
 #endif
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::submitCaptchaResponse(). URL:" << url;
+#endif
     QNetworkRequest request(url);
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
     request.setRawHeader("X-Requested-With", "XMLHttpRequest");
@@ -184,6 +199,9 @@ void DepositFilesPlugin::submitLogin(const QVariantMap &credentials) {
 }
 
 void DepositFilesPlugin::fetchDownloadRequest(const QUrl &url) {
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::fetchDownloadRequest(). URL:" << url;
+#endif
     m_redirects = 0;
     QNetworkRequest request(url);
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -194,6 +212,9 @@ void DepositFilesPlugin::fetchDownloadRequest(const QUrl &url) {
 }
 
 void DepositFilesPlugin::followRedirect(const QUrl &url, const char* slot) {
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::followRedirect(). URL:" << url;
+#endif
     m_redirects++;
     QNetworkRequest request(url);
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -214,6 +235,9 @@ void DepositFilesPlugin::getCaptchaKey() {
     url.addQueryItem("fid", m_fileId);
 #endif
     QNetworkRequest request(url);
+#ifdef DEPOSITFILES_DEBUG
+    qDebug() << "DepositFilesPlugin::getCaptchaKey(). URL:" << url;
+#endif
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
     request.setRawHeader("X-Requested-With", "XMLHttpRequest");
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -358,7 +382,13 @@ void DepositFilesPlugin::checkDownloadRequest() {
     reply->deleteLater();
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
+        QUrl url(FILE_REGEXP.cap());
+
+        if (url.scheme().isEmpty()) {
+            url.setScheme(m_url.scheme());
+        }
+
+        emit downloadRequest(QNetworkRequest(url));
         return;
     }
 
@@ -492,7 +522,13 @@ void DepositFilesPlugin::checkCaptcha() {
     const QString response = QString::fromUtf8(reply->readAll());
 
     if (FILE_REGEXP.indexIn(response) != -1) {
-        emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
+        QUrl url(FILE_REGEXP.cap());
+
+        if (url.scheme().isEmpty()) {
+            url.setScheme(m_url.scheme());
+        }
+
+        emit downloadRequest(QNetworkRequest(url));
     }
     else if (response.contains("check_recaptcha")) {
         emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
