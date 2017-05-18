@@ -1,0 +1,8 @@
+{
+    "type": "js",
+    "name": "ImageFap",
+    "icon": "qdl2-imagefap.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)imagefap\\.com/((photo|pictures)/\\d+/.+|gallery\\.php\\?gid=\\d+)"
+}
+
