@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
     dailymotion \
+    imagefap \
     mixcloud \
     pornhub \
     soundcloud \

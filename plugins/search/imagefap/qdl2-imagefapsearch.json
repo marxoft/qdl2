@@ -1,0 +1,82 @@
+{
+    "type": "js",
+    "name": "ImageFap",
+    "icon": "qdl2-imagefapsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefaultSearchOptions",
+            "value": false
+        },
+        
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "query"
+        },
+
+        {
+            "type": "list",
+            "label": "Size",
+            "key": "size",
+            "value": "",
+            "options": [
+                {
+                    "label": "Any size",
+                    "value": ""
+                },
+
+                {
+                    "label": "Small",
+                    "value": "small"
+                },
+
+                {
+                    "label": "Medium",
+                    "value": "medium"
+                },
+
+                {
+                    "label": "Large",
+                    "value": "large"
+                },
+
+                {
+                    "label": "Huge",
+                    "value": "huge"
+                }
+            ]
+        },
+
+        {
+            "type": "list",
+            "label": "Date",
+            "key": "date",
+            "value": "",
+            "options": [
+                {
+                    "label": "Anytime",
+                    "value": ""
+                },
+
+                {
+                    "label": "Today",
+                    "value": "today"
+                },
+
+                {
+                    "label": "This week",
+                    "value": "week"
+                },
+
+                {
+                    "label": "This month",
+                    "value": "month"
+                }
+            ]
+        }
+    ]
+}
+
