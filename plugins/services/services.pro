@@ -12,6 +12,7 @@ SUBDIRS = \
     filespace \
     googledrive \
     imagebam \
+    imagefap \
     imageupper \
     imgbox \
     keeptoshare \
@@ -24,6 +25,7 @@ SUBDIRS = \
     publishtome \
     rapidgator \
     sendvid \
+    sexix \
     soundcloud \
     spankbang \
     tezfiles \
@@ -34,6 +36,7 @@ SUBDIRS = \
     vbox7 \
     vidlox \
     vimeo \
+    vpornex \
     wenoo \
     xhamster \
     xvideos \
