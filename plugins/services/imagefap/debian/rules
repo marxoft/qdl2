@@ -38,8 +38,8 @@ install: build
 
 	mkdir -p debian/qdl-plugins-imagefap/opt/qdl2/plugins/services
 	mkdir -p debian/qdl-plugins-imagefap/opt/qdl2/plugins/icons
-	cp qdl2-imagefap.js qdl2-imagebam.json debian/qdl-plugins-imagebam/opt/qdl2/plugins/services
-	cp qdl2-imagefap.jpg debian/qdl-plugins-imagebam/opt/qdl2/plugins/icons
+	cp qdl2-imagefap.js qdl2-imagefap.json debian/qdl-plugins-imagefap/opt/qdl2/plugins/services
+	cp qdl2-imagefap.jpg debian/qdl-plugins-imagefap/opt/qdl2/plugins/icons
 
 # Build architecture-independent files here.
 binary-indep: build install
