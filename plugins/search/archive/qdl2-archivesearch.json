@@ -1,0 +1,21 @@
+{
+    "type": "js",
+    "name": "Internet Archive",
+    "icon": "qdl2-archivesearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "query"
+        }
+    ]
+}
+
