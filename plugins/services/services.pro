@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+    archive \
     bigfile \
     dailymotion \
     datafile \

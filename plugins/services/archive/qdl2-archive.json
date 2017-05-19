@@ -1,0 +1,8 @@
+{
+    "type": "js",
+    "name": "Internet Archive",
+    "icon": "qdl2-archive.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)archive\\.org/(details|download|metadata)/[\\w_]+"
+}
+
