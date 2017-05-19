@@ -3,7 +3,7 @@
     "name": "Keep2Share",
     "icon": "qdl2-keeptoshare.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
+    "regExp": "http(s|)://(www\\.|new\\.|)(keep2s(hare|)|k2s)\\.cc/file/\\w+",
     "settings": [
         {
             "type": "group",

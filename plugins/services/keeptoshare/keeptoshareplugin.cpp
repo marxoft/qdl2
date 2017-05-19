@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -29,7 +29,7 @@
 #include <QtPlugin>
 #endif
 
-const QRegExp KeepToSharePlugin::FILE_REGEXP("(http://(keep2s(hare|)|k2s)\\.cc|)/file/url\\.html[^'\"]+");
+const QRegExp KeepToSharePlugin::FILE_REGEXP("(http(s|)://(new\\.|)(keep2s(hare|)|k2s)\\.cc|)/file/url\\.html[^'\"]+");
 const QString KeepToSharePlugin::LOGIN_URL("http://keep2share.cc/login.html");
 const QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
@@ -40,6 +40,7 @@ const QString KeepToSharePlugin::CONFIG_FILE(QDesktopServices::storageLocation(Q
                                              + "/.config/qdl2/plugins/qdl2-keeptoshare");
 #endif
 const int KeepToSharePlugin::MAX_REDIRECTS = 8;
+const int KeepToSharePlugin::WAIT_TIME = 30000;
 
 KeepToSharePlugin::KeepToSharePlugin(QObject *parent) :
     ServicePlugin(parent),
@@ -142,10 +143,11 @@ void KeepToSharePlugin::checkUrlIsValid() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
-    QString fileName = response.section("File: <span>", 1, 1).section('<', 0, 0);
+    QString fileName;
+    const QRegExp re("(File: <span>|font-size: 18px; \">|title-account\"><span><strong>)([^<]+)");
 
-    if (fileName.isEmpty()) {
-        fileName = response.section("font-size: 18px; \">", 1, 1).section('<', 0, 0);
+    if (re.indexIn(response) != -1) {
+        fileName = re.cap(2).trimmed();
     }
 
     if (fileName.isEmpty()) {
@@ -252,6 +254,7 @@ void KeepToSharePlugin::checkDownloadRequest() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
+    m_url = reply->url();
 
     if (FILE_REGEXP.indexIn(response) != -1) {
         QString url = FILE_REGEXP.cap();
@@ -367,13 +370,14 @@ void KeepToSharePlugin::checkWaitTime() {
                         emit waitRequest(msecs, true);
                     }
                     else {
-                        emit error(tr("Unknown eror"));
+                        emit error(tr("Unknown error"));
                     }
                 }
             }
         }
         else {
-            recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
+            recaptchaKey.prepend(QString("%1://%2/file/captcha.html?v=").arg(reply->url().scheme())
+                    .arg(reply->url().authority()));
             emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
         }
     }
@@ -449,20 +453,13 @@ void KeepToSharePlugin::checkCaptcha() {
             emit error(tr("No captcha key found"));
         }
         else {
-            recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
+            recaptchaKey.prepend(QString("%1://%2/file/captcha.html?v=").arg(reply->url().scheme())
+                    .arg(reply->url().authority()));
             emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
         }
     }
     else {
-        const int secs = response.section("download-wait-timer\" style=\"margin: 0 auto;\">", 1, 1)
-                                 .section('<', 0, 0).trimmed().toInt();
-
-        if (secs > 0) {
-            startWaitTimer(secs * 1000, SLOT(getDownloadLink()));
-        }
-        else {
-            emit error(tr("Unknown error"));
-        }
+        startWaitTimer(WAIT_TIME, SLOT(getDownloadLink()));
     }
 
     reply->deleteLater();

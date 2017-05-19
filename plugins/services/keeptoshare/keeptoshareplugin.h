@@ -86,6 +86,7 @@ private:
     static const QString CONFIG_FILE;
     
     static const int MAX_REDIRECTS;
+    static const int WAIT_TIME;
 
     QPointer<QNetworkAccessManager> m_nam;
     QTimer *m_waitTimer;
