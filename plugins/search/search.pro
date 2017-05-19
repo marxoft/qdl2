@@ -6,4 +6,5 @@ SUBDIRS = \
     pornhub \
     soundcloud \
     vimeo \
+    vpornex \
     youtube

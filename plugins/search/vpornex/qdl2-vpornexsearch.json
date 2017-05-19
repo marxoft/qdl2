@@ -1,0 +1,21 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "Vpornex",
+    "icon": "qdl2-vpornexsearch.jpg",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "query"
+        }
+    ]
+}
+
