@@ -5,6 +5,7 @@ SUBDIRS = \
     imagefap \
     mixcloud \
     pornhub \
+    sexix \
     soundcloud \
     vimeo \
     vpornex \

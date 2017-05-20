@@ -1,0 +1,39 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "Sexix",
+    "icon": "qdl2-sexixsearch.jpg",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "query"
+        },
+
+        {
+            "type": "list",
+            "label": "Order by",
+            "key": "order",
+            "value": "rand",
+            "options": [
+                {
+                    "label": "Random",
+                    "value": "rand"
+                },
+
+                {
+                    "label": "Date",
+                    "value": "date"
+                }
+            ]
+        }
+    ]
+}
+
