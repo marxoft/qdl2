@@ -24,7 +24,8 @@ function getResults(url) {
             try {
                 var response = request.responseText;
                 var results = [];
-                var posts = response.split("<div id=\"post-");
+                var posts = response.substring(response.indexOf("<main id=\"main\""), response.indexOf("</main>"))
+                    .split("<div id=\"post-");
 
                 for (var i = 1; i < posts.length; i++) {
                     var post = posts[i];
@@ -45,7 +46,7 @@ function getResults(url) {
                 }
 
                 try {
-                    var next = /<link rel="next" href="([^"]+)"/.exec(response)[1];
+                    var next = /href="([^"]+)">Next</.exec(response)[1];
                     searchCompleted(results, {"url": next});
                 }
                 catch(e) {
@@ -69,12 +70,12 @@ function fetchMore(params) {
 function search() {
     if (settings.value("useDefault", false) === true) {
         var query = settings.value("query");
-        getResults(BASE_URL + (query ? "?s=" + query : ""));
+        getResults(BASE_URL + (query ? "?s=" + query : "?filter=date&cat=0"));
     }
     else {
         var query = {"type": "text", "label": qsTr("Search query"), "key": "query"};
         settingsRequest(qsTr("Choose search options"), [query], function(params) {
-            getResults(BASE_URL + (params.query ? "?s=" + params.query : ""));
+            getResults(BASE_URL + (params.query ? "?s=" + params.query : "?filter=date&cat=0"));
         });
     }
 }
