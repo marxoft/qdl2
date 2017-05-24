@@ -46,7 +46,7 @@ function getResults(url) {
                 }
 
                 try {
-                    var next = /href="([^"]+)">Next</.exec(response)[1];
+                    var next = /<a class="current">\d+<\/a><\/li><li><a href='([^']+)/.exec(response)[1];
                     searchCompleted(results, {"url": next});
                 }
                 catch(e) {
