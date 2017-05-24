@@ -41,4 +41,5 @@ SUBDIRS = \
     wenoo \
     xhamster \
     xvideos \
-    youtube
+    youtube \
+    zippyshare

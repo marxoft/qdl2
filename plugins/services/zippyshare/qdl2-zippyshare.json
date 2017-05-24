@@ -1,0 +1,8 @@
+{
+    "type": "js",
+    "name": "Zippyshare",
+    "icon": "qdl2-zippyshare.jpg",
+    "version": 1,
+    "regExp": "http(s|)://www\\d+\\.zippyshare\\.com/v/\\w+/file\\.html"
+}
+
