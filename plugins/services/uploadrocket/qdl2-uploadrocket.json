@@ -1,0 +1,8 @@
+{
+    "type": "js",
+    "name": "UploadRocket",
+    "icon": "qdl2-uploadrocket.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)uploadrocket\\.net/\\w+(/[^/]+\.html|\\.htm)"
+}
+

@@ -33,6 +33,7 @@ SUBDIRS = \
     txxx \
     uploaded \
     uploadly \
+    uploadrocket \
     upstore \
     vbox7 \
     vidlox \
