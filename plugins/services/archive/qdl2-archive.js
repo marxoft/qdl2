@@ -45,6 +45,7 @@ function checkFile(url) {
         }
     }
 
+    request.followRedirects = false;
     request.open("HEAD", url);
     request.send();
 }
@@ -62,29 +63,29 @@ function checkFiles(url) {
                 }
 
                 var packageName = url.substring(url.lastIndexOf("/") + 1);
-                var options = [{"label": qsTr("All files"), "value": ""}];
+                var options = [];
 
                 for (var i = 0; i < files.length; i++) {
                     options.push({"label": files[i].name, "value": files[i].name});
                 }
 
-                var list = {"type": "list", "label": qsTr("File"), "key": "file", "options": options};
-                settingsRequest(qsTr("Choose file"), [list], function(params) {
+                var list = {"type": "list", "multiselect": true, "label": qsTr("Files"), "key": "files",
+                            "options": options};
+                settingsRequest(qsTr("Choose files"), [list], function(params) {
+                    var files = params.files;
+
+                    if (!files.length) {
+                        error(qsTr("No files chosen"));
+                        return;
+                    }
+
                     var results = [];
-
-                    if (params.file) {
-                        urlChecked(new UrlResult(DOWNLOAD_URL + packageName + "/" + params.file, params.file));
+                    
+                    for (var i = 0; i < files.length; i++) {
+                        results.push(new UrlResult(DOWNLOAD_URL + packageName + "/" + files[i], files[i]));
                     }
-                    else {
-                        var results = [];
 
-                        for (var i = 1; i < options.length; i++) {
-                            results.push(new UrlResult(DOWNLOAD_URL + packageName + "/" + options[i].value,
-                                options[i].value));
-                        }
-
-                        urlChecked(results, packageName);
-                    }
+                    urlChecked(results, packageName);
                 });
             }
             catch(e) {
