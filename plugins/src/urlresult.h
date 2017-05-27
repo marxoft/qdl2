@@ -58,11 +58,15 @@ struct UrlResult
     
     /*!
      * The url of the result.
+     *
+     * The default value is an empty string.
      */
     QString url;
     
     /*!
      * The filename of the result.
+     *
+     * The default value is an empty string.
      */
     QString fileName;
 };
