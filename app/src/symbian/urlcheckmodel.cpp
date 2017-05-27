@@ -297,13 +297,14 @@ void UrlCheckModel::clear() {
 
 bool UrlCheckModel::submitSettingsResponse(const QVariantMap &settings) {
     if (status() == AwaitingSettingsResponse) {        
+        setStatus(Active);
+
         if (ServicePlugin *plugin = getCurrentPlugin()) {            
             if (QMetaObject::invokeMethod(plugin, m_requestedSettingsCallback, Q_ARG(QVariantMap, settings))) {
                 Logger::log("UrlCheckModel::submitSettingsResponse(): Callback successful: "
                             + m_requestedSettingsCallback, Logger::MediumVerbosity);
                 stopRequestedSettingsTimer();
                 clearRequestedSettings();
-                setStatus(Active);
                 return true;
             }
             
