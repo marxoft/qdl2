@@ -23,8 +23,11 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
+#include <QPushButton>
 #include <QScrollArea>
 #include <QSpinBox>
 #include <QTimer>
@@ -104,6 +107,35 @@ void PluginSettingsDialog::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
+bool PluginSettingsDialog::eventFilter(QObject *obj, QEvent *event) {
+    if (const QMenu *menu = qobject_cast<QMenu*>(obj)) {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            if (QAction *action = menu->activeAction()) {
+                action->trigger();
+                return true;
+            }
+        }
+        else if (event->type() == QEvent::KeyPress) {
+            if (const QKeyEvent *key = static_cast<QKeyEvent*>(event)) {
+                switch (key->key()) {
+                    case Qt::Key_Enter:
+                    case Qt::Key_Return:
+                        if (QAction *action = menu->activeAction()) {
+                            action->trigger();
+                            return true;
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    return QDialog::eventFilter(obj, event);
+}
+
 void PluginSettingsDialog::addCheckBox(QFormLayout *layout, const QString &label, const QString &key, bool value) {
     QCheckBox *checkbox = new QCheckBox("&" + label, this);
     checkbox->setProperty("key", key);
@@ -113,7 +145,7 @@ void PluginSettingsDialog::addCheckBox(QFormLayout *layout, const QString &label
 }
 
 void PluginSettingsDialog::addComboBox(QFormLayout *layout, const QString &label, const QString &key,
-                                    const QVariantList &options, const QVariant &value) {
+                                       const QVariantList &options, const QVariant &value) {
     QComboBox *combobox = new QComboBox(this);
     SelectionModel *model = new SelectionModel(combobox);
     combobox->setProperty("key", key);
@@ -130,7 +162,7 @@ void PluginSettingsDialog::addComboBox(QFormLayout *layout, const QString &label
 }
 
 void PluginSettingsDialog::addGroupBox(QFormLayout *layout, const QString &label, const QString &key,
-                                    const QVariantList &settings) {
+                                       const QVariantList &settings) {
     QGroupBox *groupbox = new QGroupBox("&" + label, this);
     QFormLayout *form = new QFormLayout(groupbox);
 
@@ -142,7 +174,7 @@ void PluginSettingsDialog::addGroupBox(QFormLayout *layout, const QString &label
 }
 
 void PluginSettingsDialog::addLineEdit(QFormLayout *layout, const QString &label, const QString &key,
-                                    const QString &value, bool isPassword) {
+                                       const QString &value, bool isPassword) {
     QLineEdit *edit = new QLineEdit(value, this);
     edit->setProperty("key", key);
 
@@ -154,8 +186,28 @@ void PluginSettingsDialog::addLineEdit(QFormLayout *layout, const QString &label
     connect(edit, SIGNAL(textChanged(QString)), this, SLOT(setTextValue(QString)));
 }
 
+void PluginSettingsDialog::addMenuButton(QFormLayout *layout, const QString &label, const QString &key,
+                                         const QVariantList &options, const QVariantList &values) {
+    QPushButton *button = new QPushButton(tr("Select options"), this);
+    QMenu *menu = new QMenu(button);
+    menu->installEventFilter(this);
+    button->setMenu(menu);
+
+    foreach (const QVariant &var, options) {
+        const QVariantMap option = var.toMap();
+        QAction *action = menu->addAction(option.value("label").toString());
+        action->setProperty("key", key);
+        action->setData(option.value("value"));
+        action->setCheckable(true);
+        action->setChecked(values.contains(option.value("value")));
+    }
+
+    layout->addRow("&" + label + ":", button);
+    connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(setMultiListValue(QAction*)));
+}
+
 void PluginSettingsDialog::addSpinBox(QFormLayout *layout, const QString &label, const QString &key, int minimum,
-                                   int maximum, int step, int value) {
+                                      int maximum, int step, int value) {
     QSpinBox *spinbox = new QSpinBox(this);
     spinbox->setProperty("key", key);
     spinbox->setMinimum(minimum);
@@ -193,7 +245,13 @@ void PluginSettingsDialog::addWidget(QFormLayout *layout, const QVariantMap &set
                    setting.value("maximum", 100).toInt(), setting.value("step", 1).toInt(), value.toInt());
     }
     else if (type == "list") {
-        addComboBox(layout, setting.value("label").toString(), key, setting.value("options").toList(), value);
+        if (setting.value("multiselect").toBool()) {
+            addMenuButton(layout, setting.value("label").toString(), key, setting.value("options").toList(),
+                          value.toList());
+        }
+        else {
+            addComboBox(layout, setting.value("label").toString(), key, setting.value("options").toList(), value);
+        }
     }
     else if (type == "password") {
         addLineEdit(layout, setting.value("label").toString(), key, value.toString(), true);
@@ -219,6 +277,20 @@ void PluginSettingsDialog::setListValue(int value) {
     if (const QComboBox *combobox = qobject_cast<QComboBox*>(sender())) {
         m_settings[combobox->property("key").toString()] = combobox->itemData(value);
     }
+}
+
+void PluginSettingsDialog::setMultiListValue(QAction *action) {
+    const QString key = action->property("key").toString();
+    QVariantList list = m_settings.value(key).toList();
+
+    if (action->isChecked()) {
+        list << action->data();
+    }
+    else {
+        list.removeOne(action->data());
+    }
+
+    m_settings[key] = list;
 }
 
 void PluginSettingsDialog::setTextValue(const QString &value) {

@@ -37,7 +37,11 @@ private Q_SLOTS:
     void setBooleanValue(bool value);
     void setIntegerValue(int value);
     void setListValue(int value);
+    void setMultiListValue(QAction *action);
     void setTextValue(const QString &value);
+
+protected:
+    virtual bool eventFilter(QObject *obj, QEvent *event);
 
 private:
     void addCheckBox(QFormLayout *layout, const QString &label, const QString &key, bool value);
@@ -46,6 +50,8 @@ private:
     void addGroupBox(QFormLayout *layout, const QString &label, const QString &key, const QVariantList &settings);
     void addLineEdit(QFormLayout *layout, const QString &label, const QString &key, const QString &value,
                      bool isPassword = false);
+    void addMenuButton(QFormLayout *layout, const QString &label, const QString &key, const QVariantList &options,
+                       const QVariantList &values);
     void addSpinBox(QFormLayout *layout, const QString &label, const QString &key, int minimum, int maximum,
                     int step, int value);
     void addWidget(QFormLayout *layout, const QVariantMap &setting, const QString &group = QString());
