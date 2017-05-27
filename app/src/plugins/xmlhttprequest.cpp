@@ -25,6 +25,7 @@ XMLHttpRequest::XMLHttpRequest(QObject *parent) :
     QObject(parent),
     m_nam(0),
     m_reply(0),
+    m_followRedirects(true),
     m_readyState(UNSENT),
     m_status(0),
     m_redirects(0)
@@ -35,6 +36,7 @@ XMLHttpRequest::XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent) 
     QObject(parent),
     m_nam(manager),
     m_reply(0),
+    m_followRedirects(true),
     m_readyState(UNSENT),
     m_status(0),
     m_redirects(0)
@@ -43,6 +45,14 @@ XMLHttpRequest::XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent) 
 
 QNetworkAccessManager* XMLHttpRequest::networkAccessManager() {
     return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
+}
+
+bool XMLHttpRequest::followRedirects() const {
+    return m_followRedirects;
+}
+
+void XMLHttpRequest::setFollowRedirects(bool enabled) {
+    m_followRedirects = enabled;
 }
 
 int XMLHttpRequest::readyState() const {
@@ -211,26 +221,28 @@ void XMLHttpRequest::onReplyReadyRead() {
 }
 
 void XMLHttpRequest::onReplyFinished() {
-    const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
-    
-    if (!redirect.isEmpty()) {
-        Logger::log("XMLHttpRequest::onReplyFinished(): Redirect: " + redirect, Logger::LowVerbosity);
+    if (followRedirects()) {
+        const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
         
-        if (m_redirects < MAX_REDIRECTS) {
-            QUrl url(redirect);
+        if (!redirect.isEmpty()) {
+            Logger::log("XMLHttpRequest::onReplyFinished(): Redirect: " + redirect, Logger::LowVerbosity);
             
-            if (url.scheme().isEmpty()) {
-                url.setScheme(m_reply->url().scheme());
+            if (m_redirects < MAX_REDIRECTS) {
+                QUrl url(redirect);
+                
+                if (url.scheme().isEmpty()) {
+                    url.setScheme(m_reply->url().scheme());
+                }
+                
+                if (url.authority().isEmpty()) {
+                    url.setAuthority(m_reply->url().authority());
+                }
+                
+                m_reply->deleteLater();
+                m_reply = 0;
+                followRedirect(url);
+                return;
             }
-            
-            if (url.authority().isEmpty()) {
-                url.setAuthority(m_reply->url().authority());
-            }
-            
-            m_reply->deleteLater();
-            m_reply = 0;
-            followRedirect(url);
-            return;
         }
     }
     

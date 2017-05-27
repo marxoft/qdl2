@@ -29,6 +29,7 @@ class XMLHttpRequest : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool followRedirects READ followRedirects WRITE setFollowRedirects)
     Q_PROPERTY(int readyState READ readyState)
     Q_PROPERTY(QString responseText READ responseText)
     Q_PROPERTY(QString responseXML READ responseXML)
@@ -49,6 +50,9 @@ public:
     
     explicit XMLHttpRequest(QObject *parent = 0);
     explicit XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent = 0);
+
+    bool followRedirects() const;
+    void setFollowRedirects(bool enabled);
 
     int readyState() const;
 
@@ -93,6 +97,8 @@ private:
     QNetworkReply *m_reply;
 
     QNetworkRequest m_request;
+
+    bool m_followRedirects;
 
     int m_readyState;
     int m_status;
