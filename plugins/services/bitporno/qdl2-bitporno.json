@@ -1,0 +1,44 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "BitPorno",
+    "icon": "qdl2-bitporno.jpg",
+    "regExp": "http(s|)://(www\\.|)bitporno\\.com/\\?v=\\w+",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default video format",
+            "key": "useDefaultFormat",
+            "value": false
+        },
+
+        {
+            "type": "list",
+            "label": "Video format",
+            "key": "format",
+            "value": "1080P HD",
+            "options": [
+                {
+                    "label": "1080P HD",
+                    "value": "1080P HD"
+                },
+
+                {
+                    "label": "720P",
+                    "value": "720P"
+                },
+
+                {
+                    "label": "480P",
+                    "value": "480P"
+                },
+
+                {
+                    "label": "360P",
+                    "value": "360P"
+                }
+            ]
+        }
+    ]
+}
+

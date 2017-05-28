@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
     archive \
     bigfile \
+    bitporno \
     dailymotion \
     datafile \
     depfile \
