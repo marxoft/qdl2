@@ -59,7 +59,7 @@ private Q_SLOTS:
     void setCurrentPackagePriority(QAction *action);
     void showCurrentPackageProperties();
 
-    void setMaximumConcurrentTransfers();
+    void setMaximumConcurrentTransfers(QAction *action);
 
     void setCategoryMenuActions();
     void setTransferMenuActions();
@@ -95,7 +95,7 @@ private Q_SLOTS:
     void onMaximumConcurrentTransfersChanged(int maximum);
     void onTotalSpeedChanged(int speed);
     
-private:    
+private:
     QMenu *m_fileMenu;
     QMenu *m_transferMenu;
     QMenu *m_packageMenu;

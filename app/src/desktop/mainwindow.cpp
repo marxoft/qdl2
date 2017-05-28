@@ -312,6 +312,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(Categories::instance(), SIGNAL(changed()), this, SLOT(setCategoryMenuActions()));
 
     connect(Settings::instance(), SIGNAL(nextActionChanged(int)), m_actionSelector, SLOT(setCurrentIndex(int)));
+    connect(Settings::instance(), SIGNAL(maximumConcurrentTransfersChanged(int)), this, SLOT(onMaximumConcurrentTransfersChanged(int)));
     
     connect(TransferModel::instance(), SIGNAL(captchaRequest(TransferItem*)), this, SLOT(showCaptchaDialog(TransferItem*)));
     connect(TransferModel::instance(), SIGNAL(settingsRequest(TransferItem*)), this, SLOT(showPluginSettingsDialog(TransferItem*)));
@@ -355,6 +356,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_packageCategoryGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackageCategory(QAction*)));
     connect(m_packagePriorityGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackagePriority(QAction*)));
     connect(m_pageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPage(QAction*)));
+    connect(m_concurrentTransfersGroup, SIGNAL(triggered(QAction*)), this, SLOT(setMaximumConcurrentTransfers(QAction*)));
 
     connect(m_actionSelector, SIGNAL(activated(int)), Settings::instance(), SLOT(setNextAction(int)));
         
@@ -500,10 +502,8 @@ void MainWindow::showCurrentPackageProperties() {
     }
 }
 
-void MainWindow::setMaximumConcurrentTransfers() {
-    if (const QAction *action = m_concurrentTransfersGroup->checkedAction()) {
-        Settings::setMaximumConcurrentTransfers(action->data().toInt());
-    }
+void MainWindow::setMaximumConcurrentTransfers(QAction *action) {
+    Settings::setMaximumConcurrentTransfers(action->data().toInt());
 }
 
 void MainWindow::setCategoryMenuActions() {
