@@ -312,30 +312,30 @@ void UrlCheckModel::clear() {
 }
 
 bool UrlCheckModel::submitSettingsResponse(const QVariantMap &settings) {
-    if (status() == AwaitingSettingsResponse) {        
-        setStatus(Active);
+    if (status() != AwaitingSettingsResponse) {
+        return false;
+    }
 
-        if (ServicePlugin *plugin = getCurrentPlugin()) {            
-            if (QMetaObject::invokeMethod(plugin, m_requestedSettingsCallback, Q_ARG(QVariantMap, settings))) {
-                Logger::log("UrlCheckModel::submitSettingsResponse(): Callback successful: "
-                            + m_requestedSettingsCallback, Logger::MediumVerbosity);
-                stopRequestedSettingsTimer();
-                clearRequestedSettings();
-                return true;
-            }
-            
-            Logger::log("UrlCheckModel::submitSettingsResponse(): Error calling callback: "
-                        + m_requestedSettingsCallback);
-        }
-        else {
-            Logger::log("UrlCheckModel::submitSettingsResponse(): No plugin acquired");
-        }
+    if (settings.isEmpty()) {
+        onUrlCheckError(tr("No settings response"));
+        return false;
     }
-    else {
-        Logger::log("UrlCheckModel::submitSettingsResponse(): Not awaiting settings response", Logger::MediumVerbosity);
+
+    ServicePlugin *plugin = getCurrentPlugin();
+
+    if (!plugin) {
+        onUrlCheckError(tr("No plugin found"));
+        return false;
     }
-    
-    return false;
+
+    if (!QMetaObject::invokeMethod(plugin, m_requestedSettingsCallback, Q_ARG(QVariantMap, settings))) {
+        stopRequestedSettingsTimer();
+        clearRequestedSettings();
+        onUrlCheckError(tr("Invalid settings callback method"));
+        return false;
+    }
+
+    return true;
 }
 
 ServicePlugin* UrlCheckModel::getCurrentPlugin() const {
