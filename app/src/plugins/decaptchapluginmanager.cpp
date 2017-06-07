@@ -113,7 +113,7 @@ int DecaptchaPluginManager::load() {
         dir.setPath(path);
         
         foreach (const QFileInfo &info, dir.entryInfoList(QStringList() << "*.json", QDir::Files, QDir::Time)) {
-            if (info.lastModified() > m_lastLoaded) {
+            if (info.created() > m_lastLoaded) {
                 DecaptchaPluginConfig *config = getConfigByFilePath(info.absoluteFilePath());
                 
                 if (!config) {
