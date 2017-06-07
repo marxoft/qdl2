@@ -115,6 +115,7 @@ maemo5 {
         src/maemo5/imagecache.h \
         src/maemo5/itemdelegate.h \
         src/maemo5/mainwindow.h \
+        src/maemo5/multivalueselector.h \
         src/maemo5/networkproxydialog.h \
         src/maemo5/package.h \
         src/maemo5/packagepropertiesdialog.h \
@@ -122,6 +123,7 @@ maemo5 {
         src/maemo5/plugindialog.h \
         src/maemo5/pluginsettingsdialog.h \
         src/maemo5/qdl.h \
+        src/maemo5/qmaemo5multilistpickselector.h \
         src/maemo5/recaptchapluginsdialog.h \
         src/maemo5/retrieveurlsdialog.h \
         src/maemo5/searchdialog.h \
@@ -154,6 +156,7 @@ maemo5 {
         src/maemo5/itemdelegate.cpp \
         src/maemo5/main.cpp \
         src/maemo5/mainwindow.cpp \
+        src/maemo5/multivalueselector.cpp \
         src/maemo5/networkproxydialog.cpp \
         src/maemo5/package.cpp \
         src/maemo5/packagepropertiesdialog.cpp \
@@ -161,6 +164,7 @@ maemo5 {
         src/maemo5/plugindialog.cpp \
         src/maemo5/pluginsettingsdialog.cpp \
         src/maemo5/qdl.cpp \
+        src/maemo5/qmaemo5multilistpickselector.cpp \
         src/maemo5/recaptchapluginsdialog.cpp \
         src/maemo5/retrieveurlsdialog.cpp \
         src/maemo5/searchdialog.cpp \
