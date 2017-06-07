@@ -23,7 +23,15 @@ function checkUrl(url) {
         if (request.readyState == 4) {
             try {
                 var fileName = /itemprop="headline">([^<]+)/.exec(request.responseText)[1] + ".mp4";
-                urlChecked(new UrlResult(url, fileName));
+
+                try {
+                    var docId = /docid=([^&"]+)/.exec(request.responseText)[1];
+                    var gdUrl = "https://drive.google.com/file/d/" + docId + "/view";
+                    urlChecked(new UrlResult(gdUrl, fileName));
+                }
+                catch(e) {
+                    urlChecked(new UrlResult(url, fileName));
+                }
             }
             catch(e) {
                 error(e);
