@@ -1,3 +1,11 @@
+qdl (2.5.0) unstable; urgency=low
+
+  * Add support for multi-select plugin list settings.
+  * Add support for captcha requests when performing URL checks.
+  * Add status messages for content searches.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 06 Jun 2017 02:28:32 +0000
+
 qdl (2.4.0) unstable; urgency=low
 
   * Add search plugin API for content searches.
