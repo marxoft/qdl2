@@ -15,6 +15,7 @@
  */
 
 #include "urlcheckdialog.h"
+#include "captchadialog.h"
 #include "pluginsettingsdialog.h"
 #include <QDialogButtonBox>
 #include <QHeaderView>
@@ -61,6 +62,7 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     m_layout->addWidget(m_buttonBox);
 
     connect(UrlCheckModel::instance(), SIGNAL(progressChanged(int)), m_progressBar, SLOT(setValue(int)));
+    connect(UrlCheckModel::instance(), SIGNAL(captchaRequest(QImage)), this, SLOT(showCaptchaDialog(QImage)));
     connect(UrlCheckModel::instance(), SIGNAL(settingsRequest(QString, QVariantList)),
             this, SLOT(showPluginSettingsDialog(QString, QVariantList)));
     connect(UrlCheckModel::instance(), SIGNAL(statusChanged(UrlCheckModel::Status)),
@@ -104,6 +106,24 @@ void UrlCheckDialog::showContextMenu(const QPoint &pos) {
 
     if (menu.exec(m_view->mapToGlobal(pos))) {
         UrlCheckModel::instance()->remove(m_view->currentIndex().row());
+    }
+}
+
+void UrlCheckDialog::showCaptchaDialog(const QImage &image) {
+    CaptchaDialog dialog(this);
+    dialog.setImage(image);
+    dialog.setTimeout(UrlCheckModel::instance()->captchaTimeout());
+    connect(UrlCheckModel::instance(), SIGNAL(statusChanged(UrlCheckModel::Status)), &dialog, SLOT(close()));
+
+    switch (dialog.exec()) {
+    case QDialog::Accepted:
+        UrlCheckModel::instance()->submitCaptchaResponse(dialog.response());
+        break;
+    case QDialog::Rejected:
+        UrlCheckModel::instance()->submitCaptchaResponse(QString());
+        break;
+    default:
+        break;
     }
 }
 

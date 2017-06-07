@@ -27,7 +27,6 @@
 #include <QHBoxLayout>
 #include <QListView>
 #include <QMenu>
-#include <QMessageBox>
 #include <QSplitter>
 
 SearchPage::SearchPage(QWidget *parent) :
@@ -54,10 +53,39 @@ SearchPage::SearchPage(QWidget *parent) :
     
     connect(m_model, SIGNAL(settingsRequest(QString, QVariantList)),
             this, SLOT(showPluginSettingsDialog(QString, QVariantList)));
-    connect(m_model, SIGNAL(statusChanged(SearchModel::Status)), this, SLOT(onModelStatusChanged(SearchModel::Status)));
+    connect(m_model, SIGNAL(statusChanged(SearchModel::Status)), this, SLOT(onModelStatusChanged()));
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this, SLOT(showItemDetails(QModelIndex)));
+}
+
+QString SearchPage::errorString() const {
+    return m_model->errorString();
+}
+
+Page::Status SearchPage::status() const {
+    switch (m_model->status()) {
+    case SearchModel::Active:
+    case SearchModel::AwaitingSettingsResponse:
+        return Active;
+    case SearchModel::Completed:
+        return Ready;
+    case SearchModel::Canceled:
+        return Canceled;
+    case SearchModel::Error:
+        return Error;
+    default:
+        return Idle;
+    }
+}
+
+QString SearchPage::statusString() const {
+    switch (status()) {
+    case Ready:
+        return tr("%1 results").arg(m_model->rowCount());
+    default:
+        return m_model->statusString();
+    }
 }
 
 void SearchPage::closeEvent(QCloseEvent *event) {
@@ -176,12 +204,6 @@ void SearchPage::showPluginSettingsDialog(const QString &title, const QVariantLi
     }
 }
 
-void SearchPage::onModelStatusChanged(SearchModel::Status status) {
-    switch (status) {
-    case SearchModel::Error:
-        QMessageBox::critical(this, tr("Search error"), m_model->errorString());
-        break;
-    default:
-        break;
-    }
+void SearchPage::onModelStatusChanged() {
+    emit statusChanged(status());
 }

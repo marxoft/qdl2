@@ -82,12 +82,16 @@ private Q_SLOTS:
     void showCaptchaDialog(TransferItem *transfer);
     void showPluginSettingsDialog(TransferItem *transfer);
 
+    void showMessage(const QString &message);
+    void showError(const QString &errorString);
+
     void loadPlugins();
 
     void onActiveTransfersChanged(int active);
     void onCurrentRowChanged(const QModelIndex &index);
     void onMaximumConcurrentTransfersChanged(int maximum);
     void onNextActionChanged(int action);
+    void onPageStatusChanged();
     void onTotalSpeedChanged(int speed);
     
 private:
@@ -135,7 +139,7 @@ private:
     
     QToolBar *m_toolBar;
     
-    QLabel *m_activeLabel;
+    QLabel *m_messageLabel;
     QLabel *m_speedLabel;
     
     QVBoxLayout *m_layout;

@@ -34,7 +34,6 @@ int ValueSelector::currentIndex() const {
 
 void ValueSelector::setCurrentIndex(int i) {
     m_selector->setCurrentIndex(i);
-    setValueText(m_model->data(m_model->index(i, 0), SelectionModel::NameRole).toString());
 }
 
 SelectionModel* ValueSelector::model() const {
@@ -88,7 +87,5 @@ void ValueSelector::showEvent(QShowEvent *e) {
 }
 
 void ValueSelector::onSelected() {
-    if (!currentValue().isNull()) {
-        emit valueChanged(currentValue());
-    }
+    emit valueChanged(currentValue());
 }

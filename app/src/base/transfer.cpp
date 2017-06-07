@@ -1012,6 +1012,7 @@ bool Transfer::submitCaptchaResponse(const QString &response) {
     }
 
     clearCaptchaImage();
+    stopWaitTimer();
 
     if (response.isEmpty()) {
         setErrorString(tr("No captcha response"));
@@ -1042,6 +1043,7 @@ bool Transfer::submitSettingsResponse(const QVariantMap &settings) {
     switch (status()) {
     case AwaitingDecaptchaSettingsResponse:
         clearRequestedSettings();
+        stopWaitTimer();
         
         if (settings.isEmpty()) {
             setErrorString(tr("No settings response"));
@@ -1065,6 +1067,7 @@ bool Transfer::submitSettingsResponse(const QVariantMap &settings) {
         return true;
     case AwaitingRecaptchaSettingsResponse:
         clearRequestedSettings();
+        stopWaitTimer();
         
         if (settings.isEmpty()) {
             setErrorString(tr("No settings response"));
@@ -1088,6 +1091,7 @@ bool Transfer::submitSettingsResponse(const QVariantMap &settings) {
         return true;
     case AwaitingServiceSettingsResponse:
         clearRequestedSettings();
+        stopWaitTimer();
         
         if (settings.isEmpty()) {
             setErrorString(tr("No settings response"));
@@ -1260,10 +1264,12 @@ void Transfer::startWaitTimer(int msecs, const char* slot) {
         m_timer = new QTimer(this);
         m_timer->setInterval(1000);
     }
+    else {
+        disconnect(m_timer, 0, this, 0);
+    }
     
-    m_timeRemaining = msecs;
-    disconnect(m_timer, 0, this, 0);
     connect(m_timer, SIGNAL(timeout()), this, slot);
+    m_timeRemaining = msecs;
     m_timer->start();
 }
 
@@ -1374,6 +1380,7 @@ void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, const QString 
     }
 
     setStatus(RetrievingCaptchaChallenge);
+    m_recaptchaKey = recaptchaKey;
     m_callback = callback;
     m_recaptchaPlugin->getCaptcha(recaptchaKey);
 }

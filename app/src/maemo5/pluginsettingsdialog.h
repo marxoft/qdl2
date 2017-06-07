@@ -53,6 +53,7 @@ private Q_SLOTS:
     void setBooleanValue(bool value);
     void setIntegerValue(int value);
     void setListValue(const QVariant &value);
+    void setMultiListValue(const QVariantList &values);
     void setTextValue(const QString &value);
 
     void updateTimeRemaining();
@@ -61,6 +62,8 @@ private:
     void addCheckBox(const QString &label, const QString &key, bool value);
     void addGroup(const QString &label, const QString &key, const QVariantList &settings);
     void addLineEdit(const QString &label, const QString &key, const QString &value, bool isPassword = false);
+    void addMultiValueSelector(const QString &label, const QString &key, const QVariantList &options,
+                               const QVariantList &values);
     void addSpinBox(const QString &label, const QString &key, int minimum, int maximum, int step, int value);
     void addValueSelector(const QString &label, const QString &key, const QVariantList &options, const QVariant &value);
     void addWidget(const QVariantMap &setting, const QString &group = QString());

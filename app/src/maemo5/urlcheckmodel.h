@@ -20,7 +20,10 @@
 
 #include "urlresult.h"
 #include <QAbstractListModel>
+#include <QPointer>
 
+class DecaptchaPlugin;
+class RecaptchaPlugin;
 class ServicePlugin;
 class QTimer;
 
@@ -50,6 +53,8 @@ class UrlCheckModel : public QAbstractListModel
 {
     Q_OBJECT
     
+    Q_PROPERTY(QByteArray captchaImage READ captchaImage NOTIFY statusChanged)
+    Q_PROPERTY(int captchaTimeout READ captchaTimeout NOTIFY captchaTimeoutChanged)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QVariantList requestedSettings READ requestedSettings NOTIFY statusChanged)
@@ -72,7 +77,10 @@ public:
     enum Status {
         Idle = 0,
         Active,
-        AwaitingSettingsResponse,
+        AwaitingCaptchaResponse,
+        AwaitingDecaptchaSettingsResponse,
+        AwaitingRecaptchaSettingsResponse,
+        AwaitingServiceSettingsResponse,
         Completed,
         Canceled
     };
@@ -80,6 +88,10 @@ public:
     ~UrlCheckModel();
 
     static UrlCheckModel* instance();
+
+    QByteArray captchaImage() const;
+    int captchaTimeout() const;
+    QString captchaTimeoutString() const;
 
     int progress() const;
     
@@ -119,17 +131,30 @@ public Q_SLOTS:
     void cancel();
     void clear();
     
+    bool submitCaptchaResponse(const QString &response);
     bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
+    void updateCaptchaTimeout();
     void updateRequestedSettingsTimeout();
     
     void onUrlChecked(const UrlResult &result);
     void onUrlChecked(const UrlResultList &results, const QString &packageName);
-    void onUrlCheckError(const QString &errorString);
-    void onUrlCheckSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
+
+    void onCaptchaReady(const QString &challenge, const QImage &image);
+    void onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QByteArray &callback); 
+    void onCaptchaResponse(const QString &captchaId, const QString &response);
+    void onCaptchaResponseReported(const QString &);
+
+    void onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
+    void onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
+    void onServiceSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
+
+    void onError(const QString &errorString);
     
 Q_SIGNALS:
+    void captchaRequest(const QImage &image);
+    void captchaTimeoutChanged(int timeout);
     void countChanged(int count);
     void progressChanged(int progress);
     void requestedSettingsTimeoutChanged(int timeout);
@@ -138,17 +163,23 @@ Q_SIGNALS:
     
 private:
     UrlCheckModel();
+
+    void setCaptchaImage(const QImage &image);
+    void clearCaptchaImage();
     
     void setRequestedSettings(const QString &title, const QVariantList &settings, const QByteArray &callback);
     void clearRequestedSettings();
     
-    void startRequestedSettingsTimer();
-    void stopRequestedSettingsTimer();
+    void startWaitTimer(int msecs, const char *slot);
+    void stopWaitTimer();
 
     void setStatus(Status s);
 
-    ServicePlugin* getCurrentPlugin() const;
-    
+    bool initDecaptchaPlugin(const QString &pluginId);
+    bool initRecaptchaPlugin(const QString &pluginId);
+    bool initServicePlugin(const QString &url);
+    void clearPlugins();
+
     void next();
 
     static UrlCheckModel *self;
@@ -158,15 +189,28 @@ private:
     QHash<int, QByteArray> m_roles;
     
     QTimer *m_timer;
+
+    QPointer<ServicePlugin> m_servicePlugin;
+    QPointer<RecaptchaPlugin> m_recaptchaPlugin;
+    QPointer<DecaptchaPlugin> m_decaptchaPlugin;
     
+    QByteArray m_captchaImageData;
+    QString m_captchaChallenge;
+    QString m_captchaResponse;
+    QString m_recaptchaKey;
+    QString m_decaptchaId;
+
     QString m_requestedSettingsTitle;
     QVariantList m_requestedSettings;
-    QByteArray m_requestedSettingsCallback;
-    int m_requestedSettingsTimeout;
+
+    QByteArray m_callback;
 
     Status m_status;
 
+    bool m_reportCaptchaError;
+
     int m_index;
+    int m_timeRemaining;
 };
 
 #endif // URLCHECKMODEL_H

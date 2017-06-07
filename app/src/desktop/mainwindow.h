@@ -23,6 +23,7 @@ class TransferItem;
 class QActionGroup;
 class QComboBox;
 class QLabel;
+class QSpinBox;
 class QStackedWidget;
 class QTabBar;
 class QToolButton;
@@ -59,14 +60,11 @@ private Q_SLOTS:
     void setCurrentPackagePriority(QAction *action);
     void showCurrentPackageProperties();
 
-    void setMaximumConcurrentTransfers(QAction *action);
-
     void setCategoryMenuActions();
     void setTransferMenuActions();
     void setPackageMenuActions();
 
     void showContextMenu(const QPoint &pos);
-    void showOptionsMenu();
     
     void closePage(int index);
     void closeCurrentPage();
@@ -87,12 +85,15 @@ private Q_SLOTS:
     
     void showCaptchaDialog(TransferItem *transfer);
     void showPluginSettingsDialog(TransferItem *transfer);
+
+    void showMessage(const QString &message);
+    void showError(const QString &errorString);
     
     void loadPlugins();
 
     void onActiveTransfersChanged(int active);
     void onCurrentRowChanged(const QModelIndex &index);
-    void onMaximumConcurrentTransfersChanged(int maximum);
+    void onPageStatusChanged();
     void onTotalSpeedChanged(int speed);
     
 private:
@@ -107,10 +108,6 @@ private:
 
     QMenu *m_packageCategoryMenu;
     QMenu *m_packagePriorityMenu;
-
-    QMenu *m_optionsMenu;
-    
-    QMenu *m_concurrentTransfersMenu;
 
     QToolBar *m_topToolBar;
     QToolBar *m_bottomToolBar;
@@ -150,14 +147,14 @@ private:
     QActionGroup *m_packageCategoryGroup;
     QActionGroup *m_packagePriorityGroup;
     QActionGroup *m_pageGroup;
-    QActionGroup *m_concurrentTransfersGroup;
+
+    QSpinBox *m_concurrentTransfersSpinBox;
 
     QComboBox *m_actionSelector;
     
+    QLabel *m_messageLabel;
     QLabel *m_activeLabel;
     QLabel *m_speedLabel;
-    
-    QToolButton *m_optionsButton;
     
     QWidget *m_widget;
     

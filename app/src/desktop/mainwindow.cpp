@@ -49,6 +49,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSpinBox>
 #include <QStackedWidget>
 #include <QTabBar>
 #include <QToolBar>
@@ -67,8 +68,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_transferPriorityMenu(new QMenu(tr("&Priority"), this)),
     m_packageCategoryMenu(new QMenu(tr("&Category"), this)),
     m_packagePriorityMenu(new QMenu(tr("&Priority"), this)),
-    m_optionsMenu(new QMenu(tr("&Options"), this)),
-    m_concurrentTransfersMenu(new QMenu(tr("&Maximum concurrent downloads"), this)),
     m_topToolBar(new QToolBar(this)),
     m_bottomToolBar(new QToolBar(this)),
     m_addUrlsAction(new QAction(QIcon::fromTheme("list-add"), tr("&Add URLs"), this)),
@@ -100,11 +99,11 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packageCategoryGroup(new QActionGroup(this)),
     m_packagePriorityGroup(new QActionGroup(this)),
     m_pageGroup(new QActionGroup(this)),
-    m_concurrentTransfersGroup(new QActionGroup(this)),
+    m_concurrentTransfersSpinBox(new QSpinBox(this)),
     m_actionSelector(new QComboBox(this)),
+    m_messageLabel(new QLabel(this)),
     m_activeLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
     m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this)),
-    m_optionsButton(new QToolButton(this)),
     m_widget(new QWidget(this)),
     m_tabs(new QTabBar(m_widget)),
     m_stack(new QStackedWidget(m_widget)),
@@ -206,12 +205,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_helpMenu->addAction(m_aboutAction);
 
-    m_optionsMenu->addMenu(m_concurrentTransfersMenu);
+    m_concurrentTransfersSpinBox->setRange(1, MAX_CONCURRENT_TRANSFERS);
+    m_concurrentTransfersSpinBox->setValue(Settings::maximumConcurrentTransfers());
+
+    QLabel *concurrentLabel = new QLabel(tr("&Maximum concurrent downloads: "), this);
+    concurrentLabel->setBuddy(m_concurrentTransfersSpinBox);
 
     m_actionSelector->setModel(new ActionModel(m_actionSelector));
     m_actionSelector->setCurrentIndex(Settings::nextAction());
     
-    QLabel *actionLabel = new QLabel(tr("&After current download(s): "), this);
+    QLabel *actionLabel = new QLabel(tr(" &After current download(s): "), this);
     actionLabel->setBuddy(m_actionSelector);
 
     m_topToolBar->setObjectName("topToolBar");
@@ -228,6 +231,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_topToolBar->addAction(m_queueAction);
     m_topToolBar->addAction(m_pauseAction);
     m_topToolBar->addSeparator();
+    m_topToolBar->addWidget(concurrentLabel);
+    m_topToolBar->addWidget(m_concurrentTransfersSpinBox);
     m_topToolBar->addWidget(actionLabel);
     m_topToolBar->addWidget(m_actionSelector);
 
@@ -237,34 +242,19 @@ MainWindow::MainWindow(QWidget *parent) :
     QWidget *spacer = new QWidget(m_bottomToolBar);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    QWidget *spacer2 = new QWidget(m_bottomToolBar);
-    spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    const int concurrent = Settings::maximumConcurrentTransfers();
-
-    for (int i = 1; i <= MAX_CONCURRENT_TRANSFERS; i++) {
-        QAction *action = m_concurrentTransfersMenu->addAction(QString::number(i));
-        action->setData(i);
-        action->setCheckable(true);
-        action->setChecked(i == concurrent);
-        m_concurrentTransfersGroup->addAction(action);
-    }
-
-    m_optionsButton->setIcon(QIcon::fromTheme("document-properties"));
-    m_optionsButton->setText(tr("&Options"));
-
-    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("9999.99MB/s"));
-    m_speedLabel->setAlignment(Qt::AlignCenter);
+    m_messageLabel->setMargin(6);
+    m_activeLabel->setMargin(6);
+    m_speedLabel->setMargin(6);
 
     m_bottomToolBar->setObjectName("bottomToolBar");
     m_bottomToolBar->setWindowTitle(tr("Bottom toolbar"));
     m_bottomToolBar->setAllowedAreas(Qt::BottomToolBarArea);
     m_bottomToolBar->setMovable(false);
-    m_bottomToolBar->addWidget(m_optionsButton);
+    m_bottomToolBar->addWidget(m_messageLabel);
     m_bottomToolBar->addWidget(spacer);
-    m_bottomToolBar->addWidget(m_activeLabel);
-    m_bottomToolBar->addWidget(spacer2);
     m_bottomToolBar->addWidget(m_speedLabel);
+    m_bottomToolBar->addSeparator();
+    m_bottomToolBar->addWidget(m_activeLabel);
     m_bottomToolBar->addWidget(speedIcon);
     
     m_tabs->setTabsClosable(true);
@@ -312,7 +302,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(Categories::instance(), SIGNAL(changed()), this, SLOT(setCategoryMenuActions()));
 
     connect(Settings::instance(), SIGNAL(nextActionChanged(int)), m_actionSelector, SLOT(setCurrentIndex(int)));
-    connect(Settings::instance(), SIGNAL(maximumConcurrentTransfersChanged(int)), this, SLOT(onMaximumConcurrentTransfersChanged(int)));
+    connect(Settings::instance(), SIGNAL(maximumConcurrentTransfersChanged(int)),
+            m_concurrentTransfersSpinBox, SLOT(setValue(int)));
     
     connect(TransferModel::instance(), SIGNAL(captchaRequest(TransferItem*)), this, SLOT(showCaptchaDialog(TransferItem*)));
     connect(TransferModel::instance(), SIGNAL(settingsRequest(TransferItem*)), this, SLOT(showPluginSettingsDialog(TransferItem*)));
@@ -356,8 +347,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_packageCategoryGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackageCategory(QAction*)));
     connect(m_packagePriorityGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPackagePriority(QAction*)));
     connect(m_pageGroup, SIGNAL(triggered(QAction*)), this, SLOT(setCurrentPage(QAction*)));
-    connect(m_concurrentTransfersGroup, SIGNAL(triggered(QAction*)), this, SLOT(setMaximumConcurrentTransfers(QAction*)));
 
+    connect(m_concurrentTransfersSpinBox, SIGNAL(valueChanged(int)),
+            Settings::instance(), SLOT(setMaximumConcurrentTransfers(int)));
     connect(m_actionSelector, SIGNAL(activated(int)), Settings::instance(), SLOT(setNextAction(int)));
         
     connect(m_tabs, SIGNAL(currentChanged(int)), this, SLOT(setCurrentPage(int)));
@@ -366,8 +358,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this, SLOT(onCurrentRowChanged(QModelIndex)));
-
-    connect(m_optionsButton, SIGNAL(clicked()), this, SLOT(showOptionsMenu()));    
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -502,10 +492,6 @@ void MainWindow::showCurrentPackageProperties() {
     }
 }
 
-void MainWindow::setMaximumConcurrentTransfers(QAction *action) {
-    Settings::setMaximumConcurrentTransfers(action->data().toInt());
-}
-
 void MainWindow::setCategoryMenuActions() {
     m_packageCategoryMenu->clear();
     QAction *categoryAction = m_packageCategoryMenu->addAction(tr("Default"));
@@ -571,10 +557,6 @@ void MainWindow::showContextMenu(const QPoint &pos) {
     }
 }
 
-void MainWindow::showOptionsMenu() {
-    m_optionsMenu->popup(m_optionsButton->mapToGlobal(m_optionsButton->rect().center()));
-}
-
 void MainWindow::closePage(int index) {
     if (index > 0) {
         if (QWidget *page = m_stack->widget(index)) {
@@ -608,10 +590,24 @@ void MainWindow::setCurrentPage(int index) {
     if ((index >= 0) && (index < m_pageGroup->actions().size())) {
         m_pageGroup->actions().at(index)->setChecked(true);
     }
+
+    if (const Page *page = qobject_cast<Page*>(m_stack->currentWidget())) {
+        showMessage(page->statusString());
+    }
+    else {
+        showMessage(QString());
+    }
 }
 
 void MainWindow::setCurrentPage(QAction *action) {
     m_tabs->setCurrentIndex(m_pageGroup->actions().indexOf(action));
+
+    if (const Page *page = qobject_cast<Page*>(m_stack->currentWidget())) {
+        showMessage(page->statusString());
+    }
+    else {
+        showMessage(QString());
+    }
 }
 
 void MainWindow::search(const QString &pluginName, const QString &pluginId) {
@@ -628,6 +624,7 @@ void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     action->setChecked(true);
     m_pageGroup->addAction(action);
     m_pageGroup->setVisible(true);
+    connect(page, SIGNAL(statusChanged(Page::Status)), this, SLOT(onPageStatusChanged()));
     page->search(pluginId);
 }
 
@@ -794,6 +791,14 @@ void MainWindow::showPluginSettingsDialog(TransferItem *t) {
     }
 }
 
+void MainWindow::showMessage(const QString &message) {
+    m_messageLabel->setText(message);
+}
+
+void MainWindow::showError(const QString &errorString) {
+    QMessageBox::critical(this, tr("Error"), errorString);
+}
+
 void MainWindow::loadPlugins() {
     const int decaptcha = DecaptchaPluginManager::instance()->load();
     const int recaptcha = RecaptchaPluginManager::instance()->load();
@@ -802,14 +807,14 @@ void MainWindow::loadPlugins() {
     const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
-        QMessageBox::information(this, tr("Load plugins"), tr("%1 new plugins found").arg(count));
+        showMessage(tr("%1 new plugins found").arg(count));
         
         if (search > 0) {
             m_searchAction->setEnabled(true);
         }
     }
     else {
-        QMessageBox::information(this, tr("Load plugins"), tr("No new plugins found"));
+        showMessage(tr("No new plugins found"));
     }
 }
 
@@ -823,12 +828,17 @@ void MainWindow::onCurrentRowChanged(const QModelIndex &index) {
     m_packageMenu->setEnabled(type == TransferItem::PackageType);
 }
 
-void MainWindow::onMaximumConcurrentTransfersChanged(int maximum) {
-    foreach (QAction *action, m_concurrentTransfersGroup->actions()) {
-        if (action->data() == maximum) {
-            action->setChecked(true);
-            return;
+void MainWindow::onPageStatusChanged() {
+    if (const Page *page = qobject_cast<Page*>(sender())) {
+        switch (page->status()) {
+        case Page::Error:
+            showError(page->errorString());
+            break;
+        default:
+            break;
         }
+
+        showMessage(page->statusString());
     }
 }
 

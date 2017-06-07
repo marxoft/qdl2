@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,48 +14,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VALUESELECTOR_H
-#define VALUESELECTOR_H
+#ifndef MULTIVALUESELECTOR_H
+#define MULTIVALUESELECTOR_H
 
 #include <QMaemo5ValueButton>
-#include <QVariant>
+#include <QVariantList>
 
-class QMaemo5ListPickSelector;
+class QMaemo5MultiListPickSelector;
 class SelectionModel;
 
-class ValueSelector : public QMaemo5ValueButton
+class MultiValueSelector : public QMaemo5ValueButton
 {
     Q_OBJECT
     
-    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex)
-    Q_PROPERTY(QVariant currentValue READ currentValue WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QList<int> currentIndexes READ currentIndexes WRITE setCurrentIndexes)
+    Q_PROPERTY(QVariantList currentValues READ currentValues WRITE setValues NOTIFY valuesChanged)
 
 public:
-    explicit ValueSelector(const QString &text, QWidget *parent = 0);
+    explicit MultiValueSelector(const QString &text, QWidget *parent = 0);
 
-    int currentIndex() const;
+    QList<int> currentIndexes() const;
     
     SelectionModel* model() const;
     void setModel(SelectionModel *model);
     
-    QVariant currentValue() const;
+    QVariantList currentValues() const;
 
 public Q_SLOTS:
-    void setCurrentIndex(int i);
+    void setCurrentIndexes(const QList<int> &i);
     
-    void setValue(const QVariant &v);
+    void setValues(const QVariantList &v);
 
 private Q_SLOTS:
     void onSelected();
 
 Q_SIGNALS:
-    void valueChanged(const QVariant &v);
+    void valuesChanged(const QVariantList &v);
 
 private:
-    void showEvent(QShowEvent *e);
-
     SelectionModel *m_model;
-    QMaemo5ListPickSelector *m_selector;
+    QMaemo5MultiListPickSelector *m_selector;
 };
 
-#endif // VALUESELECTOR_H
+#endif // MULTIVALUESELECTOR_H

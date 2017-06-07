@@ -15,6 +15,7 @@
  */
 
 #include "plugindialog.h"
+#include "multivalueselector.h"
 #include "pluginsettings.h"
 #include "selectionmodel.h"
 #include "valueselector.h"
@@ -99,6 +100,23 @@ void PluginDialog::addLineEdit(const QString &label, const QString &key, const Q
     connect(edit, SIGNAL(textChanged(QString)), this, SLOT(setTextValue(QString)));
 }
 
+void PluginDialog::addMultiValueSelector(const QString &label, const QString &key, const QVariantList &options,
+                                         const QVariantList &values) {
+    MultiValueSelector *selector = new MultiValueSelector(label, m_container);
+    SelectionModel *model = new SelectionModel(selector);
+    selector->setProperty("key", key);
+    selector->setModel(model);
+
+    foreach (const QVariant &var, options) {
+        const QVariantMap option = var.toMap();
+        model->append(option.value("label").toString(), option.value("value"));
+    }
+
+    selector->setValues(values);
+    m_vbox->addWidget(selector);
+    connect(selector, SIGNAL(valuesChanged(QVariantList)), this, SLOT(setMultiListValue(QVariantList)));
+}
+
 void PluginDialog::addSpinBox(const QString &label, const QString &key, int minimum, int maximum, int step,
                               int value) {
     QSpinBox *spinbox = new QSpinBox(m_container);
@@ -155,7 +173,13 @@ void PluginDialog::addWidget(const QVariantMap &setting, const QString &group) {
                    setting.value("maximum", 100).toInt(), setting.value("step", 1).toInt(), value.toInt());
     }
     else if (type == "list") {
-        addValueSelector(setting.value("label").toString(), key, setting.value("options").toList(), value);
+        if (setting.value("multiselect").toBool()) {
+            addMultiValueSelector(setting.value("label").toString(), key, setting.value("options").toList(),
+                                  value.toList());
+        }
+        else {
+            addValueSelector(setting.value("label").toString(), key, setting.value("options").toList(), value);
+        }
     }
     else if (type == "password") {
         addLineEdit(setting.value("label").toString(), key, value.toString(), true);
@@ -180,6 +204,12 @@ void PluginDialog::setIntegerValue(int value) {
 void PluginDialog::setListValue(const QVariant &value) {
     if (const QObject *obj = sender()) {
         m_settings[obj->property("key").toString()] = value;
+    }
+}
+
+void PluginDialog::setMultiListValue(const QVariantList &values) {
+    if (const QObject *obj = sender()) {
+        m_settings[obj->property("key").toString()] = values;
     }
 }
 

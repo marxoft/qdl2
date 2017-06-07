@@ -31,6 +31,11 @@ class SearchPage : public Page
 
 public:
     explicit SearchPage(QWidget *parent = 0);
+
+    virtual QString errorString() const;
+
+    virtual Status status() const;
+    virtual QString statusString() const;
    
 public Q_SLOTS:
     void search(const QString &pluginId);
@@ -49,7 +54,7 @@ private Q_SLOTS:
     
     void showPluginSettingsDialog(const QString &title, const QVariantList &settings);
     
-    void onModelStatusChanged(SearchModel::Status status);
+    void onModelStatusChanged();
 
 private:
     SearchModel *m_model;

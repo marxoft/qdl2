@@ -20,3 +20,28 @@ Page::Page(QWidget *parent) :
     QWidget(parent)
 {
 }
+
+QString Page::errorString() const {
+    return QString();
+}
+
+Page::Status Page::status() const {
+    return Idle;
+}
+
+QString Page::statusString() const {
+    switch (status()) {
+    case Idle:
+        return tr("Idle");
+    case Active:
+        return tr("Active");
+    case Ready:
+        return tr("Ready");
+    case Canceled:
+        return tr("Canceled");
+    case Error:
+        return tr("Error");
+    default:
+        return QString();
+    }
+}

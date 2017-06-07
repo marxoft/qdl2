@@ -22,9 +22,30 @@
 class Page : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QString errorString READ errorString NOTIFY statusChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
+
+    Q_ENUMS(Status)
 
 public:
+    enum Status {
+        Idle = 0,
+        Active,
+        Ready,
+        Canceled,
+        Error
+    };
+
     explicit Page(QWidget *parent = 0);
+
+    virtual QString errorString() const;
+
+    virtual Status status() const;
+    virtual QString statusString() const;
+
+Q_SIGNALS:
+    void statusChanged(Page::Status status);
 };
 
 #endif // PAGE_H

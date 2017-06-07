@@ -44,7 +44,6 @@
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QLabel>
-#include <QMaemo5InformationBox>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -89,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_stack(new QStackedWidget(m_widget)),
     m_view(new QTreeView(m_stack)),
     m_toolBar(new QToolBar(this)),
-    m_activeLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
+    m_messageLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
     m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this)),
     m_layout(new QVBoxLayout(m_widget))
 {
@@ -179,17 +178,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QLabel *speedIcon = new QLabel(m_toolBar);
     speedIcon->setPixmap(QIcon::fromTheme("general_received").pixmap(m_toolBar->iconSize()));
 
-    QWidget *spacer1 = new QWidget(m_toolBar);
-    spacer1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    
-    QWidget *spacer2 = new QWidget(m_toolBar);
-    spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    
-    m_activeLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QWidget *spacer = new QWidget(m_toolBar);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    m_speedLabel->setMinimumWidth(m_speedLabel->fontMetrics().width("9999.99MB/s"));
-    m_speedLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
+    m_messageLabel->setMargin(8);
+    m_speedLabel->setMargin(8);
+    
     m_toolBar->setAllowedAreas(Qt::BottomToolBarArea);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
@@ -198,9 +192,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_toolBar->addAction(m_retrieveUrlsAction);
     m_toolBar->addAction(m_clipboardUrlsAction);
     m_toolBar->addAction(m_propertiesAction);
-    m_toolBar->addWidget(spacer1);
-    m_toolBar->addWidget(m_activeLabel);
-    m_toolBar->addWidget(spacer2);
+    m_toolBar->addWidget(m_messageLabel);
+    m_toolBar->addWidget(spacer);
     m_toolBar->addWidget(m_speedLabel);
     m_toolBar->addWidget(speedIcon);
     
@@ -420,6 +413,13 @@ void MainWindow::closeCurrentPage() {
 void MainWindow::setCurrentPage(int index) {
     m_stack->setCurrentIndex(index);
     m_closePageAction->setEnabled(index > 0);
+
+    if (const Page *page = qobject_cast<Page*>(m_stack->currentWidget())) {
+        showMessage(page->statusString());
+    }
+    else {
+        showMessage(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()));
+    }
 }
 
 void MainWindow::showFirstPage() {
@@ -446,6 +446,7 @@ void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     m_stack->setCurrentIndex(index);
     m_tabs->setCurrentIndex(index);
     m_tabs->show();
+    connect(page, SIGNAL(statusChanged(Page::Status)), this, SLOT(onPageStatusChanged()));
     page->search(pluginId);
 }
 
@@ -612,6 +613,14 @@ void MainWindow::showPluginSettingsDialog(TransferItem *t) {
     }
 }
 
+void MainWindow::showMessage(const QString &message) {
+    m_messageLabel->setText(message);
+}
+
+void MainWindow::showError(const QString &errorString) {
+    QMessageBox::critical(this, tr("Error"), errorString);
+}
+
 void MainWindow::loadPlugins() {
     const int decaptcha = DecaptchaPluginManager::instance()->load();
     const int recaptcha = RecaptchaPluginManager::instance()->load();
@@ -620,19 +629,21 @@ void MainWindow::loadPlugins() {
     const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
-        QMessageBox::information(this, tr("Load plugins"), tr("%1 new plugins found").arg(count));
+        showMessage(tr("%1 new plugins found").arg(count));
         
         if (search > 0) {
             m_searchAction->setEnabled(true);
         }
     }
     else {
-        QMessageBox::information(this, tr("Load plugins"), tr("No new plugins found"));
+        showMessage(tr("No new plugins found"));
     }
 }
 
 void MainWindow::onActiveTransfersChanged(int active) {
-    m_activeLabel->setText(QString("%1DLs").arg(active));
+    if (m_stack->currentIndex() == 0) {
+        showMessage(QString("%1DLs").arg(active));
+    }
 }
 
 void MainWindow::onCurrentRowChanged(const QModelIndex &index) {
@@ -645,6 +656,22 @@ void MainWindow::onMaximumConcurrentTransfersChanged(int maximum) {
 
 void MainWindow::onNextActionChanged(int action) {
     m_nextAction->setValue(action);
+}
+
+void MainWindow::onPageStatusChanged() {
+    if (m_stack->currentIndex() > 0) {
+        if (const Page *page = qobject_cast<Page*>(sender())) {
+            switch (page->status()) {
+            case Page::Error:
+                showError(page->errorString());
+                break;
+            default:
+                break;
+            }
+
+            showMessage(page->statusString());
+        }
+    }
 }
 
 void MainWindow::onTotalSpeedChanged(int speed) {

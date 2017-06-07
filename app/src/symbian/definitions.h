@@ -38,6 +38,10 @@ static const QStringList RECAPTCHA_PLUGIN_PATHS = QStringList() << QString(ROOT_
                                                                 << QString(HOME_PATH + "qdl2/plugins/recaptcha/")
                                                                 << QString(CARD_PATH + "qdl2/plugins/recaptcha/");
 
+static const QStringList SEARCH_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/search/")
+                                                             << QString(HOME_PATH + "qdl2/plugins/search/")
+                                                             << QString(CARD_PATH + "qdl2/plugins/search/");
+
 static const QStringList SERVICE_PLUGIN_PATHS = QStringList() << QString(ROOT_PATH + "qdl2/plugins/services/")
                                                               << QString(HOME_PATH + "qdl2/plugins/services/")
                                                               << QString(CARD_PATH + "qdl2/plugins/services/");
@@ -68,7 +72,7 @@ static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
 
 // Version
-static const QString VERSION_NUMBER("2.3.1");
+static const QString VERSION_NUMBER("2.4.0");
 
 // Appearance
 static const QString ACTIVE_COLOR("#0881cb");
