@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -28,8 +28,10 @@
 #include <QtPlugin>
 #endif
 
+const QRegExp DepFilePlugin::DOWNLOAD_REGEXP("var ds=\\w+\\.\\w+\\('([^']+)'\\)");
 const QRegExp DepFilePlugin::FILE_REGEXP("http(s|)://\\d+\\w+\\.\\w+/\\d+/\\d+/\\d+/\\w+/[^'\"]+");
 const QRegExp DepFilePlugin::WAIT_REGEXP("No less than (\\d+) min should pass before next download");
+
 const QString DepFilePlugin::LOGIN_URL("https://depfile.com");
 const QString DepFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
@@ -40,6 +42,7 @@ const QString DepFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesk
                                          + "/.config/qdl2/plugins/qdl2-depfile");
 #endif
 const int DepFilePlugin::MAX_REDIRECTS = 8;
+const int DepFilePlugin::WAIT_TIME = 60;
 
 DepFilePlugin::DepFilePlugin(QObject *parent) :
     ServicePlugin(parent),
@@ -345,28 +348,28 @@ void DepFilePlugin::checkCaptcha() {
                                 "submitCaptchaResponse");
         }
     }
-    else {
-        m_downloadUrl =
-        QUrl::fromPercentEncoding(response.section("document.getElementById(\"wait_input\").value= unescape('",
-                                                    1, 1).section("');", 0, 0).toUtf8());
-        const int secs = response.section("var sec=", 1, 1).section(";", 0, 0).toInt();
+    else if (DOWNLOAD_REGEXP.indexIn(response) != -1) {
+        m_downloadUrl = QUrl::fromEncoded(QByteArray::fromBase64(DOWNLOAD_REGEXP.cap(1).toUtf8()));
+        int secs = response.section("var sec=", 1, 1).section(";", 0, 0).toInt();
 
-        if ((!m_downloadUrl.isEmpty()) && (secs > 0)) {
-            startWaitTimer(secs * 1000, SLOT(sendDownloadRequest()));
+        if (secs < 1) {
+            secs = WAIT_TIME;
         }
-        else if (WAIT_REGEXP.indexIn(response) != -1) {
-            const int mins = WAIT_REGEXP.cap(1).toInt();
 
-            if (mins > 0) {
-                emit waitRequest(mins * 60000, true);
-            }
-            else {
-                emit error(tr("Unknown error"));
-            }
+        startWaitTimer(secs * 1000, SLOT(sendDownloadRequest()));
+    }
+    else if (WAIT_REGEXP.indexIn(response) != -1) {
+        const int mins = WAIT_REGEXP.cap(1).toInt();
+
+        if (mins > 0) {
+            emit waitRequest(mins * 60000, true);
         }
         else {
             emit error(tr("Unknown error"));
         }
+    }
+    else {
+        emit error(tr("Unknown error"));
     }
 
     reply->deleteLater();

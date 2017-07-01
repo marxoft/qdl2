@@ -3,7 +3,7 @@
     "name": "DepFile",
     "icon": "qdl2-depfile.jpg",
     "version": 1,
-    "regExp": "http(s|)://(depfile\\.com|yep\\.pm|kyc\\.pm|ssh\\.tf)/\\w+",
+    "regExp": "http(s|)://(depfile\\.com|yep\\.pm|kyc\\.pm|ssh\\.tf|click\\.tf)/\\w+",
     "settings": [
         {
             "type": "group",

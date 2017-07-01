@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -76,6 +76,7 @@ private:
     void startWaitTimer(int msecs, const char* slot);
     void stopWaitTimer();
 
+    static const QRegExp DOWNLOAD_REGEXP;
     static const QRegExp FILE_REGEXP;
     static const QRegExp WAIT_REGEXP;
     static const QString LOGIN_URL;
@@ -83,6 +84,7 @@ private:
     static const QString CONFIG_FILE;
     
     static const int MAX_REDIRECTS;
+    static const int WAIT_TIME;
 
     QPointer<QNetworkAccessManager> m_nam;
     QTimer *m_waitTimer;
