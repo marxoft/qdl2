@@ -26,6 +26,7 @@ SUBDIRS = \
     porntrex \
     publishtome \
     rapidgator \
+    rapidvideo \
     sendvid \
     sexix \
     soundcloud \
