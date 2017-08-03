@@ -1,3 +1,9 @@
+qdl-plugins-keeptoshare (0.2.3) unstable; urgency=low
+
+  * Fix filename detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 03 Aug 2017 20:19:31 +0000
+
 qdl-plugins-keeptoshare (0.2.2) unstable; urgency=low
 
   * Support the 'new' subdomain.
