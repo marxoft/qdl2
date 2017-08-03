@@ -177,7 +177,7 @@ void FileFactoryPlugin::checkUrlIsValid() {
         }
     }
     else {
-        const QString fileName = response.section("file_name", 1, 1).section("<h2>", 1, 1).section('<', 0, 0);
+        const QString fileName = response.section("class=\"file-name\">", 1, 1).section('<', 0, 0);
         
         if (fileName.isEmpty()) {
             if (response.contains(PASSWORD_PROTECTED_ERROR)) {

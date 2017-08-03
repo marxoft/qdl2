@@ -1,3 +1,9 @@
+qdl-plugins-filefactory (0.3.1) unstable; urgency=low
+
+  * Fix filename detection.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 03 Jul 2017 20:05:21 +0000
+
 qdl-plugins-filefactory (0.3.0) unstable; urgency=low
 
   * Add support for folders and password-protected links.
