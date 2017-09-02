@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var FORMATS = ["1080p", "720p", "480p", "360p"];
+var FORMATS = ["720p", "480p", "360p"];
 var request = null;
 
 function checkUrl(url) {
@@ -40,26 +40,27 @@ function getDownloadRequest(url) {
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             try {
-                var formats = JSON.parse(/"sources": (\[[^\]]+\])/.exec(request.responseText)[1]);
+                var response = request.responseText;
+                var options = [];
 
-                if (!formats.length) {
+                for (var i = 0; i < FORMATS.length; i++) {
+                    try {
+                        var re =
+                            new RegExp("<source src=\"([^\"]+)\" type=\"video/mp4\" title=\"" + FORMATS[i] + "\"");
+                        options.push({"label": FORMATS[i].toUpperCase(), "value": re.exec(response)[1]});
+                    }
+                    catch(e) {
+                        continue;
+                    }
+                }
+
+                if (!options.length) {
                     error(qsTr("No video formats found"));
                     return;
                 }
 
-                var options = [];
-
-                for (var i = 0; i < FORMATS.length; i++) {
-                    for (var j = 0; j < formats.length; j++) {
-                        if (formats[j].label == FORMATS[i]) {
-                            options.push({"label": formats[j].label.toUpperCase(), "value": formats[j].file});
-                            break;
-                        }
-                    }
-                }
-
                 if (settings.value("useDefaultFormat", false) === true) {
-                    var format = settings.value("format", "1080P");
+                    var format = settings.value("format", "720P");
 
                     for (var i = 0; i < options.length; i++) {
                         if (options[i].label == format) {
@@ -83,7 +84,7 @@ function getDownloadRequest(url) {
         }
     }
 
-    request.open("GET", url);
+    request.open("GET", url + "&q=0p"); // Ensure full list of formats appears
     request.send();
 }
 

@@ -16,13 +16,8 @@
             "type": "list",
             "label": "Video format",
             "key": "format",
-            "value": "1080P",
+            "value": "720P",
             "options": [
-                {
-                    "label": "1080P",
-                    "value": "1080P"
-                },
-
                 {
                     "label": "720P",
                     "value": "720P"
