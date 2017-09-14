@@ -34,7 +34,7 @@ bool TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
         if (request->method() == QHttpRequest::HTTP_GET) {
             const bool includeChildren = Utils::urlQueryItemValue(request->url(), "includeChildren") == "true";
             const int offset = qMax(0, Utils::urlQueryItemValue(request->url(), "offset").toInt());
-            const int limit = Utils::urlQueryItemValue(request->url(), "limit").toInt();            
+            const int limit = Utils::urlQueryItemValue(request->url(), "limit").toInt();
             writeResponse(response, QHttpResponse::STATUS_OK,
                           QtJson::Json::serialize(Qdl::getTransfers(offset, limit, includeChildren)));
             return true;
@@ -61,20 +61,33 @@ bool TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
         writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
         return true;
     }
+
+    if (parts.at(1) == "status") {
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getTransfersStatus()));
+            return true;
+        }
+
+        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+        return true;
+    }
     
     if (parts.at(1) == "search") {
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString property = Utils::urlQueryItemValue(request->url(), "property");
             const QString value = Utils::urlQueryItemValue(request->url(), "value");
+            const int matchFlags = qMax(0, Utils::urlQueryItemValue(request->url(), "matchFlags").toInt());
+            const int offset = qMax(0, Utils::urlQueryItemValue(request->url(), "offset").toInt());
+            const int limit = Utils::urlQueryItemValue(request->url(), "limit").toInt();
+            const bool includeChildren = Utils::urlQueryItemValue(request->url(), "includeChildren") == "true";
             
             if ((property.isEmpty()) || (value.isEmpty())) {
                 writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
             }
             else {
                 writeResponse(response, QHttpResponse::STATUS_OK,
-                QtJson::Json::serialize(Qdl::searchTransfers(property, value,
-                                        Utils::urlQueryItemValue(request->url(), "hits", "1").toInt(),
-                                        Utils::urlQueryItemValue(request->url(), "includeChildren") == "true")));
+                QtJson::Json::serialize(Qdl::searchTransfers(property, value, matchFlags, offset, limit,
+                                        includeChildren)));
             }
             
             return true;

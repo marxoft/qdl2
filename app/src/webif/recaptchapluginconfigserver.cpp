@@ -24,7 +24,7 @@
 bool RecaptchaPluginConfigServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
     
-    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "recaptcha")) {
+    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "recaptchaplugins")) {
         return false;
     }
 

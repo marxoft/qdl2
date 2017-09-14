@@ -22,6 +22,7 @@
 #include "mainwindow.h"
 #include "pluginsettings.h"
 #include "recaptchapluginmanager.h"
+#include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "transfermodel.h"
@@ -83,6 +84,18 @@ static QVariantMap configToVariantMap(const DecaptchaPluginConfig *config) {
 }
 
 static QVariantMap configToVariantMap(const RecaptchaPluginConfig *config) {
+    QVariantMap map;
+    map["displayName"] = config->displayName();
+    map["filePath"] = config->filePath();
+    map["iconFilePath"] = config->iconFilePath();
+    map["id"] = config->id();
+    map["pluginFilePath"] = config->pluginFilePath();
+    map["pluginType"] = config->pluginType();
+    map["version"] = config->version();
+    return map;
+}
+
+static QVariantMap configToVariantMap(const SearchPluginConfig *config) {
     QVariantMap map;
     map["displayName"] = config->displayName();
     map["filePath"] = config->filePath();
@@ -173,6 +186,24 @@ static QVariantList getConfigSettings(const RecaptchaPluginConfig *config) {
     return settings;
 }
 
+static QVariantList getConfigSettings(const SearchPluginConfig *config) {
+    QVariantList settings = config->settings();
+
+    if (settings.isEmpty()) {
+        return settings;
+    }
+
+    PluginSettings plugin(config->id());
+
+    for (int i = 0; i < settings.size(); i++) {
+        QVariantMap setting = settings.at(i).toMap();
+        getConfigSetting(plugin, setting);
+        settings[i] = setting;
+    }
+
+    return settings;
+}
+
 static QVariantList getConfigSettings(const ServicePluginConfig *config) {
     QVariantList settings = config->settings();
 
@@ -239,17 +270,11 @@ void Qdl::addTransfers(const QStringList &urls, const QString &requestMethod, co
     TransferModel::instance()->append(urls, requestMethod, requestHeaders, postData);
 }
 
-QVariantMap Qdl::getTransfers(int offset, int limit, bool includeChildren) {
+QVariantList Qdl::getTransfers(int offset, int limit, bool includeChildren) {
     if ((limit <= 0) || (limit > TransferModel::instance()->rowCount())) {
         limit = TransferModel::instance()->rowCount();
     }
 
-    QVariantMap map;
-    map["active"] = TransferModel::instance()->activeTransfers();
-    map["speed"] = TransferModel::instance()->totalSpeed();
-    map["speedString"] = TransferModel::instance()->totalSpeedString();
-    map["total"] = TransferModel::instance()->rowCount();
-    
     QVariantList transfers;
     
     for (int i = offset; i < limit; i++) {
@@ -277,8 +302,16 @@ QVariantMap Qdl::getTransfers(int offset, int limit, bool includeChildren) {
         }
     }
 
-    map["transfers"] = transfers;
-    return map;
+    return transfers;
+}
+
+QVariantMap Qdl::getTransfersStatus() {
+    QVariantMap status;
+    status["active"] = TransferModel::instance()->activeTransfers();
+    status["speed"] = TransferModel::instance()->totalSpeed();
+    status["speedString"] = TransferModel::instance()->totalSpeedString();
+    status["total"] = TransferModel::instance()->rowCount();
+    return status;
 }
 
 QVariantMap Qdl::getTransfer(const QString &id, bool includeChildren) {
@@ -304,14 +337,21 @@ QVariantMap Qdl::getTransfer(const QString &id, bool includeChildren) {
     return QVariantMap();
 }
 
-QVariantList Qdl::searchTransfers(const QString &property, const QVariant &value, int hits, bool includeChildren) {
+QVariantList Qdl::searchTransfers(const QString &property, const QVariant &value, int matchFlags, int offset, int limit,
+        bool includeChildren) {
+    if ((limit <= 0) || (limit > TransferModel::instance()->rowCount())) {
+        limit = TransferModel::instance()->rowCount();
+    }
+
+    const int hits = qMin(offset + limit, TransferModel::instance()->rowCount());
     QVariantList transfers;
     const QModelIndexList indexes =
     TransferModel::instance()->match(TransferModel::instance()->index(0, 0),
                                      TransferItem::roleNames().key(property.toUtf8()), value, hits,
-                                     Qt::MatchExactly | Qt::MatchRecursive);
+                                     Qt::MatchFlags(matchFlags));
     
-    foreach (const QModelIndex &index, indexes) {
+    for (int i = offset; i < indexes.size(); i++) {
+        const QModelIndex &index = indexes.at(i);
         QVariantMap transfer = TransferModel::instance()->itemDataWithRoleNames(index);
         
         if (!transfer.isEmpty()) {
@@ -506,6 +546,52 @@ bool Qdl::setRecaptchaPluginSettings(const QString &id, const QVariantMap &prope
     }
     
     if (const RecaptchaPluginConfig *config = RecaptchaPluginManager::instance()->getConfigById(id)) {
+        PluginSettings settings(config->id());
+        QMapIterator<QString, QVariant> iterator(properties);
+
+        while (iterator.hasNext()) {
+            iterator.next();
+            settings.setValue(iterator.key(), iterator.value());
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+QVariantList Qdl::getSearchPlugins() {
+    QVariantList list;
+
+    foreach (const SearchPluginPair &pair, SearchPluginManager::instance()->plugins()) {
+        list << configToVariantMap(pair.config);
+    }
+
+    return list;
+}
+
+QVariantMap Qdl::getSearchPlugin(const QString &id) {
+    if (const SearchPluginConfig *config = SearchPluginManager::instance()->getConfigById(id)) {
+        return configToVariantMap(config);
+    }
+
+    return QVariantMap();
+}
+
+QVariantList Qdl::getSearchPluginSettings(const QString &id) {
+    if (const SearchPluginConfig *config = SearchPluginManager::instance()->getConfigById(id)) {
+        return getConfigSettings(config);
+    }
+
+    return QVariantList();
+}
+
+bool Qdl::setSearchPluginSettings(const QString &id, const QVariantMap &properties) {
+    if (properties.isEmpty()) {
+        return false;
+    }
+    
+    if (const SearchPluginConfig *config = SearchPluginManager::instance()->getConfigById(id)) {
         PluginSettings settings(config->id());
         QMapIterator<QString, QVariant> iterator(properties);
 

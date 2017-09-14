@@ -43,6 +43,7 @@ public Q_SLOTS:
 
     static QList< QPair<QString, QString> > urlQueryItems(const QUrl &url);
     static QVariantMap urlQueryItemMap(const QUrl &url);
+    static QString mapToUrlQuery(const QVariantMap &map);
     static QString urlQueryItemValue(const QUrl &url, const QString &queryItem,
                                      const QString &defaultValue = QString());
 };

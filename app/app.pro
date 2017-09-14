@@ -181,7 +181,7 @@ maemo5 {
         src/maemo5/valueselectoraction.cpp
         
     dbus.path = /usr/share/dbus-1/services
-    dbus.files = dbus/org.marxoft.qdl2.service
+    dbus.files = dbus/maemo5/org.marxoft.qdl2.service
 
     desktop.path = /usr/share/applications/hildon
     desktop.files = desktop/maemo5/qdl2.desktop
@@ -349,7 +349,7 @@ maemo5 {
         src/desktop/urlcheckmodel.cpp
         
     dbus.path = /usr/share/dbus-1/services
-    dbus.files = dbus/org.marxoft.qdl2.service
+    dbus.files = dbus/desktop/org.marxoft.qdl2.service
 
     desktop.path = /usr/share/applications
     desktop.files = desktop/desktop/qdl2.desktop
@@ -399,7 +399,10 @@ contains(DEFINES, WEB_INTERFACE) {
         src/webif/categoryserver.h \
         src/webif/decaptchapluginconfigserver.h \
         src/webif/fileserver.h \
+        src/webif/imagecacheserver.h \
         src/webif/recaptchapluginconfigserver.h \
+        src/webif/searchserver.h \
+        src/webif/searchpluginconfigserver.h \
         src/webif/serverresponse.h \
         src/webif/servicepluginconfigserver.h \
         src/webif/settingsserver.h \
@@ -418,7 +421,10 @@ contains(DEFINES, WEB_INTERFACE) {
         src/webif/categoryserver.cpp \
         src/webif/decaptchapluginconfigserver.cpp \
         src/webif/fileserver.cpp \
+        src/webif/imagecacheserver.cpp \
         src/webif/recaptchapluginconfigserver.cpp \
+        src/webif/searchserver.cpp \
+        src/webif/searchpluginconfigserver.cpp \
         src/webif/servicepluginconfigserver.cpp \
         src/webif/settingsserver.cpp \
         src/webif/transferserver.cpp \

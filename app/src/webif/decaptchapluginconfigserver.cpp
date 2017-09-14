@@ -24,7 +24,7 @@
 bool DecaptchaPluginConfigServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
     
-    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "decaptcha")) {
+    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "decaptchaplugins")) {
         return false;
     }
 

@@ -15,6 +15,7 @@
  */
 
 #include "utils.h"
+#include "json.h"
 #include <QFile>
 #include <QRegExp>
 #include <QUuid>
@@ -134,6 +135,24 @@ QVariantMap Utils::urlQueryItemMap(const QUrl &url) {
     }
     
     return map;
+}
+
+QString Utils::mapToUrlQuery(const QVariantMap &map) {
+    QString query;
+    QMapIterator<QString, QVariant> iterator(map);
+
+    while (iterator.hasNext()) {
+        iterator.next();
+        query.append(iterator.key());
+        query.append("=");
+        query.append(QString::fromUtf8(QtJson::Json::serialize(iterator.value())));
+
+        if (iterator.hasNext()) {
+            query.append("&");
+        }
+    }
+
+    return query;
 }
 
 QString Utils::urlQueryItemValue(const QUrl &url, const QString &queryItem, const QString &defaultValue) {

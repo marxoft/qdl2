@@ -37,7 +37,7 @@ public:
     ~ImageCache();
     
     QImage image(const QUrl &url, const QSize &size = QSize(), Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio,
-                 Qt::TransformationMode transformatioMode = Qt::SmoothTransformation);
+                 Qt::TransformationMode transformationMode = Qt::SmoothTransformation);
     
 private Q_SLOTS:
     void onRequestFinished(ImageRequest *request);

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.marxoft.qdl2
+Exec=/usr/bin/qdl2

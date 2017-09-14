@@ -134,7 +134,7 @@ bool TransferModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 }
 
 int TransferModel::rowCount(const QModelIndex &parent) const {
-    if (TransferItem *item = get(parent)) {
+    if (const TransferItem *item = get(parent)) {
         return item->rowCount();
     }
 
@@ -150,7 +150,7 @@ QModelIndex TransferModel::index(int row, int column, const QModelIndex &parent)
         return QModelIndex();
     }
 
-    if (TransferItem *parentItem = get(parent)) {
+    if (const TransferItem *parentItem = get(parent)) {
         if (TransferItem *child = parentItem->childItem(row)) {
             return createIndex(row, column, child);
         }
@@ -168,7 +168,7 @@ QModelIndex TransferModel::parent(const QModelIndex &child) const {
         return QModelIndex();
     }
 
-    if (TransferItem *item = get(child)) {
+    if (const TransferItem *item = get(child)) {
         if (TransferItem *parentItem = item->parentItem()) {
             if (parentItem != m_packages) {
                 return createIndex(parentItem->row(), 0, parentItem);
@@ -205,7 +205,7 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 QVariant TransferModel::data(const QModelIndex &index, int role) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         switch (role) {
         case Qt::DisplayRole:
             switch (index.column()) {
@@ -242,7 +242,7 @@ QVariant TransferModel::data(const QModelIndex &index, int role) const {
 }
 
 QVariant TransferModel::data(const QModelIndex &index, const QByteArray &roleName) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         return item->data(roleName);
     }
 
@@ -250,7 +250,7 @@ QVariant TransferModel::data(const QModelIndex &index, const QByteArray &roleNam
 }
 
 QVariant TransferModel::data(const QVariant &index, const QByteArray &roleName) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         return item->data(roleName);
     }
 
@@ -282,7 +282,7 @@ bool TransferModel::setData(const QVariant &index, const QVariant &value, const 
 }
 
 QMap<int, QVariant> TransferModel::itemData(const QModelIndex &index) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         return item->itemData();
     }
 
@@ -290,7 +290,7 @@ QMap<int, QVariant> TransferModel::itemData(const QModelIndex &index) const {
 }
 
 QVariantMap TransferModel::itemDataWithRoleNames(const QModelIndex &index) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         return item->itemDataWithRoleNames();
     }
 
@@ -298,7 +298,7 @@ QVariantMap TransferModel::itemDataWithRoleNames(const QModelIndex &index) const
 }
 
 QVariantMap TransferModel::itemDataWithRoleNames(const QVariant &index) const {
-    if (TransferItem *item = get(index)) {
+    if (const TransferItem *item = get(index)) {
         return item->itemDataWithRoleNames();
     }
 

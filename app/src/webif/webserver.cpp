@@ -20,10 +20,13 @@
 #include "decaptchapluginconfigserver.h"
 #include "definitions.h"
 #include "fileserver.h"
+#include "imagecacheserver.h"
 #include "recaptchapluginconfigserver.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
 #include "qhttpserver.h"
+#include "searchserver.h"
+#include "searchpluginconfigserver.h"
 #include "servicepluginconfigserver.h"
 #include "settingsserver.h"
 #include "transferserver.h"
@@ -35,6 +38,8 @@ WebServer* WebServer::self = 0;
 WebServer::WebServer() :
     QObject(),
     m_server(0),
+    m_imageServer(0),
+    m_searchServer(0),
     m_port(8080),
     m_authenticationEnabled(false),
     m_status(Idle)
@@ -153,6 +158,14 @@ void WebServer::init() {
         connect(m_server, SIGNAL(newRequest(QHttpRequest*,QHttpResponse*)),
                 this, SLOT(onNewRequest(QHttpRequest*,QHttpResponse*)));
     }
+
+    if (!m_imageServer) {
+        m_imageServer = new ImageCacheServer(this);
+    }
+
+    if (!m_searchServer) {
+        m_searchServer = new SearchServer(this);
+    }
 }
 
 void WebServer::onNewRequest(QHttpRequest *request, QHttpResponse *response) {
@@ -207,18 +220,33 @@ void WebServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
             return;
         }
     }
-    else if (request->path().startsWith("/decaptcha")) {
+    else if (request->path().startsWith("/images")) {
+        if (m_imageServer->handleRequest(request, response)) {
+            return;
+        }
+    }
+    else if (request->path().startsWith("/decaptchaplugins")) {
         if (DecaptchaPluginConfigServer::handleRequest(request, response)) {
             return;
         }
     }
-    else if (request->path().startsWith("/recaptcha")) {
+    else if (request->path().startsWith("/recaptchaplugins")) {
         if (RecaptchaPluginConfigServer::handleRequest(request, response)) {
             return;
         }
     }
-    else if (request->path().startsWith("/services")) {
+    else if (request->path().startsWith("/searchplugins")) {
+        if (SearchPluginConfigServer::handleRequest(request, response)) {
+            return;
+        }
+    }
+    else if (request->path().startsWith("/serviceplugins")) {
         if (ServicePluginConfigServer::handleRequest(request, response)) {
+            return;
+        }
+    }
+    else if (request->path().startsWith("/search")) {
+        if (m_searchServer->handleRequest(request, response)) {
             return;
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,31 +14,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "servicepluginconfigserver.h"
+#include "searchpluginconfigserver.h"
 #include "json.h"
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
 #include "serverresponse.h"
 
-bool ServicePluginConfigServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+bool SearchPluginConfigServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
     
-    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "serviceplugins")) {
+    if ((parts.isEmpty()) || (parts.size() > 3) || (parts.first() != "searchplugins")) {
         return false;
     }
 
     if (parts.size() == 1) {
         if (request->method() == QHttpRequest::HTTP_GET) {
             writeResponse(response, QHttpResponse::STATUS_OK,
-                          QtJson::Json::serialize(Qdl::getServicePlugins()));
+                          QtJson::Json::serialize(Qdl::getSearchPlugins()));
             return true;
         }
     }
 
     if (parts.size() == 2) {
         if (request->method() == QHttpRequest::HTTP_GET) {
-            const QVariantMap config = Qdl::getServicePlugin(parts.at(1));
+            const QVariantMap config = Qdl::getSearchPlugin(parts.at(1));
             
             if (!config.isEmpty()) {
                 writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(config));
@@ -52,14 +52,14 @@ bool ServicePluginConfigServer::handleRequest(QHttpRequest *request, QHttpRespon
     if (parts.last() == "settings") {
         if (request->method() == QHttpRequest::HTTP_GET) {
             writeResponse(response, QHttpResponse::STATUS_OK,
-                          QtJson::Json::serialize(Qdl::getServicePluginSettings(parts.at(1))));
+                          QtJson::Json::serialize(Qdl::getSearchPluginSettings(parts.at(1))));
             return true;
         }
 
         if (request->method() == QHttpRequest::HTTP_PUT) {
             const QVariantMap properties = QtJson::Json::parse(QString::fromUtf8(request->body())).toMap();
             
-            if ((properties.isEmpty()) || (!Qdl::setServicePluginSettings(parts.at(1), properties))) {
+            if ((properties.isEmpty()) || (!Qdl::setSearchPluginSettings(parts.at(1), properties))) {
                 writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
             }
             else {
