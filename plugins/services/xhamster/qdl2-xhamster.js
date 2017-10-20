@@ -16,19 +16,28 @@
 
 var VIDEO_FORMATS = ["1080p", "720p", "480p", "240p"];
 var USER_AGENT = "Wget/1.13.4 (linux-gnu)";
+var EMBED_URL = "https://xhamster.com/xembed.php?video=";
 
 var request = null;
 
 function checkUrl(url) {
+    var id = url.substr(url.lastIndexOf("/") + 1);
+    id = id.substr(id.lastIndexOf("-") + 1);
+
+    if (!id) {
+        error(qsTr("No video ID found in URL"));
+        return;
+    }
+
     request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var vars = JSON.parse(request.responseText.split("vars: ")[1].split(",\n")[0]);
-                var fileName = vars["new"].title;
+                var vars = JSON.parse(request.responseText.split("flashVars = ")[1].split(";\n")[0]);
+                var fileName = vars.title;
                 
                 if (fileName) {
-                    urlChecked(new UrlResult(url, fileName + ".flv"));
+                    urlChecked(new UrlResult(url, fileName + ".mp4"));
                 }
                 else {
                     error(qsTr("File not found"));
@@ -40,24 +49,31 @@ function checkUrl(url) {
         }
     }
 
-    request.open("GET", url);
+    request.open("GET", EMBED_URL + id);
     request.setRequestHeader("User-Agent", USER_AGENT);
     request.send();
 }
 
 function getDownloadRequest(url) {
+    var id = url.substr(url.lastIndexOf("/") + 1);
+    id = id.substr(id.lastIndexOf("-") + 1);
+
+    if (!id) {
+        error(qsTr("No video ID found in URL"));
+        return;
+    }
+
     request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
             try {
-                var vars = JSON.parse(request.responseText.split("vars: ")[1].split(",\n")[0]);
-                var videoUrls = JSON.parse(vars["new"].videoUrls);
+                var sources = JSON.parse(/sources: (\{[^\}]+\})/.exec(request.responseText)[1]);
                 var format = settings.value("videoFormat", "1080p");
 
                 if (settings.value("useDefaultVideoFormat", true) == true) {
                     for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
                         try {
-                            var videoUrl = videoUrls[VIDEO_FORMATS[i]][0];
+                            var videoUrl = sources[VIDEO_FORMATS[i]];
                             
                             if (videoUrl) {
                                 downloadRequest(new NetworkRequest(videoUrl));
@@ -76,7 +92,7 @@ function getDownloadRequest(url) {
                     
                     for (var i = 0; i < VIDEO_FORMATS.length; i++) {
                         try {
-                            var videoUrl = videoUrls[VIDEO_FORMATS[i]][0];
+                            var videoUrl = sources[VIDEO_FORMATS[i]];
                             
                             if (videoUrl) {
                                 options.push({"label": VIDEO_FORMATS[i].toUpperCase(), "value": videoUrl});
@@ -105,7 +121,7 @@ function getDownloadRequest(url) {
         }
     }
 
-    request.open("GET", url);
+    request.open("GET", EMBED_URL + id);
     request.setRequestHeader("User-Agent", USER_AGENT);
     request.send();
 }
@@ -113,6 +129,7 @@ function getDownloadRequest(url) {
 function cancelCurrentOperation() {
     if (request) {
         request.abort();
+	request = null;
     }
 
     return true;

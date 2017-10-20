@@ -3,7 +3,7 @@
     "name": "XHamster",
     "icon": "qdl2-xhamster.jpg",
     "version": 1,
-    "regExp": "http(s|)://(www\\.|)xhamster\\.com/movies/\\d+",
+    "regExp": "http(s|)://(www\\.|)xhamster\\.com/videos/\\w+",
     "settings": [
         {
             "type": "boolean",
