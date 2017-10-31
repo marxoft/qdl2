@@ -32,7 +32,7 @@ const QRegExp DepFilePlugin::DOWNLOAD_REGEXP("var ds=\\w+\\.\\w+\\('([^']+)'\\)"
 const QRegExp DepFilePlugin::FILE_REGEXP("http(s|)://\\d+\\w+\\.\\w+/\\d+/\\d+/\\d+/\\w+/[^'\"]+");
 const QRegExp DepFilePlugin::WAIT_REGEXP("No less than (\\d+) min should pass before next download");
 
-const QString DepFilePlugin::LOGIN_URL("https://depfile.com");
+const QString DepFilePlugin::LOGIN_URL("https://depfile.us");
 const QString DepFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
 #if QT_VERSION >= 0x050000
 const QString DepFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
