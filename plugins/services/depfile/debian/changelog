@@ -1,3 +1,9 @@
+qdl-plugins-depfile (0.0.5) unstable; urgency=low
+
+  * Update regexp used for detecting DepFile URLs.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Tue, 31 Oct 2017 20:42:15 +0000
+
 qdl-plugins-depfile (0.0.4) unstable; urgency=low
 
   * Fix detection of download URL.
