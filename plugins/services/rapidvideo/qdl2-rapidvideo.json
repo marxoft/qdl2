@@ -4,36 +4,5 @@
     "name": "Rapidvideo",
     "icon": "qdl2-rapidvideo.jpg",
     "regExp": "http(s|)://(www\\.|)rapidvideo\\.com/v/[A-Z0-9]+",
-    "settings": [
-        {
-            "type": "boolean",
-            "label": "Use default video format",
-            "key": "useDefaultFormat",
-            "value": false
-        },
-
-        {
-            "type": "list",
-            "label": "Video format",
-            "key": "format",
-            "value": "720P",
-            "options": [
-                {
-                    "label": "720P",
-                    "value": "720P"
-                },
-
-                {
-                    "label": "480P",
-                    "value": "480P"
-                },
-
-                {
-                    "label": "360P",
-                    "value": "360P"
-                }
-            ]
-        }
-    ]
 }
 
