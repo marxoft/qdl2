@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,8 +39,47 @@ function getDownloadRequest(url) {
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             try {
-                var source = /<source src="([^"]+)/.exec(request.responseText)[1];
-                downloadRequest(new NetworkRequest(source));
+                var response = request.responseText;
+
+                try {
+                    var sources = JSON.parse(/"sources": (\[[^\]]+\])/.exec(response)[1]);
+
+                    if (!sources.length) {
+                        error(qsTr("No video formats found"));
+                        return;
+                    }
+
+                    if (settings.value("useDefaultFormat", false) === true) {
+                        var format = settings.value("format", "1080");
+
+                        for (var i = sources.length - 1; i >= 0; i--) {
+                            var source = sources[i];
+
+                            if (source.res == format) {
+                                downloadRequest(new NetworkRequest(source.file));
+                                return;
+                            }
+                        }
+
+                        downloadRequest(new NetworkRequest(sources[0].file));
+                        return;
+                    }
+
+                    var options = [];
+
+                    for (var i = sources.length - 1; i >= 0; i--) {
+                        var source = sources[i];
+                        options.push({"label": source.res + "P", "value": source.file});
+                    }
+
+                    settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
+                        "label": qsTr("Video format"), "options": options, "value": options[0].value}],
+                        function (conf) { downloadRequest(new NetworkRequest(conf.url)); });
+                }
+                catch(e) {
+                    var source = /<source src="([^"]+)/.exec(request.responseText)[1];
+                    downloadRequest(new NetworkRequest(source));
+                }
             }
             catch(e) {
                 error(e);
