@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var FORMATS = ["1080p", "720p", "480p", "360p"];
 var request = null;
 
 function checkUrl(url) {
@@ -22,15 +21,15 @@ function checkUrl(url) {
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             try {
-                var fileName = /itemprop="headline">([^<]+)/.exec(request.responseText)[1] + ".mp4";
-
-                try {
-                    var docId = /docid=([^&"]+)/.exec(request.responseText)[1];
-                    var gdUrl = "https://drive.google.com/file/d/" + docId + "/view";
-                    urlChecked(new UrlResult(gdUrl, fileName));
+                var response = request.responseText;
+                var fileName = /itemprop="name">([^<]+)/.exec(response)[1] + ".mp4";
+                var rvUrl = /http(s|):\/\/(www\.|)rapidvideo\.com\/(\?v=|v\/|e\/)[0-9A-Z]+/.exec(response)[0];
+                
+                if ((fileName) && (rvUrl)) {
+                    urlChecked(new UrlResult(rvUrl, fileName));
                 }
-                catch(e) {
-                    urlChecked(new UrlResult(url, fileName));
+                else {
+                    error(qsTr("No video URL found"));
                 }
             }
             catch(e) {
@@ -44,55 +43,7 @@ function checkUrl(url) {
 }
 
 function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            try {
-                var formats = JSON.parse(/sources:(\[[^\]]+\])/.exec(request.responseText)[1]);
-
-                if (!formats.length) {
-                    error(qsTr("No video formats found"));
-                    return;
-                }
-
-                var options = [];
-
-                for (var i = 0; i < FORMATS.length; i++) {
-                    for (var j = 0; j < formats.length; j++) {
-                        if (formats[j].label == FORMATS[i]) {
-                            options.push({"label": formats[j].label.toUpperCase(), "value": formats[j].file});
-                            break;
-                        }
-                    }
-                }
-
-                if (settings.value("useDefaultFormat", false) === true) {
-                    var format = settings.value("format", "1080P");
-
-                    for (var i = 0; i < options.length; i++) {
-                        if (options[i].label == format) {
-                            downloadRequest(new NetworkRequest(options[i].value));
-                            return;
-                        }
-                    }
-
-                    downloadRequest(new NetworkRequest(options[options.length - 1].value));
-                }
-                else {
-                    var list = {"type": "list", "label": qsTr("Video format"), "key": "url", "options": options,
-                                "value": options[0].value};
-                    settingsRequest(qsTr("Choose video format"), [list],
-                        function(f) { downloadRequest(new NetworkRequest(f.url)); });
-                }
-            }
-            catch(e) {
-                error(e);
-            }
-        }
-    }
-
-    request.open("GET", url);
-    request.send();
+    error(qsTr("Download requests not supported"));
 }
 
 function cancelCurrentOperation() {
