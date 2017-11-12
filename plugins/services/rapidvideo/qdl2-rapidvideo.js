@@ -77,8 +77,62 @@ function getDownloadRequest(url) {
                         function (conf) { downloadRequest(new NetworkRequest(conf.url)); });
                 }
                 catch(e) {
-                    var source = /<source src="([^"]+)/.exec(request.responseText)[1];
-                    downloadRequest(new NetworkRequest(source));
+                    var sources = response.split("<source ");
+
+                    if (sources.length < 2) {
+                        error(qsTr("No video formats found"));
+                        return;
+                    }
+
+                    if (settings.value("useDefaultFormat", false) === true) {
+                        var format = settings.value("format", "1080");
+
+                        for (var i = sources.length - 1; i > 0; i--) {
+                            var source = sources[i];
+                            var res = /data-res="([^"]+)/.exec(source)[1];
+
+                            if (res == format) {
+                                var src = /src="([^"]+)/.exec(source)[1];
+
+                                if (src) {
+                                    downloadRequest(new NetworkRequest(src));
+                                    return;
+                                }
+                            }
+                        }
+
+                        var src = /src="([^"]+)/.exec(sources[1])[1];
+
+                        if (src) {
+                            downloadRequest(new NetworkRequest(src));
+                        }
+                        else {
+                            error(qsTr("No video formats found"));
+                        }
+
+                        return;
+                    }
+
+                    var options = [];
+
+                    for (var i = sources.length - 1; i > 0; i--) {
+                        var source = sources[i];
+                        var res = /data-res="([^"]+)/.exec(source)[1];
+                        var src = /src="([^"]+)/.exec(source)[1];
+
+                        if ((res) && (src)) {
+                            options.push({"label": res + "P", "value": src});
+                        }
+                    }
+
+                    if (!options.length) {
+                        error(qsTr("No video formats found"));
+                        return;
+                    }
+
+                    settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
+                        "label": qsTr("Video format"), "options": options, "value": options[0].value}],
+                        function (conf) { downloadRequest(new NetworkRequest(conf.url)); });
                 }
             }
             catch(e) {
@@ -87,7 +141,7 @@ function getDownloadRequest(url) {
         }
     }
 
-    request.open("GET", url);
+    request.open("GET", url + "&q=0p");
     request.send();
 }
 
