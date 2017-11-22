@@ -76,7 +76,7 @@ void GenericRecaptchaPlugin::getCaptcha(int captchaType, const QString &captchaK
     m_captchaType = captchaType;
     QNetworkRequest request(captchaKey);
     QNetworkReply *reply = networkAccessManager()->get(request);
-    connect(reply, SIGNAL(finished()), this, SLOT(checkCaptchaImage()));
+    connect(reply, SIGNAL(finished()), this, SLOT(checkCaptchaResponse()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
