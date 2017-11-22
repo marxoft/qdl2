@@ -615,6 +615,7 @@ void MainWindow::setCurrentPage(QAction *action) {
 void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     const QString text = tr("Search - %1").arg(pluginName);
     SearchPage *page = new SearchPage(m_stack);
+    page->setAttribute(Qt::WA_DeleteOnClose, true);
     m_stack->addWidget(page);
     const int index = m_stack->indexOf(page);
     m_tabs->addTab(text);

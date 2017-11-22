@@ -442,6 +442,7 @@ void MainWindow::showPreviousPage() {
 
 void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     SearchPage *page = new SearchPage(m_stack);
+    page->setAttribute(Qt::WA_DeleteOnClose, true);
     m_stack->addWidget(page);
     const int index = m_stack->indexOf(page);
     m_tabs->addTab(pluginName);
