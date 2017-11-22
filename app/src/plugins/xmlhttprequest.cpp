@@ -64,7 +64,7 @@ int XMLHttpRequest::readyState() const {
 }
 
 void XMLHttpRequest::setReadyState(int state) {
-    Logger::log("XMLHttpRequest::setReadyState(): readyState: " + QString::number(state), Logger::LowVerbosity);
+    Logger::log("XMLHttpRequest::setReadyState(): readyState: " + QString::number(state), Logger::MediumVerbosity);
     
     if (state != readyState()) {
         m_readyState = state;
@@ -132,7 +132,7 @@ QString XMLHttpRequest::getAllResponseHeaders() const {
 }
 
 void XMLHttpRequest::open(const QString &method, const QString &url, const QString &username, const QString &password) {
-    Logger::log(QString("XMLHttpRequest::open(). Method: %1, URL: %2").arg(method).arg(url), Logger::LowVerbosity);
+    Logger::log(QString("XMLHttpRequest::open(). Method: %1, URL: %2").arg(method).arg(url), Logger::MediumVerbosity);
     
     switch (readyState()) {
     case OPENED:
@@ -155,7 +155,7 @@ void XMLHttpRequest::open(const QString &method, const QString &url, const QStri
 }
 
 void XMLHttpRequest::send(const QString &body) {
-    Logger::log("XMLHttpRequest::send(): Body: " + body, Logger::LowVerbosity);
+    Logger::log("XMLHttpRequest::send(): Body: " + body, Logger::MediumVerbosity);
     
     switch (readyState()) {
     case HEADERS_RECEIVED:
@@ -177,15 +177,14 @@ void XMLHttpRequest::send(const QString &body) {
 }
 
 void XMLHttpRequest::abort() {
-    Logger::log("XMLHttpRequest::abort()", Logger::LowVerbosity);
-    
     if ((m_reply) && (m_reply->isRunning())) {
+        Logger::log("XMLHttpRequest::abort(): Aborting request", Logger::MediumVerbosity);
         m_reply->abort();
     }
 }
 
 void XMLHttpRequest::followRedirect(const QUrl &url) {
-    Logger::log("XMLHttpRequest::followRedirect(): URL: " + url.toString(), Logger::LowVerbosity);
+    Logger::log("XMLHttpRequest::followRedirect(): URL: " + url.toString(), Logger::MediumVerbosity);
     m_redirects++;
     m_response = QByteArray();
     QNetworkRequest request(m_request);
@@ -229,7 +228,7 @@ void XMLHttpRequest::onReplyFinished() {
         const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
         
         if (!redirect.isEmpty()) {
-            Logger::log("XMLHttpRequest::onReplyFinished(): Redirect: " + redirect, Logger::LowVerbosity);
+            Logger::log("XMLHttpRequest::onReplyFinished(): Redirect: " + redirect, Logger::MediumVerbosity);
             
             if (m_redirects < MAX_REDIRECTS) {
                 QUrl url(redirect);
