@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,21 +20,10 @@
 #include <qyoutube/streamsrequest.h>
 #include <QNetworkRequest>
 #include <QRegExp>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString YouTubePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-youtube");
-#else
-const QString YouTubePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-youtube");
-#endif
 const QString YouTubePlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
 const QString YouTubePlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
 const QString YouTubePlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
@@ -48,11 +37,7 @@ YouTubePlugin::YouTubePlugin(QObject *parent) :
 {
 }
 
-ServicePlugin* YouTubePlugin::createPlugin(QObject *parent) {
-    return new YouTubePlugin(parent);
-}
-
-void YouTubePlugin::checkUrl(const QString &url) {
+void YouTubePlugin::checkUrl(const QString &url, const QVariantMap &) {
     if (!m_resourcesRequest) {
         m_resourcesRequest = new QYouTube::ResourcesRequest(this);
         m_resourcesRequest->setApiKey(API_KEY);
@@ -77,12 +62,13 @@ void YouTubePlugin::checkUrl(const QString &url) {
     }
 }
 
-void YouTubePlugin::getDownloadRequest(const QString &url) {    
+void YouTubePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     if (!m_streamsRequest) {
         m_streamsRequest = new QYouTube::StreamsRequest(this);
         connect(m_streamsRequest, SIGNAL(finished()), this, SLOT(onStreamsRequestFinished()));
     }
     
+    m_settings = settings;
     const QString id = url.section(QRegExp("v=|/"), -1).section(QRegExp("&|\\?"), 0, 0);
     m_streamsRequest->list(id);
 }
@@ -158,10 +144,8 @@ void YouTubePlugin::onStreamsRequestFinished() {
             return;
         }
 
-        QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-        
-        if (settings.value("useDefaultVideoFormat", true).toBool()) {
-            const QString format = settings.value("videoFormat", "18").toString();
+        if (m_settings.value("useDefaultVideoFormat", true).toBool()) {
+            const QString format = m_settings.value("videoFormat", "18").toString();
 
             for (int i = 0; i < VIDEO_FORMATS.indexOf(format); i++) {
                 for (int j = 0; j < streams.size(); j++) {
@@ -204,6 +188,10 @@ void YouTubePlugin::onStreamsRequestFinished() {
     }   
 }
 
+ServicePlugin* YouTubePluginFactory::createPlugin(QObject *parent) {
+    return new YouTubePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-youtube, YouTubePlugin)
+Q_EXPORT_PLUGIN2(qdl2-youtube, YouTubePluginFactory)
 #endif

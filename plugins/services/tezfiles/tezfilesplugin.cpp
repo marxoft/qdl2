@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,16 +16,13 @@
  */
 
 #include "tezfilesplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
 #include <QTime>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -35,13 +32,7 @@ const QRegExp TezfilesPlugin::FILENAME_REGEXP("(<h1 style=\"margin-top: \\d+px;\
 const QRegExp TezfilesPlugin::WAITTIME_REGEXP("(<div id=\"download-wait-timer\".+>\\s+)(\\d+)(\\s+</div>)");
 const QString TezfilesPlugin::LOGIN_URL("http://tezfiles.com/login.html");
 const QString TezfilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
-#if QT_VERSION >= 0x050000
-const QString TezfilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-tezfiles");
-#else
-const QString TezfilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-tezfiles");
-#endif
+
 const int TezfilesPlugin::MAX_REDIRECTS = 8;
 
 TezfilesPlugin::TezfilesPlugin(QObject *parent) :
@@ -61,10 +52,6 @@ QString TezfilesPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* TezfilesPlugin::createPlugin(QObject *parent) {
-    return new TezfilesPlugin(parent);
 }
 
 QNetworkAccessManager* TezfilesPlugin::networkAccessManager() {
@@ -97,7 +84,7 @@ bool TezfilesPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void TezfilesPlugin::checkUrl(const QString &url) {
+void TezfilesPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -162,10 +149,9 @@ void TezfilesPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void TezfilesPlugin::getDownloadRequest(const QString &url) {
+void TezfilesPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -183,11 +169,6 @@ void TezfilesPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -361,7 +342,7 @@ void TezfilesPlugin::checkWaitTime() {
         }
         else {
             recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, recaptchaKey, "submitCaptchaResponse");
         }
     }
 
@@ -437,7 +418,7 @@ void TezfilesPlugin::checkCaptcha() {
         }
         else {
             recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, recaptchaKey, "submitCaptchaResponse");
         }
     }
     else if (WAITTIME_REGEXP.indexIn(response) != -1) {
@@ -529,12 +510,6 @@ void TezfilesPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -586,6 +561,10 @@ void TezfilesPlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* TezfilesPluginFactory::createPlugin(QObject *parent) {
+    return new TezfilesPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-tezfiles, TezfilesPlugin)
+Q_EXPORT_PLUGIN2(qdl2-tezfiles, TezfilesPluginFactory)
 #endif

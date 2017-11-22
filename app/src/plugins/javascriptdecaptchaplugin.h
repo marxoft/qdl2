@@ -18,32 +18,20 @@
 #define JAVASCRIPTDECAPTCHAPLUGIN_H
 
 #include "decaptchaplugin.h"
-#include "javascriptpluginglobalobject.h"
+#include <QPointer>
+#include <QScriptEngine>
 
 class JavaScriptDecaptchaPlugin : public DecaptchaPlugin
 {
     Q_OBJECT
 
-    Q_INTERFACES(DecaptchaPlugin)
-
-    Q_PROPERTY(QString fileName READ fileName)
-    Q_PROPERTY(QString id READ id)
-
 public:
-    explicit JavaScriptDecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent = 0);
-
-    QString fileName() const;
-
-    QString id() const;
-
-    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0);
-    
-    virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
+    explicit JavaScriptDecaptchaPlugin(const QScriptValue &plugin, QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
-    virtual void getCaptchaResponse(const QImage &image);
+    virtual void getCaptchaResponse(int captchaType, const QByteArray &captchaData, const QVariantMap &settings);
     virtual void reportCaptchaResponse(const QString &captchaId);
 
     void submitSettingsResponse(const QVariantMap &settings);
@@ -52,32 +40,48 @@ private Q_SLOTS:
     void onSettingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
 
 private:
-    void initEngine();
+    bool init();
     
-    JavaScriptPluginGlobalObject *m_global;
-    QScriptEngine *m_engine;
-    QPointer<QNetworkAccessManager> m_nam;
-
-    QString m_fileName;
-    QString m_id;
-
+    QScriptValue m_plugin;
     QScriptValue m_callback;
     
-    bool m_evaluated;
+    bool m_initted;
 };
 
-class JavaScriptDecaptchaPluginGlobalObject : public JavaScriptPluginGlobalObject
+class JavaScriptDecaptchaPluginSignaller : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit JavaScriptDecaptchaPluginGlobalObject(QScriptEngine *engine);
+    explicit JavaScriptDecaptchaPluginSignaller(QObject *parent = 0);
 
 Q_SIGNALS:
     void captchaResponse(const QString &captchaId, const QString &response);
     void captchaResponseReported(const QString &captchaId);
     void error(const QString &errorString);
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
+};
+
+class JavaScriptDecaptchaPluginFactory : public QObject, public DecaptchaPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(DecaptchaPluginFactory)
+
+public:
+    explicit JavaScriptDecaptchaPluginFactory(const QString &fileName, QScriptEngine *engine, QObject *parent = 0);
+
+    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0);
+
+private:
+    bool init();
+
+    QPointer<QScriptEngine> m_engine;
+
+    QString m_fileName;
+
+    QScriptValue m_constructor;
+
+    bool m_initted;
 };
 
 #endif // JAVASCRIPTDECAPTCHAPLUGIN_H

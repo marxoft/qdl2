@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -18,21 +18,9 @@
 #include "soundcloudsearchplugin.h"
 #include <qsoundcloud/resourcesrequest.h>
 #include <QDateTime>
-#include <QSettings>
 #include <QUrl>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
-#endif
-
-#if QT_VERSION >= 0x050000
-const QString SoundCloudSearchPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-soundcloudsearch");
-#else
-const QString SoundCloudSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-soundcloudsearch");
 #endif
 
 const QString SoundCloudSearchPlugin::CLIENT_ID("9b7cb759c6d41b14af05855f94bc743c");
@@ -43,10 +31,6 @@ SoundCloudSearchPlugin::SoundCloudSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
     m_request(0)
 {
-}
-
-SearchPlugin* SoundCloudSearchPlugin::createPlugin(QObject *parent) {
-    return new SoundCloudSearchPlugin(parent);
 }
 
 bool SoundCloudSearchPlugin::cancelCurrentOperation() {
@@ -61,9 +45,7 @@ void SoundCloudSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->get(params.value("path").toString());
 }
 
-void SoundCloudSearchPlugin::search() {
-    const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-    
+void SoundCloudSearchPlugin::search(const QVariantMap &settings) {
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
         QVariantMap searchQuery;
         searchQuery["type"] = "text";
@@ -151,6 +133,10 @@ void SoundCloudSearchPlugin::onRequestFinished() {
     }
 }
 
+SearchPlugin* SoundCloudSearchPluginFactory::createPlugin(QObject *parent) {
+    return new SoundCloudSearchPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-soundcloudsearch, SoundCloudSearchPlugin)
+Q_EXPORT_PLUGIN2(qdl2-soundcloudsearch, SoundCloudSearchPluginFactory)
 #endif

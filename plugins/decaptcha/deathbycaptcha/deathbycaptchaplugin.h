@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,23 +24,16 @@
 class DeathByCaptchaPlugin : public DecaptchaPlugin
 {
     Q_OBJECT
-    
-    Q_INTERFACES(DecaptchaPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.DeathByCaptchaPlugin")
-#endif
 
 public:
     explicit DeathByCaptchaPlugin(QObject *parent = 0);
-    
-    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0);
     
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void getCaptchaResponse(const QImage &image);
+    virtual void getCaptchaResponse(int captchaType, const QByteArray &captchaData, const QVariantMap &settings);
     virtual void reportCaptchaResponse(const QString &captchaId);
 
     void setLogin(const QVariantMap &login);
@@ -61,7 +54,6 @@ private:
 
     static const QString CAPTCHA_URL;
     static const QString REPORT_URL;
-    static const QString CONFIG_FILE;
 
     QPointer<QNetworkAccessManager> m_nam;
 
@@ -73,6 +65,18 @@ private:
     QString m_password;
 
     bool m_ownManager;
+};
+
+class DeathByCaptchaPluginFactory : public QObject, public DecaptchaPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(DecaptchaPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.DeathByCaptchaPluginFactory")
+#endif
+
+public:
+    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // DEATHBYCAPTCHAPLUGIN_H

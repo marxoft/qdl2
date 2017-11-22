@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,8 @@
  */
 
 #include "solvemediarecaptchaplugin.h"
+#include "captchatype.h"
 #include "json.h"
-#include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -24,15 +24,14 @@
 #include <QtPlugin>
 #endif
 
+const QString SolveMediaRecaptchaPlugin::CAPTCHA_CHALLENGE_URL("http://api.solvemedia.com/papi/_challenge.js?k=");
+const QString SolveMediaRecaptchaPlugin::CAPTCHA_IMAGE_URL("http://api.solvemedia.com/papi/media?c=");
+
 SolveMediaRecaptchaPlugin::SolveMediaRecaptchaPlugin(QObject *parent) :
     RecaptchaPlugin(parent),
     m_nam(0),
     m_ownManager(false)
 {
-}
-
-RecaptchaPlugin* SolveMediaRecaptchaPlugin::createPlugin(QObject *parent) {
-    return new SolveMediaRecaptchaPlugin(parent);
 }
 
 QNetworkAccessManager* SolveMediaRecaptchaPlugin::networkAccessManager() {
@@ -63,8 +62,13 @@ bool SolveMediaRecaptchaPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void SolveMediaRecaptchaPlugin::getCaptcha(const QString &captchaKey) {
-    QUrl url("http://api.solvemedia.com/papi/_challenge.js?k=" + captchaKey);
+void SolveMediaRecaptchaPlugin::getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &) {
+    if (captchaType != CaptchaType::Image) {
+        error(tr("Captcha type %1 not supported").arg(captchaType));
+        return;
+    }
+
+    QUrl url(CAPTCHA_CHALLENGE_URL + captchaKey);
     QNetworkRequest request(url);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(onCaptchaDownloaded()));
@@ -112,7 +116,7 @@ void SolveMediaRecaptchaPlugin::onCaptchaDownloaded() {
 
 void SolveMediaRecaptchaPlugin::downloadCaptchaImage(const QString &challenge) {
     m_challenge = challenge;
-    QUrl url("http://api.solvemedia.com/papi/media?c=" + challenge);
+    QUrl url(CAPTCHA_IMAGE_URL + challenge);
     QNetworkRequest request(url);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(onCaptchaImageDownloaded()));
@@ -139,18 +143,14 @@ void SolveMediaRecaptchaPlugin::onCaptchaImageDownloaded() {
         return;
     }
 
-    const QImage image = QImage::fromData(reply->readAll());
-
-    if (image.isNull()) {
-        emit error(tr("Invalid captcha image"));
-    }
-    else {
-        emit captcha(m_challenge, image);
-    }
-
+    emit captcha(CaptchaType::Image, QByteArray(m_challenge.toUtf8() + "\n" + reply->readAll().toBase64()));
     reply->deleteLater();
 }
 
+RecaptchaPlugin* SolveMediaRecaptchaPluginFactory::createPlugin(QObject *parent) {
+    return new SolveMediaRecaptchaPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-solvemediarecaptcha, SolveMediaRecaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-solvemediarecaptcha, SolveMediaRecaptchaPluginFactory)
 #endif

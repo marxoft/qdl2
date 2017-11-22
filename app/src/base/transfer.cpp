@@ -15,10 +15,12 @@
  */
 
 #include "transfer.h"
+#include "captchatype.h"
 #include "decaptchaplugin.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "logger.h"
+#include "pluginsettings.h"
 #include "recaptchaplugin.h"
 #include "recaptchapluginmanager.h"
 #include "serviceplugin.h"
@@ -29,7 +31,6 @@
 #include <QBuffer>
 #include <QDir>
 #include <QFile>
-#include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
@@ -53,6 +54,7 @@ Transfer::Transfer(QObject *parent) :
     m_status(Paused),
     m_requestMethod("GET"),
     m_servicePluginIcon(DEFAULT_ICON),
+    m_captchaType(CaptchaType::Unknown),
     m_customCommandOverrideEnabled(false),
     m_usePlugins(true),
     m_reportCaptchaError(false),
@@ -66,12 +68,18 @@ QVariant Transfer::data(int role) const {
     switch (role) {
     case BytesTransferredRole:
         return bytesTransferred();
-    case CaptchaImageRole:
-        return captchaImage();
+    case CaptchaDataRole:
+        return captchaData();
+    case CaptchaResponseRole:
+        return captchaResponse();
     case CaptchaTimeoutRole:
         return captchaTimeout();
     case CaptchaTimeoutStringRole:
         return captchaTimeoutString();
+    case CaptchaTypeRole:
+        return captchaType();
+    case CaptchaTypeStringRole:
+        return captchaTypeString();
     case CustomCommandRole:
         return customCommand();
     case CustomCommandOverrideEnabledRole:
@@ -142,7 +150,7 @@ QVariant Transfer::data(int role) const {
 
 bool Transfer::setData(int role, const QVariant &value) {
     switch (role) {
-    case CaptchaImageRole:
+    case CaptchaResponseRole:
         return submitCaptchaResponse(value.toString());
     case CustomCommandRole:
         setCustomCommand(value.toString());
@@ -206,9 +214,12 @@ bool Transfer::setData(int role, const QVariant &value) {
 QMap<int, QVariant> Transfer::itemData() const {
     QMap<int, QVariant> map = TransferItem::itemData();
     map[BytesTransferredRole] = bytesTransferred();
-    map[CaptchaImageRole] = captchaImage();
+    map[CaptchaDataRole] = captchaData();
+    map[CaptchaResponseRole] = captchaResponse();
     map[CaptchaTimeoutRole] = captchaTimeout();
     map[CaptchaTimeoutStringRole] = captchaTimeoutString();
+    map[CaptchaTypeRole] = captchaType();
+    map[CaptchaTypeStringRole] = captchaTypeString();
     map[CustomCommandRole] = customCommand();
     map[CustomCommandOverrideEnabledRole] = customCommandOverrideEnabled();
     map[DownloadPathRole] = downloadPath();
@@ -246,9 +257,12 @@ QMap<int, QVariant> Transfer::itemData() const {
 QVariantMap Transfer::itemDataWithRoleNames() const {
     QVariantMap map = TransferItem::itemDataWithRoleNames();
     map[roleNames().value(BytesTransferredRole)] = bytesTransferred();
-    map[roleNames().value(CaptchaImageRole)] = captchaImage();
+    map[roleNames().value(CaptchaDataRole)] = captchaData();
+    map[roleNames().value(CaptchaResponseRole)] = captchaResponse();
     map[roleNames().value(CaptchaTimeoutRole)] = captchaTimeout();
     map[roleNames().value(CaptchaTimeoutStringRole)] = captchaTimeoutString();
+    map[roleNames().value(CaptchaTypeRole)] = captchaType();
+    map[roleNames().value(CaptchaTypeStringRole)] = captchaTypeString();
     map[roleNames().value(CustomCommandRole)] = customCommand();
     map[roleNames().value(CustomCommandOverrideEnabledRole)] = customCommandOverrideEnabled();
     map[roleNames().value(DownloadPathRole)] = downloadPath();
@@ -411,24 +425,52 @@ QString Transfer::fileSuffix() const {
     return dot == -1 ? QString() : m_fileName.mid(dot + 1);
 }
 
-QByteArray Transfer::captchaImage() const {
-    return m_captchaImageData;
+int Transfer::captchaType() const {
+    return m_captchaType;
 }
 
-void Transfer::setCaptchaImage(const QImage &image) {
-    QByteArray ba;
-    QBuffer buffer(&ba);
-    buffer.open(QBuffer::WriteOnly);
-    image.save(&buffer, "JPEG");
-    m_captchaImageData = ba.toBase64();
-    emit dataChanged(this, CaptchaImageRole);
-}
-
-void Transfer::clearCaptchaImage() {
-    if (!m_captchaImageData.isEmpty()) {
-        m_captchaImageData.clear();
-        emit dataChanged(this, CaptchaImageRole);
+QString Transfer::captchaTypeString() const {
+    switch (captchaType()) {
+    case CaptchaType::Image:
+        return tr("Image");
+    case CaptchaType::NoCaptcha:
+        return tr("NoCaptcha");
+    default:
+        return tr("Unknown");
     }
+}
+
+QByteArray Transfer::captchaData() const {
+    return m_captchaData;
+}
+
+QString Transfer::captchaResponse() const {
+    return m_captchaResponse;
+}
+
+void Transfer::setCaptchaData(int captchaType, const QByteArray &captchaData) {
+    m_captchaType = captchaType;
+
+    if (captchaType == CaptchaType::NoCaptcha) {
+        m_captchaChallenge.clear();
+        m_captchaData = captchaData;
+    }
+    else {
+        const int newline = captchaData.indexOf("\n");
+        m_captchaChallenge = QString::fromUtf8(captchaData.left(newline));
+        m_captchaData = captchaData.mid(newline + 1);
+    }
+
+    emit dataChanged(this, CaptchaTypeRole);
+    emit dataChanged(this, CaptchaDataRole);
+}
+
+void Transfer::clearCaptchaData() {
+    m_captchaType = CaptchaType::Unknown;
+    m_captchaChallenge.clear();
+    m_captchaData.clear();
+    emit dataChanged(this, CaptchaTypeRole);
+    emit dataChanged(this, CaptchaDataRole);
 }
 
 int Transfer::captchaTimeout() const {
@@ -815,7 +857,7 @@ bool Transfer::start() {
         
         if (initServicePlugin()) {
             setStatus(Connecting);
-            m_servicePlugin->getDownloadRequest(url());
+            m_servicePlugin->getDownloadRequest(url(), PluginSettings(pluginId()).values());
             return true;
         }
 
@@ -1011,31 +1053,36 @@ bool Transfer::submitCaptchaResponse(const QString &response) {
         return false;
     }
 
-    clearCaptchaImage();
     stopWaitTimer();
 
     if (response.isEmpty()) {
         setErrorString(tr("No captcha response"));
         setStatus(Failed);
+        clearCaptchaData();
         return false;
     }
     
     if (!initServicePlugin()) {
         setErrorString(tr("No service plugin found"));
         setStatus(Failed);
+        clearCaptchaData();
         return false;
     }
     
     setStatus(SubmittingCaptchaResponse);
     m_captchaResponse = response;
+    emit dataChanged(this, CaptchaResponseRole);
     
-    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString, m_captchaChallenge),
-                                   Q_ARG(QString, response))) {
+    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString,
+                    captchaType() == CaptchaType::NoCaptcha ? QString::fromUtf8(captchaData()) : m_captchaChallenge),
+                Q_ARG(QString, response))) {
         setErrorString(tr("Invalid captcha callback method"));
         setStatus(Failed);
+        clearCaptchaData();
         return false;
     }
     
+    clearCaptchaData();
     return true;
 }
 
@@ -1171,8 +1218,10 @@ bool Transfer::initDecaptchaPlugin(const QString &pluginId) {
 
     initNetworkAccessManager();
     m_decaptchaPlugin->setNetworkAccessManager(m_nam);
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponse(QString, QString)), this, SLOT(onCaptchaResponse(QString, QString)));
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponseReported(QString)), this, SLOT(onCaptchaResponseReported(QString)));
+    connect(m_decaptchaPlugin, SIGNAL(captchaResponse(QString, QString)),
+            this, SLOT(onCaptchaResponse(QString, QString)));
+    connect(m_decaptchaPlugin, SIGNAL(captchaResponseReported(QString)),
+            this, SLOT(onCaptchaResponseReported(QString)));
     connect(m_decaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onDecaptchaError(QString)));
     connect(m_decaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
             this, SLOT(onDecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
@@ -1200,7 +1249,7 @@ bool Transfer::initRecaptchaPlugin(const QString &pluginId) {
 
     initNetworkAccessManager();
     m_recaptchaPlugin->setNetworkAccessManager(m_nam);
-    connect(m_recaptchaPlugin, SIGNAL(captcha(QString, QImage)), this, SLOT(onCaptchaReady(QString, QImage)));
+    connect(m_recaptchaPlugin, SIGNAL(captcha(int, QByteArray)), this, SLOT(onCaptchaReady(int, QByteArray)));
     connect(m_recaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onRecaptchaError(QString)));
     connect(m_recaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
             this, SLOT(onRecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
@@ -1221,8 +1270,8 @@ bool Transfer::initServicePlugin() {
 
     initNetworkAccessManager();
     m_servicePlugin->setNetworkAccessManager(m_nam);
-    connect(m_servicePlugin, SIGNAL(captchaRequest(QString, QString, QByteArray)),
-            this, SLOT(onCaptchaRequest(QString, QString, QByteArray)));
+    connect(m_servicePlugin, SIGNAL(captchaRequest(QString, int, QString, QByteArray)),
+            this, SLOT(onCaptchaRequest(QString, int, QString, QByteArray)));
     connect(m_servicePlugin, SIGNAL(downloadRequest(QNetworkRequest, QByteArray, QByteArray)),
             this, SLOT(onDownloadRequest(QNetworkRequest, QByteArray, QByteArray)));
     connect(m_servicePlugin, SIGNAL(error(QString)), this, SLOT(onServiceError(QString)));
@@ -1346,32 +1395,25 @@ void Transfer::followRedirect(const QUrl &url) {
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
 }
 
-void Transfer::onCaptchaReady(const QString &challenge, const QImage &image) {    
-    if (image.isNull()) {
-        setErrorString(tr("Invalid captcha image"));
-        setStatus(Failed);
-        return;
-    }
-
-    m_captchaChallenge = challenge;
+void Transfer::onCaptchaReady(int type, const QByteArray &data) {
+    setCaptchaData(type, data);
     const QString pluginId = Settings::decaptchaPlugin();
     
     if (!pluginId.isEmpty()) {
         if (initDecaptchaPlugin(pluginId)) {
             setStatus(RetrievingCaptchaResponse);
             m_reportCaptchaError = true;
-            m_decaptchaPlugin->getCaptchaResponse(image);
+            m_decaptchaPlugin->getCaptchaResponse(captchaType(), captchaData(), PluginSettings(pluginId).values());
             return;
         }
     }
 
     m_reportCaptchaError = false;
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateCaptchaTimeout()));
-    setCaptchaImage(image);
     setStatus(AwaitingCaptchaResponse);
 }
 
-void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey,
+void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
                                 const QByteArray &callback) {
     if (!initRecaptchaPlugin(recaptchaPluginId)) {
         setErrorString(tr("No recaptcha plugin found"));
@@ -1380,9 +1422,10 @@ void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, const QString 
     }
 
     setStatus(RetrievingCaptchaChallenge);
-    m_recaptchaKey = recaptchaKey;
+    m_captchaType = captchaType;
+    m_captchaKey = captchaKey;
     m_callback = callback;
-    m_recaptchaPlugin->getCaptcha(recaptchaKey);
+    m_recaptchaPlugin->getCaptcha(captchaType, captchaKey, PluginSettings(recaptchaPluginId).values());
 }
 
 void Transfer::onCaptchaResponse(const QString &captchaId, const QString &response) {
@@ -1394,12 +1437,16 @@ void Transfer::onCaptchaResponse(const QString &captchaId, const QString &respon
 
     m_decaptchaId = captchaId;
     m_captchaResponse = response;
+    emit dataChanged(this, CaptchaResponseRole);
 
-    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString, m_captchaChallenge),
-                                   Q_ARG(QString, response))) {
+    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString,
+                    captchaType() == CaptchaType::NoCaptcha ? QString::fromUtf8(captchaData()) : m_captchaChallenge),
+                Q_ARG(QString, response))) {
         setErrorString(tr("Invalid captcha callback method"));
         setStatus(Failed);
     }
+
+    clearCaptchaData();
 }
 
 void Transfer::onCaptchaResponseReported(const QString &) {
@@ -1409,7 +1456,7 @@ void Transfer::onCaptchaResponseReported(const QString &) {
         return;
     }
 
-    m_recaptchaPlugin->getCaptcha(m_recaptchaKey);
+    m_recaptchaPlugin->getCaptcha(captchaType(), m_captchaKey, PluginSettings(m_recaptchaPluginId).values());
 }
 
 void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &method, const QByteArray &data) {
@@ -1552,7 +1599,7 @@ void Transfer::onReplyReadyRead() {
 
     if ((!openFile()) || (m_file->write(m_reply->read(bytes)) == -1)) {
         m_reply->deleteLater();
-	m_reply = 0;
+        m_reply = 0;
         setErrorString(tr("Cannot write to file - %1").arg(m_file->errorString()));
         setStatus(Failed);
         return;
@@ -1567,7 +1614,7 @@ void Transfer::onReplyFinished() {
     const QString redirect = QString::fromUtf8(m_reply->rawHeader("Location"));
 
     if (!redirect.isEmpty()) {
-	m_file->close();
+        m_file->close();
         m_reply->deleteLater();
         m_reply = 0;
         

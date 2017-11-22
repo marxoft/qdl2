@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  */
 
 #include "googlerecaptchaplugin.h"
-#include <QImage>
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -23,15 +23,15 @@
 #include <QtPlugin>
 #endif
 
+const QString GoogleRecaptchaPlugin::CAPTCHA_CHALLENGE_URL("https://www.google.com/recaptcha/api/challenge?k=");
+const QString GoogleRecaptchaPlugin::CAPTCHA_IMAGE_URL("https://www.google.com/recaptcha/api/image?c=");
+const QString GoogleRecaptchaPlugin::NO_CAPTCHA_HTML("<html><title>Google reCaptcha</title><body><script>function recaptchaCallback(response) { document.title = \"response=\" + response; }</script><form action=\"\" method=\"post\"><div class=\"g-recaptcha\" data-sitekey=\"%1\" data-callback=\"recaptchaCallback\"></div></form><script type=\"text/javascript\" src=\"https://www.google.com/recaptcha/api.js\"></script></body></html>");
+
 GoogleRecaptchaPlugin::GoogleRecaptchaPlugin(QObject *parent) :
     RecaptchaPlugin(parent),
     m_nam(0),
     m_ownManager(false)
 {
-}
-
-RecaptchaPlugin* GoogleRecaptchaPlugin::createPlugin(QObject *parent) {
-    return new GoogleRecaptchaPlugin(parent);
 }
 
 QNetworkAccessManager* GoogleRecaptchaPlugin::networkAccessManager() {
@@ -62,8 +62,19 @@ bool GoogleRecaptchaPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void GoogleRecaptchaPlugin::getCaptcha(const QString &captchaKey) {
-    QUrl url("http://www.google.com/recaptcha/api/challenge?k=" + captchaKey);
+void GoogleRecaptchaPlugin::getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &) {
+    switch (captchaType) {
+        case CaptchaType::Image:
+            break;
+        case CaptchaType::NoCaptcha:
+            emit captcha(captchaType, NO_CAPTCHA_HTML.arg(captchaKey).toUtf8());
+            return;
+        default:
+            emit error(tr("Captcha type %1 not supported").arg(captchaType));
+            return;
+    }
+
+    QUrl url(CAPTCHA_CHALLENGE_URL + captchaKey);
     QNetworkRequest request(url);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(onCaptchaDownloaded()));
@@ -105,7 +116,7 @@ void GoogleRecaptchaPlugin::onCaptchaDownloaded() {
 
 void GoogleRecaptchaPlugin::downloadCaptchaImage(const QString &challenge) {
     m_challenge = challenge;
-    QUrl url("http://www.google.com/recaptcha/api/image?c=" + challenge);
+    QUrl url(CAPTCHA_IMAGE_URL + challenge);
     QNetworkRequest request(url);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(onCaptchaImageDownloaded()));
@@ -132,18 +143,14 @@ void GoogleRecaptchaPlugin::onCaptchaImageDownloaded() {
         return;
     }
 
-    const QImage image = QImage::fromData(reply->readAll());
-
-    if (image.isNull()) {
-        emit error(tr("Invalid captcha image"));
-    }
-    else {
-        emit captcha(m_challenge, image);
-    }
-
+    emit captcha(CaptchaType::Image, QByteArray(m_challenge.toUtf8() + "\n" + reply->readAll().toBase64()));
     reply->deleteLater();
 }
 
+RecaptchaPlugin* GoogleRecaptchaPluginFactory::createPlugin(QObject *parent) {
+    return new GoogleRecaptchaPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-googlerecaptcha, GoogleRecaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-googlerecaptcha, GoogleRecaptchaPluginFactory)
 #endif

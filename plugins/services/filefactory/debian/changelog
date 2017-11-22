@@ -1,3 +1,9 @@
+qdl-plugins-filefactory (0.3.2) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 03:50:23 +0000
+
 qdl-plugins-filefactory (0.3.1) unstable; urgency=low
 
   * Fix filename detection.

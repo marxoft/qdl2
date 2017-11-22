@@ -17,6 +17,7 @@
 
 #include "recaptchapluginmanager.h"
 #include "definitions.h"
+#include "javascriptpluginengine.h"
 #include "javascriptrecaptchaplugin.h"
 #include "logger.h"
 #include <QDir>
@@ -56,44 +57,47 @@ RecaptchaPluginList RecaptchaPluginManager::plugins() const {
 RecaptchaPluginConfig* RecaptchaPluginManager::getConfigById(const QString &id) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("RecaptchaPluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
+            Logger::log("RecaptchaPluginManager::getConfigById(). Config found: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("RecaptchaPluginManager::getConfigById(). No config found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 RecaptchaPluginConfig* RecaptchaPluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("RecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+            Logger::log("RecaptchaPluginManager::getConfigByFilePath(). Config found: " + pair.config->id(),
                         Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+    Logger::log("RecaptchaPluginManager::getConfigByFilePath(). No config found for filePath " + filePath,
                 Logger::HighVerbosity);
     return 0;
 }
 
-RecaptchaPlugin* RecaptchaPluginManager::getPluginById(const QString &id) const {
+RecaptchaPluginFactory* RecaptchaPluginManager::getFactoryById(const QString &id) const {
     foreach (const RecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("RecaptchaPluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
-            return pair.plugin;
+            Logger::log("RecaptchaPluginManager::getFactoryById(). Factory found: " + id, Logger::HighVerbosity);
+            return pair.factory;
         }
     }
     
-    Logger::log("RecaptchaPluginManager::getPluginById(). No Plugin found for id ", Logger::HighVerbosity);
+    Logger::log("RecaptchaPluginManager::getFactoryById(). No factory found for id ", Logger::HighVerbosity);
     return 0;
 }
 
-RecaptchaPlugin* RecaptchaPluginManager::createPluginById(const QString &id, QObject *parent) const {
-    if (RecaptchaPlugin *plugin = getPluginById(id)) {
-        return plugin->createPlugin(parent);
+RecaptchaPlugin* RecaptchaPluginManager::createPluginById(const QString &id, QObject *parent) {
+    if (RecaptchaPluginFactory *factory = getFactoryById(id)) {
+        if (RecaptchaPlugin *plugin = factory->createPlugin(parent)) {
+            plugin->setNetworkAccessManager(networkAccessManager());
+            return plugin;
+        }
     }
 
     return 0;
@@ -121,9 +125,9 @@ int RecaptchaPluginManager::load() {
                     
                     if (config->load(info.absoluteFilePath())) {
                         if (config->pluginType() == "js") {
-                            JavaScriptRecaptchaPlugin *js =
-                            new JavaScriptRecaptchaPlugin(config->id(), config->pluginFilePath(), this);
-                            js->setNetworkAccessManager(networkAccessManager());
+                            JavaScriptRecaptchaPluginFactory *js =
+                                new JavaScriptRecaptchaPluginFactory(config->pluginFilePath(),
+                                        JavaScriptPluginEngine::instance(), this);
                             m_plugins << RecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("RecaptchaPluginManager::load(). JavaScript plugin loaded: "
@@ -134,9 +138,8 @@ int RecaptchaPluginManager::load() {
                             QObject *obj = loader.instance();
                             
                             if (obj) {
-                                if (RecaptchaPlugin *plugin = qobject_cast<RecaptchaPlugin*>(obj)) {
-                                    plugin->setNetworkAccessManager(networkAccessManager());
-                                    m_plugins << RecaptchaPluginPair(config, plugin);
+                                if (RecaptchaPluginFactory *factory = qobject_cast<RecaptchaPluginFactory*>(obj)) {
+                                    m_plugins << RecaptchaPluginPair(config, factory);
                                     ++count;
                                     Logger::log("RecaptchaPluginManager::load(). Qt Plugin loaded: "
                                                 + config->id(), Logger::MediumVerbosity);

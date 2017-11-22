@@ -18,6 +18,7 @@
 #include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
+#include "javascriptpluginengine.h"
 #include "logger.h"
 #include "qdl.h"
 #include "recaptchapluginmanager.h"
@@ -52,6 +53,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[]) {
     QScopedPointer<Categories> categories(Categories::instance());
     QScopedPointer<ClipboardUrlModel> clipboard(ClipboardUrlModel::instance());
     QScopedPointer<DecaptchaPluginManager> decaptchaManager(DecaptchaPluginManager::instance());
+    QScopedPointer<JavaScriptPluginEngine> engine(JavaScriptPluginEngine::instance());
     QScopedPointer<Qdl> qdl(Qdl::instance());
     QScopedPointer<RecaptchaPluginManager> recaptchaManager(RecaptchaPluginManager::instance());
     QScopedPointer<SearchPluginManager> searchManager(SearchPluginManager::instance());

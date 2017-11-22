@@ -1,52 +1,82 @@
-TEMPLATE = subdirs
+QT += core network
+CONFIG += plugin
+TARGET = qdl2-openload
+TEMPLATE = lib
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    QT += webkitwidgets
+}
+else {
+    QT += webkit
+}
+
+HEADERS += openloadplugin.h
+SOURCES += openloadplugin.cpp
 
 maemo5 {
-    config.files = qdl2-openload.json
+    INCLUDEPATH += /usr/include/qdl2
+    HEADERS += /usr/include/qdl2/serviceplugin.h
+
+    config.files = "$$TARGET".json
     config.path = /opt/qdl2/plugins/services
-    
-    icon.files = qdl2-openload.jpg
+
+    icon.files = "$$TARGET".jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    plugin.files = qdl2-openload.js
-    plugin.path = /opt/qdl2/plugins/services
+    target.path = /opt/qdl2/plugins/services
 
     INSTALLS += \
+        target \
         config \
-        icon \
-        plugin
+        icon
 
 } else:symbian {
-    config.sources = qdl2-openload.json
-    config.path = !:/qdl2/plugins/services
-    
-    icon.sources = qdl2-openload.jpg
-    icon.path = !:/qdl2/plugins/icons
+    TARGET.UID3 = 0xE73CB11F
+    TARGET.CAPABILITY += NetworkServices ReadUserData WriteUserData
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
+    TARGET.EPOCSTACKSIZE = 0x14000
 
-    plugin.sources = qdl2-openload.js
-    plugin.path = !:/qdl2/plugins/services
+    INCLUDEPATH += ../../src
+    HEADERS += ../../src/serviceplugin.h
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     openload_deployment.pkg_prerules += vendorinfo
+
+    config.sources = "$$TARGET".json
+    config.path = !:/qdl2/plugins/services
+
+    icon.sources = "$$TARGET".jpg
+    icon.path = !:/qdl2/plugins/icons
+
+    lib.sources = "$$TARGET".dll
+    lib.path = !:/sys/bin
+
+    stub.sources = "$$TARGET".qtplugin
+    stub.path = !:/qdl2/plugins/services
 
     DEPLOYMENT.display_name = QDL Plugins Openload
     DEPLOYMENT += \
         openload_deployment \
         config \
         icon \
-        plugin
+        lib \
+        stub
 
 } else:unix {
-    config.files = qdl2-openload.json
+    INCLUDEPATH += /usr/include/qdl2
+    HEADERS += /usr/include/qdl2/serviceplugin.h
+
+    config.files = "$$TARGET".json
     config.path = /usr/share/qdl2/plugins/services
-    
-    icon.files = qdl2-openload.jpg
+
+    icon.files = "$$TARGET".jpg
     icon.path = /usr/share/qdl2/plugins/icons
 
-    plugin.files = qdl2-openload.js
-    plugin.path = /usr/share/qdl2/plugins/services
+    target.path = /usr/share/qdl2/plugins/services
 
     INSTALLS += \
+        target \
         config \
-        icon \
-        plugin
+        icon
 }

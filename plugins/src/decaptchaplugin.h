@@ -40,13 +40,6 @@ public:
     }
 
     /*!
-     * Pure virtual method.
-     *
-     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
-     */
-    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
-
-    /*!
      * Allows the plugin to share an application QNetworkNetworkManager instance.
      * 
      * The base implementation does nothing. If you choose to re-implement this function,
@@ -68,9 +61,10 @@ public Q_SLOTS:
     /*!
      * Pure virtual method.
      * 
-     * This method must be re-implemented to retrieve a captcha response for \a image.
+     * This method must be re-implemented to retrieve a captcha response for the captcha with type \a captchaType
+     * and data \a captchaData.
      */
-    virtual void getCaptchaResponse(const QImage &image) = 0;
+    virtual void getCaptchaResponse(int captchaType, const QByteArray &captchaData, const QVariantMap &settings) = 0;
 
     /*!
      * Pure virtual method.
@@ -103,6 +97,25 @@ Q_SIGNALS:
     void settingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
 };
 
-Q_DECLARE_INTERFACE(DecaptchaPlugin, "org.qdl2.DecaptchaPlugin")
+/*!
+ * Interface for creating instances of DecaptchaPlugin.
+ *
+ * \sa DecaptchaPlugin
+ */
+class DecaptchaPluginFactory
+{
+
+public:
+    virtual ~DecaptchaPluginFactory() {}
+
+    /*!
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of DecaptchaPlugin with the parent set to \a parent.
+     */
+    virtual DecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
+};
+
+Q_DECLARE_INTERFACE(DecaptchaPluginFactory, "org.qdl2.DecaptchaPluginFactory")
 
 #endif // DECAPTCHAPLUGIN_H

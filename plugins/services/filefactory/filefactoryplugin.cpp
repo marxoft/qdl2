@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,16 +16,13 @@
  */
 
 #include "filefactoryplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -40,13 +37,7 @@ const QString FileFactoryPlugin::PASSWORD_PROTECTED_ERROR("Password Protected Fo
 const QString FileFactoryPlugin::LOGIN_URL("http://www.filefactory.com/member/login.php");
 const QString FileFactoryPlugin::CAPTCHA_URL("http://www.filefactory.com/file/checkCaptcha.php");
 const QString FileFactoryPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-#if QT_VERSION >= 0x050000
-const QString FileFactoryPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-filefactory");
-#else
-const QString FileFactoryPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-filefactory");
-#endif
+
 const int FileFactoryPlugin::MAX_REDIRECTS = 8;
 
 FileFactoryPlugin::FileFactoryPlugin(QObject *parent) :
@@ -67,10 +58,6 @@ QString FileFactoryPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* FileFactoryPlugin::createPlugin(QObject *parent) {
-    return new FileFactoryPlugin(parent);
 }
 
 QNetworkAccessManager* FileFactoryPlugin::networkAccessManager() {
@@ -103,7 +90,7 @@ bool FileFactoryPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void FileFactoryPlugin::checkUrl(const QString &url) {
+void FileFactoryPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     m_passwordSlot.clear();
     QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(QUrl::fromUserInput(url)));
@@ -207,11 +194,10 @@ void FileFactoryPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void FileFactoryPlugin::getDownloadRequest(const QString &url) {
+void FileFactoryPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_passwordSlot.clear();
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -229,11 +215,6 @@ void FileFactoryPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -339,7 +320,7 @@ void FileFactoryPlugin::checkDownloadRequest() {
             emit error(tr("No captcha key found"));
         }
         else {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
         }
     }
 
@@ -413,7 +394,7 @@ void FileFactoryPlugin::checkCaptcha() {
         }
     }
     else if (map.value("message").toString().startsWith("Entered code")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     else {
         emit error(tr("Unknown error"));
@@ -588,12 +569,6 @@ void FileFactoryPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -644,6 +619,10 @@ void FileFactoryPlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* FileFactoryPluginFactory::createPlugin(QObject *parent) {
+    return new FileFactoryPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-filefactory, FileFactoryPlugin)
+Q_EXPORT_PLUGIN2(qdl2-filefactory, FileFactoryPluginFactory)
 #endif

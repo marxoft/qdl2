@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,16 +16,13 @@
  */
 
 #include "uploadedplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QSettings>
 #include <QTimer>
 #include <QStringList>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -36,13 +33,7 @@ const QString UploadedPlugin::NOT_FOUND_URL("http://uploaded.net/404");
 const QString UploadedPlugin::CAPTCHA_URL("http://uploaded.net/io/ticket/captcha/");
 const QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
 const QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
-#if QT_VERSION >= 0x050000
-const QString UploadedPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-uploaded");
-#else
-const QString UploadedPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-uploaded");
-#endif
+
 const int UploadedPlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
@@ -64,10 +55,6 @@ QString UploadedPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* UploadedPlugin::createPlugin(QObject *parent) {
-    return new UploadedPlugin(parent);
 }
 
 QNetworkAccessManager* UploadedPlugin::networkAccessManager() {
@@ -100,7 +87,7 @@ bool UploadedPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void UploadedPlugin::checkUrl(const QString &url) {
+void UploadedPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -201,11 +188,10 @@ void UploadedPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void UploadedPlugin::getDownloadRequest(const QString &url) {
+void UploadedPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_fileId = url.section(QRegExp("/file/|/ul.to/"), -1);
     m_url = QUrl(BASE_FILE_URL + m_fileId);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -223,11 +209,6 @@ void UploadedPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -387,7 +368,7 @@ void UploadedPlugin::checkCaptcha() {
         const QString errorString = map.value("err").toString();
 
         if (errorString == "captcha") {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, RECAPTCHA_KEY, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
         }
         else if ((errorString == "limit-dl") || (errorString.contains(QRegExp("max|Download-Slots|Free-Downloads",
                  Qt::CaseInsensitive)))) {
@@ -407,12 +388,6 @@ void UploadedPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -444,7 +419,7 @@ void UploadedPlugin::checkLogin() {
 }
 
 void UploadedPlugin::sendCaptchaRequest() {
-    emit captchaRequest(RECAPTCHA_PLUGIN_ID, RECAPTCHA_KEY, "submitCaptchaResponse");
+    emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
 }
 
 void UploadedPlugin::startWaitTimer(int msecs, const char* slot) {
@@ -476,6 +451,10 @@ QNetworkRequest UploadedPlugin::buildDownloadRequest(const QUrl &url) const {
     return request;
 }
 
+ServicePlugin* UploadedPluginFactory::createPlugin(QObject *parent) {
+    return new UploadedPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-uploaded, UploadedPlugin)
+Q_EXPORT_PLUGIN2(qdl2-uploaded, UploadedPluginFactory)
 #endif

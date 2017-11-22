@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,29 +16,21 @@
  */
 
 #include "keeptoshareplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
 #include <QTime>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
 const QRegExp KeepToSharePlugin::FILE_REGEXP("(http(s|)://(new\\.|)(keep2s(hare|)|k2s)\\.cc|)/file/url\\.html[^'\"]+");
 const QString KeepToSharePlugin::LOGIN_URL("http://keep2share.cc/login.html");
-const QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
-#if QT_VERSION >= 0x050000
-const QString KeepToSharePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-keeptoshare");
-#else
-const QString KeepToSharePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-keeptoshare");
-#endif
+const QString KeepToSharePlugin::RECAPTCHA_KEY("6LcYcN0SAAAAABtMlxKj7X0hRxOY8_2U86kI1vbb");
+const QString KeepToSharePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
+
 const int KeepToSharePlugin::MAX_REDIRECTS = 8;
 const int KeepToSharePlugin::WAIT_TIME = 30000;
 
@@ -59,10 +51,6 @@ QString KeepToSharePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* KeepToSharePlugin::createPlugin(QObject *parent) {
-    return new KeepToSharePlugin(parent);
 }
 
 QNetworkAccessManager* KeepToSharePlugin::networkAccessManager() {
@@ -95,7 +83,7 @@ bool KeepToSharePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void KeepToSharePlugin::checkUrl(const QString &url) {
+void KeepToSharePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -155,10 +143,9 @@ void KeepToSharePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void KeepToSharePlugin::getDownloadRequest(const QString &url) {
+void KeepToSharePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -176,11 +163,6 @@ void KeepToSharePlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -342,9 +324,9 @@ void KeepToSharePlugin::checkWaitTime() {
         emit downloadRequest(QNetworkRequest(url));
     }
     else {
-        QString recaptchaKey = response.section("/file/captcha.html?v=", 1, 1).section('"', 0, 0);
+        m_token = response.section("\" name=\"YII_CSRF_TOKEN\"", 0, 0).section("value=\"", -1);
         
-        if (recaptchaKey.isEmpty()) {
+        if (m_token.isEmpty()) {
             if (response.contains("download more than one file at the same time")) {
                 emit waitRequest(600000, true);
             }
@@ -371,9 +353,7 @@ void KeepToSharePlugin::checkWaitTime() {
             }
         }
         else {
-            recaptchaKey.prepend(QString("%1://%2/file/captcha.html?v=").arg(reply->url().scheme())
-                    .arg(reply->url().authority()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, RECAPTCHA_KEY, "submitCaptchaResponse");
         }
     }
 
@@ -382,8 +362,7 @@ void KeepToSharePlugin::checkWaitTime() {
 
 void KeepToSharePlugin::submitCaptchaResponse(const QString &, const QString &response) {
     m_redirects = 0;
-    const QString data = QString("CaptchaForm[code]=%1&free=1&freeDownloadRequest=1&uniqueId=%2").arg(response)
-                                                                                                 .arg(m_fileId);
+    const QString data = QString("YII_CSRF_TOKEN=%1&UniversalCaptchaForm[verifyCode]=&g-recaptcha-response=%2&free=1&freeDownloadRequest=1&uniqueId=%3").arg(m_token).arg(response).arg(m_fileId);
     QNetworkRequest request(m_url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("Referer", m_url.toString().toUtf8());
@@ -442,15 +421,13 @@ void KeepToSharePlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(url));
     }
     else if (response.contains("verification code is incorrect")) {
-        QString recaptchaKey = response.section("/file/captcha.html?v=", 1, 1).section('"', 0, 0);
+        m_token = response.section("\" name=\"YII_CSRF_TOKEN\"", 0, 0).section("value=\"", -1);
 
-        if (recaptchaKey.isEmpty()) {
+        if (m_token.isEmpty()) {
             emit error(tr("No captcha key found"));
         }
         else {
-            recaptchaKey.prepend(QString("%1://%2/file/captcha.html?v=").arg(reply->url().scheme())
-                    .arg(reply->url().authority()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, RECAPTCHA_KEY, "submitCaptchaResponse");
         }
     }
     else {
@@ -532,12 +509,6 @@ void KeepToSharePlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -591,6 +562,10 @@ void KeepToSharePlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* KeepToSharePluginFactory::createPlugin(QObject *parent) {
+    return new KeepToSharePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-keeptoshare, KeepToSharePlugin)
+Q_EXPORT_PLUGIN2(qdl2-keeptoshare, KeepToSharePluginFactory)
 #endif

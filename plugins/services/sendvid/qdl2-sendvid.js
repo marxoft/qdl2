@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,72 +11,78 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var request = null;
+(function() {
+    var request = null;
+    var plugin = ServicePlugin();
 
-function checkUrl(url) {
-    if (url.substring(url.length - 4) == ".mp4") {
-        url = url.substring(0, url.length - 4);
-    }
-    
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var fileName = request.responseText.split("og:title\" content=\"")[1].split("\"")[0];
-                
-                if (fileName) {
-                    urlChecked(new UrlResult(url, fileName + ".mp4"));
+    plugin.checkUrl = function(url) {
+        if (url.substring(url.length - 4) == ".mp4") {
+            url = url.substring(0, url.length - 4);
+        }
+        
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var fileName = request.responseText.split("og:title\" content=\"")[1].split("\"")[0];
+                    
+                    if (fileName) {
+                        plugin.urlChecked(new UrlResult(url, fileName + ".mp4"));
+                    }
+                    else {
+                        plugin.error(qsTr("File not found"));
+                    }
                 }
-                else {
-                    error(qsTr("File not found"));
+                catch(err) {
+                    plugin.error(err);
                 }
-            }
-            catch(err) {
-                error(err);
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function getDownloadRequest(url) {
-    if (url.substring(url.length - 4) == ".mp4") {
-        downloadRequest({"url": url});
-        return;
-    }
-    
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var videoUrl = request.responseText.split("og:video\" content=\"")[1].split("\"")[0];
+    plugin.getDownloadRequest = function(url) {
+        if (url.substring(url.length - 4) == ".mp4") {
+            plugin.downloadRequest(new NetworkRequest(url));
+            return;
+        }
+        
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var videoUrl = request.responseText.split("og:video\" content=\"")[1].split("\"")[0];
 
-                if (videoUrl) {
-                    downloadRequest(new NetworkRequest(videoUrl));
+                    if (videoUrl) {
+                        plugin.downloadRequest(new NetworkRequest(videoUrl));
+                    }
+                    else {
+                        plugin.error(qsTr("Unknown error"));
+                    }
                 }
-                else {
-                    error(qsTr("Unknown error"));
+                catch(err) {
+                    plugin.error(err);
                 }
-            }
-            catch(err) {
-                error(err);
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-    }
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
 
-    return true;
-}
+        return true;
+    };
+
+    return plugin;
+})

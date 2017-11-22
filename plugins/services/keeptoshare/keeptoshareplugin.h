@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -30,26 +30,19 @@ class KeepToSharePlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.KeepToSharePlugin")
-#endif
-
 public:
     explicit KeepToSharePlugin(QObject *parent = 0);
     
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
-
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
     
-    void submitCaptchaResponse(const QString &, const QString &response);
+    void submitCaptchaResponse(const QString &source, const QString &response);
     void submitLogin(const QVariantMap &credentials);
 
 private Q_SLOTS:
@@ -82,8 +75,8 @@ private:
 
     static const QRegExp FILE_REGEXP;
     static const QString LOGIN_URL;
+    static const QString RECAPTCHA_KEY;
     static const QString RECAPTCHA_PLUGIN_ID;
-    static const QString CONFIG_FILE;
     
     static const int MAX_REDIRECTS;
     static const int WAIT_TIME;
@@ -93,10 +86,23 @@ private:
     
     QUrl m_url;
     QString m_fileId;
+    QString m_token;
     
     int m_redirects;
 
     bool m_ownManager;
+};
+
+class KeepToSharePluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.KeepToSharePluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // KEEPTOSHAREPLUGIN_H

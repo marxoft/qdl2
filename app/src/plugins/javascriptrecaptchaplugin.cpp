@@ -16,160 +16,174 @@
 
 #include "javascriptrecaptchaplugin.h"
 #include "logger.h"
-#include "pluginsettings.h"
 #include <QFile>
-#include <QImage>
-#include <QNetworkAccessManager>
 
-JavaScriptRecaptchaPlugin::JavaScriptRecaptchaPlugin(const QString &id, const QString &fileName, QObject *parent) :
+JavaScriptRecaptchaPlugin::JavaScriptRecaptchaPlugin(const QScriptValue &plugin, QObject *parent) :
     RecaptchaPlugin(parent),
-    m_global(0),
-    m_engine(0),
-    m_nam(0),
-    m_fileName(fileName),
-    m_id(id),
-    m_evaluated(false)
+    m_plugin(plugin),
+    m_initted(false)
 {
 }
 
-QString JavaScriptRecaptchaPlugin::fileName() const {
-    return m_fileName;
-}
-
-QString JavaScriptRecaptchaPlugin::id() const {
-    return m_id;
-}      
-
-RecaptchaPlugin* JavaScriptRecaptchaPlugin::createPlugin(QObject *parent) {
-    return new JavaScriptRecaptchaPlugin(id(), fileName(), parent);
-}
-
-void JavaScriptRecaptchaPlugin::setNetworkAccessManager(QNetworkAccessManager *manager) {
-    if (manager) {
-        m_nam = manager;
-        
-        if (m_global) {
-            m_global->setNetworkAccessManager(manager);
-        }
-    }
-}
-
-void JavaScriptRecaptchaPlugin::initEngine() {
-    if (m_evaluated) {
-        return;
-    }
-    
-    if (!m_engine) {
-        m_engine = new QScriptEngine(this);
+bool JavaScriptRecaptchaPlugin::init() {
+    if (m_initted) {
+        return true;
     }
 
-    QFile file(fileName());
-    
-    if (file.open(QFile::ReadOnly)) {
-        const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
-        file.close();
-        
-        if (result.isError()) {
-            Logger::log("JavaScriptRecaptchaPlugin::initEngine(): Error evaluating JavaScript file: "
-                        + result.toString());
-            return;
-        }
-        
-        Logger::log("JavaScriptRecaptchaPlugin::initEngine(): JavaScript file evaluated OK", Logger::HighVerbosity);
-        m_evaluated = true;
-        m_global = new JavaScriptRecaptchaPluginGlobalObject(m_engine);
-        
-        if (m_nam) {
-            m_global->setNetworkAccessManager(m_nam);
-        }
-        
-        connect(m_global, SIGNAL(captcha(QString, QString)), this, SLOT(onCaptcha(QString, QString)));
-        connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
-                this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
-
-        m_engine->installTranslatorFunctions();
-        m_engine->globalObject().setProperty("settings", m_engine->newQObject(new PluginSettings(id(), m_engine)));
-    }
-    else {
-        Logger::log("JavaScriptRecaptchaPlugin::initEngine(): Error reading JavaScript file: "
-                    + file.errorString());
-    }
-}
-
-bool JavaScriptRecaptchaPlugin::cancelCurrentOperation() {
-    if (!m_engine) {
+    if (!m_plugin.property("cancelCurrentOperation").isFunction()) {
+        Logger::log("JavaScriptRecaptchaPlugin::init(): No cancelCurrentOperation() function found");
         return false;
     }
 
-    return m_engine->globalObject().property("cancelCurrentOperation").call(QScriptValue()).toBool();
+    if (!m_plugin.property("getCaptcha").isFunction()) {
+        Logger::log("JavaScriptRecaptchaPlugin::init(): No getCaptcha() function found");
+        return false;
+    }
+
+    QObject *obj = m_plugin.toQObject();
+
+    if ((!obj) || (!connect(obj, SIGNAL(captcha(int, QString)), this, SLOT(onCaptcha(int, QString))))
+            || (!connect(obj, SIGNAL(error(QString)), this, SIGNAL(error(QString))))
+            || (!connect(obj, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
+                    this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue))))) {
+        Logger::log("JavaScriptRecaptchaPlugin::init(): Not a valid RecaptchaPlugin");
+        return false;
+    }
+
+    Logger::log("JavaScriptRecaptchaPlugin::init(): RecaptchaPlugin initialized OK", Logger::HighVerbosity);
+    m_initted = true;
+    return true;
 }
 
-void JavaScriptRecaptchaPlugin::getCaptcha(const QString &captchaKey) {
-    initEngine();
-    QScriptValue func = m_engine->globalObject().property("getCaptcha");
-
-    if (func.isFunction()) {
-        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << captchaKey);
-
-        if (result.isError()) {
-            const QString errorString = result.toString();
-            Logger::log("JavaScriptRecaptchaPlugin::getCaptcha(). Error calling getCaptcha(): " + errorString);
-            emit error(tr("Error calling getCaptcha(): %1").arg(errorString));
-        }
+bool JavaScriptRecaptchaPlugin::cancelCurrentOperation() {
+    if (!init()) {
+        return false;
     }
-    else {
-        Logger::log("JavaScriptRecaptchaPlugin::getCaptcha(). getCaptcha() function not defined");
-        emit error(tr("getCaptcha() function not defined"));
+
+    return m_plugin.property("cancelCurrentOperation").call(m_plugin).toBool();
+}
+
+void JavaScriptRecaptchaPlugin::getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &settings) {
+    if (!init()) {
+        emit error(tr("Plugin not initialized"));
+        return;
+    }
+
+    const QScriptValue result = m_plugin.property("getCaptcha").call(m_plugin, QScriptValueList() << captchaType
+            << captchaKey << m_plugin.engine()->toScriptValue(settings));
+
+    if (result.isError()) {
+        const QString errorString = result.toString();
+        Logger::log("JavaScriptRecaptchaPlugin::getCaptcha(). Error calling getCaptcha(): " + errorString);
+        emit error(tr("Error calling getCaptcha(): %1").arg(errorString));
     }
 }
 
 void JavaScriptRecaptchaPlugin::submitSettingsResponse(const QVariantMap &settings) {
-    initEngine();
+    if (!init()) {
+        emit error(tr("Plugin not initialized"));
+        return;
+    }
 
     if (m_callback.isFunction()) {
-        const QScriptValue result = m_callback.call(QScriptValue(), QScriptValueList()
-                                                    << m_engine->toScriptValue(settings));
+        const QScriptValue result = m_callback.call(m_plugin, QScriptValueList()
+                << m_plugin.engine()->toScriptValue(settings));
 
         if (result.isError()) {
-            emit error(tr("Settings callback error: %1").arg(result.toString()));
+            const QString errorString = result.toString();
+            Logger::log("JavaScriptRecaptchaPlugin::submitSettingsResponse(): Error calling settings callback: "
+                    + errorString);
+            emit error(tr("Settings callback error: %1").arg(errorString));
         }
     }
     else {
-        QScriptValue func = m_engine->globalObject().property(m_callback.toString());
+        const QString funcName = m_callback.toString();
+        QScriptValue func = m_plugin.property(funcName);
 
         if (func.isFunction()) {
-            const QScriptValue result = func.call(QScriptValue(), QScriptValueList()
-                                                  << m_engine->toScriptValue(settings));
-            
+            const QScriptValue result = func.call(m_plugin, QScriptValueList()
+                    << m_plugin.engine()->toScriptValue(settings));
+
             if (result.isError()) {
-                emit error(tr("Error calling %1: %1").arg(m_callback.toString()).arg(result.toString()));
+                const QString errorString = result.toString();
+                Logger::log("JavaScriptRecaptchaPlugin::submitSettingsResponse(): Error calling settings callback: "
+                        + errorString);
+                emit error(tr("Settings callback error: %1").arg(errorString));
             }
         }
         else {
-            emit error(tr("%1 function not defined in the plugin").arg(m_callback.toString()));
+            Logger::log(QString("JavaScriptRecaptchaPlugin::submitSettingsResponse(): %1 function not defined")
+                    .arg(funcName));
+            emit error(tr("%1 function not defined in the plugin").arg(funcName));
         }
     }
 }
 
-void JavaScriptRecaptchaPlugin::onCaptcha(const QString &challenge, const QString &imageData) {
-    const QImage image = QImage::fromData(QByteArray::fromBase64(imageData.toUtf8()));
-
-    if (image.isNull()) {
-        emit error(tr("Invalid captcha image"));
-    }
-    else {
-        emit captcha(challenge, image);
-    }
+void JavaScriptRecaptchaPlugin::onCaptcha(int captchaType, const QString &captchaData) {
+    emit captcha(captchaType, captchaData.toUtf8());
 }
 
 void JavaScriptRecaptchaPlugin::onSettingsRequest(const QString &title, const QVariantList &settings,
-                                                const QScriptValue &callback) {
+        const QScriptValue &callback) {
     m_callback = callback;
     emit settingsRequest(title, settings, "submitSettingsResponse");
 }
 
-JavaScriptRecaptchaPluginGlobalObject::JavaScriptRecaptchaPluginGlobalObject(QScriptEngine *engine) :
-    JavaScriptPluginGlobalObject(engine)
+JavaScriptRecaptchaPluginSignaller::JavaScriptRecaptchaPluginSignaller(QObject *parent) :
+    QObject(parent)
 {
+}
+
+JavaScriptRecaptchaPluginFactory::JavaScriptRecaptchaPluginFactory(const QString &fileName, QScriptEngine *engine,
+        QObject *parent) :
+    QObject(parent),
+    m_engine(engine),
+    m_fileName(fileName),
+    m_initted(false)
+{
+}
+
+RecaptchaPlugin* JavaScriptRecaptchaPluginFactory::createPlugin(QObject *parent) {
+    if (init()) {
+        return new JavaScriptRecaptchaPlugin(m_constructor.construct(), parent);
+    }
+
+    return 0;
+}
+
+bool JavaScriptRecaptchaPluginFactory::init() {
+    if (m_initted) {
+        return true;
+    }
+    
+    if (!m_engine) {
+        Logger::log("JavaScriptRecaptchaPluginFactory::init(): No JavaScript engine");
+        return false;
+    }
+
+    QFile file(m_fileName);
+
+    if (!file.open(QFile::ReadOnly)) {
+        Logger::log("JavaScriptRecaptchaPluginFactory::init(): Cannot read file: " + m_fileName);
+        return false;
+    }
+
+    m_constructor = m_engine->evaluate(QString::fromUtf8(file.readAll()), m_fileName);
+    file.close();
+
+    if (!m_constructor.isFunction()) {
+        if (m_constructor.isError()) {
+            Logger::log("JavaScriptRecaptchaPluginFactory::init(): Error evaluating JavaScript file: "
+                    + m_constructor.toString());
+        }
+        else {
+            Logger::log("JavaScriptRecaptchaPluginFactory::init(): No constructor function");
+        }
+
+        return false;
+    }
+
+    Logger::log("JavaScriptRecaptchaPluginFactory::init(): Initialized OK", Logger::HighVerbosity);
+    m_initted = true;
+    return true;
 }

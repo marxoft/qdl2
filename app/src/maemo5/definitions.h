@@ -58,14 +58,15 @@ static const QString PLUGIN_CONFIG_PATH(APP_CONFIG_PATH + "plugins/");
 static const QString DOWNLOAD_PATH(HOME_PATH + "/MyDocs/qdl2/");
 
 // Captcha
-static const int CAPTCHA_TIMEOUT = 120000;
+static const int CAPTCHA_TIMEOUT = 300000;
 
 // Network
 static const int DOWNLOAD_BUFFER_SIZE = 64000;
 static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
+static const QByteArray USER_AGENT("Mozilla/5.0 (X11; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0");
 
 // Version
-static const QString VERSION_NUMBER("2.5.0");
+static const QString VERSION_NUMBER("2.7.0");
 
 #endif // DEFINITIONS_H

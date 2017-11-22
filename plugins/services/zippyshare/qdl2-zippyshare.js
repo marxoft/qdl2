@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,54 +11,59 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var request = null;
+(function() {
+    var request = null;
+    var plugin = new ServicePlugin();
 
-function checkUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            try {
-                var fileName = /"og:title" content="([^"]+)"/.exec(request.responseText)[1];
-                urlChecked(new UrlResult(url, fileName));
-            }
-            catch(e) {
-                error(e);
-            }
-        }
-    }
-
-    request.open("GET", url);
-    request.send();
-}
-
-function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            try {
-                var href = url.substring(0, url.indexOf("/v/"))
-                    + eval(/document\.getElementById\('dlbutton'\).href = ([^;]+)/.exec(request.responseText)[1]);
-                downloadRequest(new NetworkRequest(href));
-            }
-            catch(e) {
-                error(e);
+    plugin.checkUrl = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                try {
+                    var fileName = /"og:title" content="([^"]+)"/.exec(request.responseText)[1];
+                    plugin.urlChecked(new UrlResult(url, fileName));
+                }
+                catch(e) {
+                    plugin.error(e);
+                }
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-        request = null;
-    }
+    plugin.getDownloadRequest = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                try {
+                    var href = url.substring(0, url.indexOf("/v/"))
+                        + eval(/document\.getElementById\('dlbutton'\).href = ([^;]+)/.exec(request.responseText)[1]);
+                    plugin.downloadRequest(new NetworkRequest(href));
+                }
+                catch(e) {
+                    plugin.error(e);
+                }
+            }
+        }
 
-    return true;
-}
+        request.open("GET", url);
+        request.send();
+    };
+
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
+
+        return true;
+    };
+
+    return plugin;
+})
 

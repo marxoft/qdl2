@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,20 +19,8 @@
 #include <qsoundcloud/resourcesrequest.h>
 #include <qsoundcloud/streamsrequest.h>
 #include <QNetworkRequest>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
-#endif
-
-#if QT_VERSION >= 0x050000
-const QString SoundCloudPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-soundcloud");
-#else
-const QString SoundCloudPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-soundcloud");
 #endif
 
 const QString SoundCloudPlugin::CLIENT_ID("9b7cb759c6d41b14af05855f94bc743c");
@@ -46,11 +34,7 @@ SoundCloudPlugin::SoundCloudPlugin(QObject *parent) :
 {
 }
 
-ServicePlugin* SoundCloudPlugin::createPlugin(QObject *parent) {
-    return new SoundCloudPlugin(parent);
-}
-
-void SoundCloudPlugin::checkUrl(const QString &url) {
+void SoundCloudPlugin::checkUrl(const QString &url, const QVariantMap &) {
     if (!m_resourcesRequest) {
         m_resourcesRequest = new QSoundCloud::ResourcesRequest(this);
         m_resourcesRequest->setClientId(CLIENT_ID);
@@ -62,13 +46,14 @@ void SoundCloudPlugin::checkUrl(const QString &url) {
     m_resourcesRequest->get("/resolve", filters);
 }
 
-void SoundCloudPlugin::getDownloadRequest(const QString &url) {    
+void SoundCloudPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     if (!m_streamsRequest) {
         m_streamsRequest = new QSoundCloud::StreamsRequest(this);
         m_streamsRequest->setClientId(CLIENT_ID);
         connect(m_streamsRequest, SIGNAL(finished()), this, SLOT(onStreamsRequestFinished()));
     }
     
+    m_settings = settings;
     m_streamsRequest->get(url);
 }
 
@@ -138,10 +123,8 @@ void SoundCloudPlugin::onStreamsRequestFinished() {
             return;
         }
 
-        const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-        
-        if (settings.value("useDefaultAudioFormat", true).toBool()) {
-            const QString format = settings.value("audioFormat", "original").toString();
+        if (m_settings.value("useDefaultAudioFormat", true).toBool()) {
+            const QString format = m_settings.value("audioFormat", "original").toString();
 
             for (int i = 0; i < AUDIO_FORMATS.indexOf(format); i++) {
                 for (int j = 0; j < streams.size(); j++) {
@@ -183,6 +166,10 @@ void SoundCloudPlugin::onStreamsRequestFinished() {
     }   
 }
 
+ServicePlugin* SoundCloudPluginFactory::createPlugin(QObject *parent) {
+    return new SoundCloudPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-soundcloud, SoundCloudPlugin)
+Q_EXPORT_PLUGIN2(qdl2-soundcloud, SoundCloudPluginFactory)
 #endif

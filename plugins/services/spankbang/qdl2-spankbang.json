@@ -3,7 +3,7 @@
     "name": "SpankBang",
     "icon": "qdl2-spankbang.jpg",
     "version": 1,
-    "regExp": "http://spankbang\\.com/\\w+/(video|embed)",
+    "regExp": "http(s|)://spankbang\\.com/\\w+/(video|embed)",
     "settings": [
         {
             "type": "boolean",
@@ -16,21 +16,21 @@
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "720p",
+            "value": "1080p",
             "options": [
                 {
                     "label": "720P",
-                    "value": "720p"
+                    "value": "1080p"
                 },
 
                 {
                     "label": "480P",
-                    "value": "480p"
+                    "value": "720p"
                 },
 
                 {
                     "label": "240P",
-                    "value": "240p"
+                    "value": "480p"
                 }
             ]
         }

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,17 +16,15 @@
  */
 
 #include "rapidgatorplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
 #if QT_VERSION >= 0x050000
-#include <QStandardPaths>
 #include <QUrlQuery>
 #else
-#include <QDesktopServices>
 #include <QtPlugin>
 #endif
 
@@ -37,13 +35,7 @@ const QString RapidGatorPlugin::DOWNLOAD_LINK_URL("http://rapidgator.net/downloa
 const QString RapidGatorPlugin::CAPTCHA_URL("http://rapidgator.net/download/captcha");
 const QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 const QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
-#if QT_VERSION >= 0x050000
-const QString RapidGatorPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                            + "/.config/qdl2/plugins/qdl2-rapidgator");
-#else
-const QString RapidGatorPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                            + "/.config/qdl2/plugins/qdl2-rapidgator");
-#endif
+
 const int RapidGatorPlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
@@ -66,10 +58,6 @@ QString RapidGatorPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* RapidGatorPlugin::createPlugin(QObject *parent) {
-    return new RapidGatorPlugin(parent);
 }
 
 QNetworkAccessManager* RapidGatorPlugin::networkAccessManager() {
@@ -102,7 +90,7 @@ bool RapidGatorPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void RapidGatorPlugin::checkUrl(const QString &url) {
+void RapidGatorPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -168,10 +156,9 @@ void RapidGatorPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void RapidGatorPlugin::getDownloadRequest(const QString &url) {
+void RapidGatorPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -189,11 +176,6 @@ void RapidGatorPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -432,7 +414,7 @@ void RapidGatorPlugin::checkDownloadLink() {
         const QVariantMap map = Json::parse(response).toMap();
         
         if (map.value("state").toString() == "done") {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, RECAPTCHA_KEY, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
         }
         else {
             emit error(tr("Unknown error"));
@@ -496,7 +478,7 @@ void RapidGatorPlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else if (response.contains("verification code is incorrect")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, RECAPTCHA_KEY, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
     }
     else if (response.contains("reached your daily downloads limit")) {
         emit waitRequest(600000, true);
@@ -514,12 +496,6 @@ void RapidGatorPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -571,6 +547,10 @@ void RapidGatorPlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* RapidGatorPluginFactory::createPlugin(QObject *parent) {
+    return new RapidGatorPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-rapidgator, RapidGatorPlugin)
+Q_EXPORT_PLUGIN2(qdl2-rapidgator, RapidGatorPluginFactory)
 #endif

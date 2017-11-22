@@ -18,34 +18,21 @@
 #define JAVASCRIPTSEARCHPLUGIN_H
 
 #include "searchplugin.h"
-#include "javascriptpluginglobalobject.h"
-#include <QScriptable>
+#include <QPointer>
+#include <QScriptEngine>
 
 class JavaScriptSearchPlugin : public SearchPlugin
 {
     Q_OBJECT
 
-    Q_INTERFACES(SearchPlugin)
-
-    Q_PROPERTY(QString fileName READ fileName)
-    Q_PROPERTY(QString id READ id)
-
 public:
-    explicit JavaScriptSearchPlugin(const QString &id, const QString &fileName, QObject *parent = 0);
+    explicit JavaScriptSearchPlugin(const QScriptValue &plugin, QObject *parent = 0);
 
-    QString fileName() const;
-
-    QString id() const;
-
-    virtual SearchPlugin* createPlugin(QObject *parent = 0);
-    
-    virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
-    
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search();
+    virtual void search(const QVariantMap &settings);
     
     void submitSettingsResponse(const QVariantMap &settings);
 
@@ -53,58 +40,48 @@ private Q_SLOTS:
     void onSettingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
 
 private:
-    void initEngine();
+    bool init();
     
-    JavaScriptPluginGlobalObject *m_global;
-    QScriptEngine *m_engine;
-    QPointer<QNetworkAccessManager> m_nam;
-
-    QString m_fileName;
-    QString m_id;
-
+    QScriptValue m_plugin;
     QScriptValue m_callback;
     
-    bool m_evaluated;
+    bool m_initted;
 };
 
-class JavaScriptSearchPluginGlobalObject : public JavaScriptPluginGlobalObject
+class JavaScriptSearchPluginSignaller : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit JavaScriptSearchPluginGlobalObject(QScriptEngine *engine);
+    explicit JavaScriptSearchPluginSignaller(QObject *parent = 0);
 
 Q_SIGNALS:
     void error(const QString &errorString);
     void searchCompleted(const SearchResultList &results);
     void searchCompleted(const SearchResultList &results, const QVariantMap &nextParams);
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
-
-private:
-    static QScriptValue newSearchResult(QScriptContext *context, QScriptEngine *engine);
 };
 
-class JavaScriptSearchResult : public QObject, public QScriptable
+class JavaScriptSearchPluginFactory : public QObject, public SearchPluginFactory
 {
     Q_OBJECT
-    
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString description READ description WRITE setDescription)
-    Q_PROPERTY(QString url READ url WRITE setUrl)
+    Q_INTERFACES(SearchPluginFactory)
 
 public:
-    explicit JavaScriptSearchResult(QObject *parent = 0);
-    
-    QString name() const;
-    void setName(const QString &n);
-    
-    QString description() const;
-    void setDescription(const QString &d);
-    
-    QString url() const;
-    void setUrl(const QString &u);
-};
+    explicit JavaScriptSearchPluginFactory(const QString &fileName, QScriptEngine *engine, QObject *parent = 0);
 
-Q_DECLARE_METATYPE(SearchResult*)
+    virtual SearchPlugin* createPlugin(QObject *parent = 0);
+
+private:
+    bool init();
+
+    QPointer<QScriptEngine> m_engine;
+
+    QString m_fileName;
+
+    QScriptValue m_constructor;
+
+    bool m_initted;
+};
 
 #endif // JAVASCRIPTSEARCHPLUGIN_H

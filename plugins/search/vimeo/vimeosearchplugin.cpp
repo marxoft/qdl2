@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -18,21 +18,10 @@
 #include "vimeosearchplugin.h"
 #include <qvimeo/resourcesrequest.h>
 #include <QDateTime>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString VimeoSearchPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-vimeosearch");
-#else
-const QString VimeoSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-vimeosearch");
-#endif
 const QString VimeoSearchPlugin::BASE_URL("https://vimeo.com");
 
 const QString VimeoSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='320' height='180' src='https://i.vimeocdn.com/video/%2_320x180.jpg' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
@@ -45,10 +34,6 @@ VimeoSearchPlugin::VimeoSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
     m_request(0)
 {
-}
-
-SearchPlugin* VimeoSearchPlugin::createPlugin(QObject *parent) {
-    return new VimeoSearchPlugin(parent);
 }
 
 bool VimeoSearchPlugin::cancelCurrentOperation() {
@@ -64,9 +49,8 @@ void VimeoSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->list("/videos", params);
 }
 
-void VimeoSearchPlugin::search() {
+void VimeoSearchPlugin::search(const QVariantMap &settings) {
     m_filters.clear();
-    const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
         QVariantMap searchQuery;
@@ -161,6 +145,10 @@ void VimeoSearchPlugin::onRequestFinished() {
     }
 }
 
+SearchPlugin* VimeoSearchPluginFactory::createPlugin(QObject *parent) {
+    return new VimeoSearchPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-vimeosearch, VimeoSearchPlugin)
+Q_EXPORT_PLUGIN2(qdl2-vimeosearch, VimeoSearchPluginFactory)
 #endif

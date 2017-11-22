@@ -1,0 +1,21 @@
+{
+    "type": "js",
+    "name": "Xopenload",
+    "icon": "qdl2-xopenloadsearch.jpg",
+    "version": 1,
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Search query",
+            "key": "query"
+        }
+    ]
+}
+

@@ -40,13 +40,6 @@ public:
     }
 
     /*!
-     * Pure virtual method.
-     *
-     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
-     */
-    virtual SearchPlugin* createPlugin(QObject *parent = 0) = 0;
-
-    /*!
      * Allows the plugin to share an application QNetworkNetworkManager instance.
      * 
      * The base implementation does nothing. If you choose to re-implement this function,
@@ -83,7 +76,7 @@ public Q_SLOTS:
      * 
      * \sa searchCompleted(), error()
      */
-    virtual void search() = 0;
+    virtual void search(const QVariantMap &settings) = 0;
 
 Q_SIGNALS:
     /*!
@@ -116,6 +109,25 @@ Q_SIGNALS:
     void settingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);    
 };
 
-Q_DECLARE_INTERFACE(SearchPlugin, "org.qdl2.SearchPlugin")
+/*!
+ * Interface for creating instances of SearchPlugin.
+ *
+ * \sa SearchPlugin
+ */
+class SearchPluginFactory
+{
+
+public:
+    virtual ~SearchPluginFactory() {}
+
+    /*!
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of SearchPlugin with the parent set to \a parent.
+     */
+    virtual SearchPlugin* createPlugin(QObject *parent = 0) = 0;
+};
+
+Q_DECLARE_INTERFACE(SearchPluginFactory, "org.qdl2.SearchPluginFactory")
 
 #endif // SEARCHPLUGIN_H

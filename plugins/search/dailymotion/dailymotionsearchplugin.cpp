@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -18,21 +18,9 @@
 #include "dailymotionsearchplugin.h"
 #include <qdailymotion/resourcesrequest.h>
 #include <QDateTime>
-#include <QSettings>
 #include <QUrl>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
-#endif
-
-#if QT_VERSION >= 0x050000
-const QString DailymotionSearchPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-dailymotionsearch");
-#else
-const QString DailymotionSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-dailymotionsearch");
 #endif
 
 const QString DailymotionSearchPlugin::HTML = QObject::tr("<a href='%1'><img width='320' height='180' src='%2' /></a><p>Date: %3</p><p>Duration: %4</p><p>%5</p>");
@@ -44,10 +32,6 @@ DailymotionSearchPlugin::DailymotionSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
     m_request(0)
 {
-}
-
-SearchPlugin* DailymotionSearchPlugin::createPlugin(QObject *parent) {
-    return new DailymotionSearchPlugin(parent);
 }
 
 bool DailymotionSearchPlugin::cancelCurrentOperation() {
@@ -63,9 +47,8 @@ void DailymotionSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->list(params.value("path").toString(), params.value("filters").toMap());
 }
 
-void DailymotionSearchPlugin::search() {
+void DailymotionSearchPlugin::search(const QVariantMap &settings) {
     m_filters.clear();
-    const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
         QVariantMap searchQuery;
@@ -175,6 +158,10 @@ void DailymotionSearchPlugin::onRequestFinished() {
     }
 }
 
+SearchPlugin* DailymotionSearchPluginFactory::createPlugin(QObject *parent) {
+    return new DailymotionSearchPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-dailymotionsearch, DailymotionSearchPlugin)
+Q_EXPORT_PLUGIN2(qdl2-dailymotionsearch, DailymotionSearchPluginFactory)
 #endif

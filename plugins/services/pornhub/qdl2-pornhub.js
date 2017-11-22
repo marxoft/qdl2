@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,96 +11,100 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var MOBILE_COOKIE = "platform=mobile";
+(function() {
+    var COOKIE = "platform=mobile";
+    var USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0";
+    var request = null;
+    var plugin = new ServicePlugin();
 
-var request = null;
-
-function checkUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var fileName = request.responseText.split("twitter:title\" content=\"")[1].split("\"")[0];
-                
-                if (fileName) {
-                    urlChecked(new UrlResult(url, fileName + ".mp4"));
+    plugin.checkUrl = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var fileName = request.responseText.split("twitter:title\" content=\"")[1].split("\"")[0];
+                    
+                    if (fileName) {
+                        plugin.urlChecked(new UrlResult(url, fileName + ".mp4"));
+                    }
+                    else {
+                        plugin.error(qsTr("File not found"));
+                    }
                 }
-                else {
-                    error(qsTr("File not found"));
+                catch(err) {
+                    plugin.error(err);
                 }
-            }
-            catch(err) {
-                error(err);
             }
         }
-    }
 
-    request.open("GET", url);
-    request.setRequestHeader("Cookie", MOBILE_COOKIE);
-    request.send();
-}
+        request.open("GET", url);
+        request.setRequestHeader("Cookie", COOKIE);
+        request.setRequestHeader("User-Agent", USER_AGENT);
+        request.send();
+    };
 
-function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var script = /var varObj =[^<]+/.exec(request.responseText)[0].trim();
-                var qitems = /var (qualityItems_\d+)/.exec(script)[1];
-                eval(script);
-                var formats = eval(qitems);
-                
-                if (!formats.length) {
-                    error(qsTr("No video formats found"));
-                    return;
-                }
-                
-                if (settings.value("useDefaultVideoFormat", true) == true) {
-                    var format = settings.value("videoFormat", "quality1080p");
+    plugin.getDownloadRequest = function(url, settings) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var formats = JSON.parse(/var qualityItems_\d+\s*=\s*(\[[^\[]+\])/.exec(request.responseText)[1]);
+
+                    if (!formats.length) {
+                        plugin.error(qsTr("No video formats found"));
+                        return;
+                    }
                     
-                    for (var i = formats.length - 1; i > 0; i--) {
-                        if (formats[i].id == format) {
-                            downloadRequest(new NetworkRequest(formats[i].url));
-                            return;
+                    if (settings.useDefaultVideoFormat) {
+                        var format = settings.videoFormat || "quality1080p";
+                        
+                        for (var i = formats.length - 1; i > 0; i--) {
+                            if (formats[i].id == format) {
+                                plugin.downloadRequest(new NetworkRequest(formats[i].url));
+                                return;
+                            }
                         }
+                        
+                        plugin.downloadRequest(new NetworkRequest(formats[formats.length - 1].url));
                     }
-                    
-                    downloadRequest(new NetworkRequest(formats[0].url));
-                }
-                else {
-                    var list = {"type": "list", "label": qsTr("Video format"), "key": "format"};
-                    var options = [];
-                    
-                    for (var i = formats.length - 1; i >= 0; i--) {
-                        options.push({"label": formats[i].text.toUpperCase(), "value": formats[i].url});
+                    else {
+                        var list = {"type": "list", "label": qsTr("Video format"), "key": "format"};
+                        var options = [];
+                        
+                        for (var i = formats.length - 1; i >= 0; i--) {
+                            options.push({"label": formats[i].text.toUpperCase(), "value": formats[i].url});
+                        }
+                        
+                        list["options"] = options;
+                        list["value"] = formats[formats.length - 1].url;
+                        plugin.settingsRequest(qsTr("Choose video format"), [list], function(s) {
+                            plugin.downloadRequest(new NetworkRequest(s.format));
+                        });
                     }
-                    
-                    list["options"] = options;
-                    list["value"] = formats[formats.length - 1].url;
-                    settingsRequest(qsTr("Choose video format"), [list], function(s) {
-                        downloadRequest(new NetworkRequest(s.format));
-                    });
                 }
-            }
-            catch(err) {
-                error(err);
+                catch(err) {
+                    plugin.error(err);
+                }
             }
         }
-    }
 
-    request.open("GET", url);
-    request.setRequestHeader("Cookie", MOBILE_COOKIE);
-    request.send();
-}
+        request.open("GET", url);
+        request.setRequestHeader("Cookie", COOKIE);
+        request.setRequestHeader("User-Agent", USER_AGENT);
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-        request = null;
-    }
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
 
-    return true;
-}
+        return true;
+    };
+
+    return plugin;
+})

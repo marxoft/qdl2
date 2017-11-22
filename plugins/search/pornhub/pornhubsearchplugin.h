@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,22 +26,16 @@ class QNetworkReply;
 class PornhubSearchPlugin : public SearchPlugin
 {
     Q_OBJECT
-    Q_INTERFACES(SearchPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.PornhubSearchPlugin")
-#endif
 
 public:
     explicit PornhubSearchPlugin(QObject *parent = 0);
-    
-    virtual SearchPlugin* createPlugin(QObject *parent = 0);
-    
+     
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search();
-    void search(const QVariantMap &settings);
+    virtual void search(const QVariantMap &settings);
+    void getVideos(const QVariantMap &settings);
 
 private Q_SLOTS:
     void checkVideos();
@@ -60,7 +54,6 @@ private:
     
     QNetworkAccessManager* networkAccessManager();
     
-    static const QString CONFIG_FILE;
     static const QString BASE_URL;
     static const QString HTML;
     
@@ -72,6 +65,18 @@ private:
     QNetworkAccessManager *m_nam;
     
     int m_redirects;
+};
+
+class PornhubSearchPluginFactory : public QObject, public SearchPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(SearchPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.PornhubSearchPluginFactory")
+#endif
+
+public:
+    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // PORNHUBSEARCHPLUGIN_H

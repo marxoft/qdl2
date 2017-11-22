@@ -24,14 +24,14 @@
 
 struct RecaptchaPluginPair
 {
-    RecaptchaPluginPair(RecaptchaPluginConfig* c, RecaptchaPlugin* p) :
+    RecaptchaPluginPair(RecaptchaPluginConfig* c, RecaptchaPluginFactory* f) :
         config(c),
-        plugin(p)
+        factory(f)
     {
     }
 
     RecaptchaPluginConfig *config;
-    RecaptchaPlugin *plugin;
+    RecaptchaPluginFactory *factory;
 };
 
 typedef QList<RecaptchaPluginPair> RecaptchaPluginList;
@@ -54,9 +54,9 @@ public:
 public Q_SLOTS:
     RecaptchaPluginConfig* getConfigById(const QString &id) const;
 
-    RecaptchaPlugin* getPluginById(const QString &id) const;
+    RecaptchaPluginFactory* getFactoryById(const QString &id) const;
 
-    RecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
+    RecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0);
 
     int load();
 

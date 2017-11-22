@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,15 +16,12 @@
  */
 
 #include "upstoreplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -33,13 +30,7 @@ const QRegExp UpstorePlugin::FILE_REGEXP("http(s|)://\\w+\\.upsto\\.re/\\w+/[\\w
 const QRegExp UpstorePlugin::WAIT_REGEXP("wait (\\d+) minutes before downloading next file");
 const QString UpstorePlugin::LOGIN_URL("http://upstore.net/account/login/");
 const QString UpstorePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-#if QT_VERSION >= 0x050000
-const QString UpstorePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-upstore");
-#else
-const QString UpstorePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-upstore");
-#endif
+
 const int UpstorePlugin::MAX_REDIRECTS = 8;
 
 UpstorePlugin::UpstorePlugin(QObject *parent) :
@@ -60,10 +51,6 @@ QString UpstorePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* UpstorePlugin::createPlugin(QObject *parent) {
-    return new UpstorePlugin(parent);
 }
 
 QNetworkAccessManager* UpstorePlugin::networkAccessManager() {
@@ -96,7 +83,7 @@ bool UpstorePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void UpstorePlugin::checkUrl(const QString &url) {
+void UpstorePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -155,10 +142,9 @@ void UpstorePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void UpstorePlugin::getDownloadRequest(const QString &url) {
+void UpstorePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -176,11 +162,6 @@ void UpstorePlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -416,7 +397,7 @@ void UpstorePlugin::sendCaptchaRequest() {
         emit error(tr("No captcha key found"));
     }
     else {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
 }
 
@@ -426,12 +407,6 @@ void UpstorePlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -482,6 +457,10 @@ void UpstorePlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* UpstorePluginFactory::createPlugin(QObject *parent) {
+    return new UpstorePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-upstore, UpstorePlugin)
+Q_EXPORT_PLUGIN2(qdl2-upstore, UpstorePluginFactory)
 #endif

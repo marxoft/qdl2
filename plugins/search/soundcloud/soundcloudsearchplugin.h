@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -28,21 +28,14 @@ class SoundCloudSearchPlugin : public SearchPlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(SearchPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.SoundCloudSearchPlugin")
-#endif
-
 public:
     explicit SoundCloudSearchPlugin(QObject *parent = 0);
-
-    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search();
+    virtual void search(const QVariantMap &settings);
 
     void submitSettings(const QVariantMap &settings);
 
@@ -50,13 +43,24 @@ private Q_SLOTS:
     void onRequestFinished();
     
 private:    
-    static const QString CONFIG_FILE;
     static const QString CLIENT_ID;
     static const QString HTML;
         
     QSoundCloud::ResourcesRequest* request();
     
     QSoundCloud::ResourcesRequest *m_request;
+};
+
+class SoundCloudSearchPluginFactory : public QObject, SearchPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(SearchPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.SoundCloudSearchPluginFactory")
+#endif
+
+public:
+    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // SOUNDCLOUDSEARCHPLUGIN_H

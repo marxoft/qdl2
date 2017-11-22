@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,17 +16,15 @@
  */
 
 #include "depositfilesplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QScriptEngine>
-#include <QSettings>
 #include <QTimer>
 #if QT_VERSION >= 0x050000
-#include <QStandardPaths>
 #include <QUrlQuery>
 #else
-#include <QDesktopServices>
 #include <QtPlugin>
 #endif
 #ifdef DEPOSITFILES_DEBUG
@@ -37,13 +35,6 @@ const QRegExp DepositFilesPlugin::FILE_REGEXP("(http(s|):|)//fileshare\\d+\\.(de
 const QString DepositFilesPlugin::LOGIN_URL("https://depositfiles.com/api/user/login");
 const QString DepositFilesPlugin::REQUEST_URL("https://depositfiles.com/get_file.php");
 const QString DepositFilesPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
-#if QT_VERSION >= 0x050000
-const QString DepositFilesPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                              + "/.config/qdl2/plugins/qdl2-depositfiles");
-#else
-const QString DepositFilesPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                              + "/.config/qdl2/plugins/qdl2-depositfiles");
-#endif
 
 const int DepositFilesPlugin::MAX_REDIRECTS = 8;
 
@@ -67,10 +58,6 @@ QString DepositFilesPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* DepositFilesPlugin::createPlugin(QObject *parent) {
-    return new DepositFilesPlugin(parent);
 }
 
 QNetworkAccessManager* DepositFilesPlugin::networkAccessManager() {
@@ -103,7 +90,7 @@ bool DepositFilesPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void DepositFilesPlugin::checkUrl(const QString &url) {
+void DepositFilesPlugin::checkUrl(const QString &url, const QVariantMap &) {
 #ifdef DEPOSITFILES_DEBUG
     qDebug() << "DepositFilesPlugin::checkUrl(). URL:" << url;
 #endif
@@ -115,13 +102,12 @@ void DepositFilesPlugin::checkUrl(const QString &url) {
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
-void DepositFilesPlugin::getDownloadRequest(const QString &url) {
+void DepositFilesPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
 #ifdef DEPOSITFILES_DEBUG
     qDebug() << "DepositFilesPlugin::getDownloadRequest(). URL:" << url;
 #endif
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -139,11 +125,6 @@ void DepositFilesPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -464,7 +445,7 @@ void DepositFilesPlugin::checkCaptchaKey() {
         emit error(tr("No captcha key found"));
     }
     else {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     
     reply->deleteLater();
@@ -531,7 +512,7 @@ void DepositFilesPlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(url));
     }
     else if (response.contains("check_recaptcha")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     else {
         emit error(tr("Unknown error"));
@@ -540,6 +521,10 @@ void DepositFilesPlugin::checkCaptcha() {
     reply->deleteLater();
 }
 
+ServicePlugin* DepositFilesPluginFactory::createPlugin(QObject *parent) {
+    return new DepositFilesPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-depositfiles, DepositFilesPlugin)
+Q_EXPORT_PLUGIN2(qdl2-depositfiles, DepositFilesPluginFactory)
 #endif

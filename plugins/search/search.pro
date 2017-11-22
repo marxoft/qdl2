@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
     archive \
+    bitporno \
     dailymotion \
     imagefap \
     mixcloud \
@@ -9,4 +10,5 @@ SUBDIRS = \
     soundcloud \
     vimeo \
     vpornex \
+    xopenload \
     youtube

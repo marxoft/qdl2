@@ -40,13 +40,6 @@ public:
     }
 
     /*!
-     * Pure virtual method.
-     *
-     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
-     */
-    virtual RecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
-
-    /*!
      * Allows the plugin to share an application QNetworkNetworkManager instance.
      * 
      * The base implementation does nothing. If you choose to re-implement this function,
@@ -67,18 +60,18 @@ public Q_SLOTS:
 
     /*!
      * Pure virtual method.
-     * This method must be re-implemented to retrieve a captcha image for the \a captchaKey.
+     * This method must be re-implemented to retrieve a captcha of type \a captchaType for the \a captchaKey.
      */
-    virtual void getCaptcha(const QString &captchaKey) = 0;
+    virtual void getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &settings) = 0;
 
 Q_SIGNALS:
     /*!
-     * This signal should be emitted when a captcha image is successfully retrieved.
+     * This signal should be emitted when a captcha is successfully retrieved.
      */
-    void captcha(const QString &captchaChallenge, const QImage &captchaImage);
+    void captcha(int captchaType, const QByteArray &captchaData);
 
     /*!
-     * This signal should be emitted when the plugin is unable to retrieve a captcha image.
+     * This signal should be emitted when the plugin is unable to retrieve a captcha.
      */
     void error(const QString &errorString);
 
@@ -91,6 +84,25 @@ Q_SIGNALS:
     void settingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
 };
 
-Q_DECLARE_INTERFACE(RecaptchaPlugin, "org.qdl2.RecaptchaPlugin")
+/*!
+ * Interface for creating instances of RecaptchaPlugin.
+ *
+ * \sa RecaptchaPlugin
+ */
+class RecaptchaPluginFactory
+{
+
+public:
+    virtual ~RecaptchaPluginFactory() {}
+
+    /*!
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of RecaptchaPlugin with the parent set to \a parent.
+     */
+    virtual RecaptchaPlugin* createPlugin(QObject *parent = 0) = 0;
+};
+
+Q_DECLARE_INTERFACE(RecaptchaPluginFactory, "org.qdl2.RecaptchaPluginFactory")
 
 #endif // RECAPTCHAPLUGIN_H

@@ -79,3 +79,40 @@ void PluginSettings::setValue(const QString &key, const QVariant &value) {
         emit changed();
     }
 }
+
+QVariantMap PluginSettings::values() const {
+    QVariantMap map;
+
+    if (!pluginId().isEmpty()) {
+        const QSettings settings(PLUGIN_CONFIG_PATH + pluginId(), QSettings::IniFormat);
+        
+        foreach (const QString &key, settings.allKeys()) {
+            QVariant v = settings.value(key);
+
+            if (v.type() == QVariant::String) {
+                if ((v == "true") || (v == "false")) {
+                    v = v.toBool();
+                }
+            }
+
+            map[key] = v;
+        }
+    }
+
+    return map;
+}
+
+void PluginSettings::setValues(const QVariantMap &values) {
+    if (pluginId().isEmpty()) {
+        return;
+    }
+
+    QSettings settings(PLUGIN_CONFIG_PATH + pluginId(), QSettings::IniFormat);
+    QMapIterator<QString, QVariant> iterator(values);
+
+    while (iterator.hasNext()) {
+        settings.setValue(iterator.key(), iterator.value());
+    }
+
+    emit changed();
+}

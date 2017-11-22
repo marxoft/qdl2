@@ -1,3 +1,15 @@
+qdl-plugins-googlerecaptcha (0.3.0) unstable; urgency=low
+
+  * Add support for 'No CAPTCHA' interactive captchas.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 22 Nov 2017 07:55:24 +0000
+
+qdl-plugins-googlerecaptcha (0.2.2) unstable; urgency=low
+
+  * Changes to recaptcha plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 02:14:43 +0000
+
 qdl-plugins-googlerecaptcha (0.2.1) unstable; urgency=low
 
   * Remove unneeded properties from the JSON declaration.

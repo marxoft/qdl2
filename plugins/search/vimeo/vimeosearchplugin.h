@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -28,21 +28,14 @@ class VimeoSearchPlugin : public SearchPlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(SearchPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.VimeoSearchPlugin")
-#endif
-
 public:
     explicit VimeoSearchPlugin(QObject *parent = 0);
-
-    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search();
+    virtual void search(const QVariantMap &settings);
 
     void submitSettings(const QVariantMap &settings);
 
@@ -50,7 +43,6 @@ private Q_SLOTS:
     void onRequestFinished();
     
 private:    
-    static const QString CONFIG_FILE;
     static const QString BASE_URL;
     static const QString HTML;
     static const QString CLIENT_ID;
@@ -62,6 +54,18 @@ private:
     QVimeo::ResourcesRequest *m_request;
     
     QVariantMap m_filters;
+};
+
+class VimeoSearchPluginFactory : public QObject, public SearchPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(SearchPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.VimeoSearchPluginFactory")
+#endif
+
+public:
+    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // VIMEOSEARCHPLUGIN_H

@@ -1,3 +1,9 @@
+qdl-plugins-xvideos (0.2.3) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 06:49:13 +0000
+
 qdl-plugins-xvideos (0.2.2) unstable; urgency=low
 
   * Use UrlResult and NetworkRequest prototypes.

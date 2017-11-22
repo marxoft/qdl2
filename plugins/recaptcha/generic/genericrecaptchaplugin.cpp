@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  */
 
 #include "genericrecaptchaplugin.h"
-#include <QImage>
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -31,10 +31,6 @@ GenericRecaptchaPlugin::GenericRecaptchaPlugin(QObject *parent) :
     m_redirects(0),
     m_ownManager(false)
 {
-}
-
-RecaptchaPlugin* GenericRecaptchaPlugin::createPlugin(QObject *parent) {
-    return new GenericRecaptchaPlugin(parent);
 }
 
 QNetworkAccessManager* GenericRecaptchaPlugin::networkAccessManager() {
@@ -65,10 +61,20 @@ bool GenericRecaptchaPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void GenericRecaptchaPlugin::getCaptcha(const QString &imageUrl) {
+void GenericRecaptchaPlugin::getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &) {
+    switch (captchaType) {
+        case CaptchaType::Image:
+        case CaptchaType::NoCaptcha:
+            break;
+        default:
+            emit error(tr("Captcha type %1 not supported").arg(captchaType));
+            return;
+    }
+
     m_redirects = 0;
-    m_url = imageUrl;
-    QNetworkRequest request(imageUrl);
+    m_captchaKey = captchaKey;
+    m_captchaType = captchaType;
+    QNetworkRequest request(captchaKey);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkCaptchaImage()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
@@ -78,11 +84,11 @@ void GenericRecaptchaPlugin::followRedirect(const QUrl &url) {
     m_redirects++;
     QNetworkRequest request(url);
     QNetworkReply *reply = networkAccessManager()->get(request);
-    connect(reply, SIGNAL(finished()), this, SLOT(checkCaptchaImage()));
+    connect(reply, SIGNAL(finished()), this, SLOT(checkCaptchaResponse()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
-void GenericRecaptchaPlugin::checkCaptchaImage() {
+void GenericRecaptchaPlugin::checkCaptchaResponse() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
     if (!reply) {
@@ -120,18 +126,20 @@ void GenericRecaptchaPlugin::checkCaptchaImage() {
         return;
     }
 
-    const QImage image = QImage::fromData(reply->readAll());
-
-    if (image.isNull()) {
-        emit error(tr("Invalid captcha image"));
+    if (m_captchaType == CaptchaType::NoCaptcha) {
+        emit captcha(m_captchaType, reply->readAll());
     }
     else {
-        emit captcha(m_url, image);
+        emit captcha(m_captchaType, QByteArray(m_captchaKey.toUtf8() + "\n" + reply->readAll().toBase64()));
     }
 
     reply->deleteLater();
 }
 
+RecaptchaPlugin* GenericRecaptchaPluginFactory::createPlugin(QObject *parent) {
+    return new GenericRecaptchaPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-genericrecaptcha, GenericRecaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-genericrecaptcha, GenericRecaptchaPluginFactory)
 #endif

@@ -15,6 +15,14 @@
  */
 
 #include "javascriptpluginglobalobject.h"
+#include "javascriptcaptchatype.h"
+#include "javascriptdecaptchaplugin.h"
+#include "javascriptnetworkrequest.h"
+#include "javascriptrecaptchaplugin.h"
+#include "javascriptsearchplugin.h"
+#include "javascriptsearchresult.h"
+#include "javascriptserviceplugin.h"
+#include "javascripturlresult.h"
 #include "logger.h"
 #include "xmlhttprequest.h"
 #include <QNetworkAccessManager>
@@ -28,11 +36,37 @@ JavaScriptPluginGlobalObject::JavaScriptPluginGlobalObject(QScriptEngine *engine
 {
     QScriptValue oldGlobal = engine->globalObject();
     QScriptValue thisGlobal = engine->newQObject(this, QScriptEngine::QtOwnership,
-                                                 QScriptEngine::ExcludeChildObjects
-                                                 | QScriptEngine::ExcludeDeleteLater);
+            QScriptEngine::ExcludeChildObjects | QScriptEngine::ExcludeDeleteLater);
 
+    thisGlobal.setProperty("DecaptchaPlugin",
+                engine->newQMetaObject(&JavaScriptDecaptchaPluginSignaller::staticMetaObject,
+                engine->newFunction(newDecaptchaPlugin)));
+    thisGlobal.setProperty("RecaptchaPlugin",
+                engine->newQMetaObject(&JavaScriptRecaptchaPluginSignaller::staticMetaObject,
+                engine->newFunction(newRecaptchaPlugin)));
+    thisGlobal.setProperty("SearchPlugin",
+                engine->newQMetaObject(&JavaScriptSearchPluginSignaller::staticMetaObject,
+                engine->newFunction(newSearchPlugin)));
+    thisGlobal.setProperty("ServicePlugin",
+                engine->newQMetaObject(&JavaScriptServicePluginSignaller::staticMetaObject,
+                engine->newFunction(newServicePlugin)));
+    thisGlobal.setProperty("CaptchaType", engine->newQMetaObject(&JavaScriptCaptchaType::staticMetaObject));
+    QScriptValue request = engine->newQObject(new JavaScriptNetworkRequest(engine));
+    engine->setDefaultPrototype(qMetaTypeId<QNetworkRequest>(), request);
+    engine->setDefaultPrototype(qMetaTypeId<QNetworkRequest*>(), request);
+    thisGlobal.setProperty("NetworkRequest", engine->newFunction(newNetworkRequest));
+    QScriptValue sr = engine->newQObject(new JavaScriptSearchResult(engine));
+    engine->setDefaultPrototype(qMetaTypeId<SearchResult>(), sr);
+    engine->setDefaultPrototype(qMetaTypeId<SearchResult*>(), sr);
+    thisGlobal.setProperty("SearchResult", engine->newFunction(newSearchResult));
+    qScriptRegisterSequenceMetaType<SearchResultList>(engine);
+    QScriptValue ur = engine->newQObject(new JavaScriptUrlResult(engine));
+    engine->setDefaultPrototype(qMetaTypeId<UrlResult>(), ur);
+    engine->setDefaultPrototype(qMetaTypeId<UrlResult*>(), ur);
+    thisGlobal.setProperty("UrlResult", engine->newFunction(newUrlResult));
+    qScriptRegisterSequenceMetaType<UrlResultList>(engine);
     thisGlobal.setProperty("XMLHttpRequest", engine->newQMetaObject(&XMLHttpRequest::staticMetaObject,
-                           engine->newFunction(newXMLHttpRequest)));
+                engine->newFunction(newXMLHttpRequest)));
     
     QScriptValueIterator iterator(oldGlobal);
 
@@ -44,28 +78,107 @@ JavaScriptPluginGlobalObject::JavaScriptPluginGlobalObject(QScriptEngine *engine
     engine->setGlobalObject(thisGlobal);
 }
 
+QScriptValue JavaScriptPluginGlobalObject::newDecaptchaPlugin(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        return engine->newQObject(new JavaScriptDecaptchaPluginSignaller, QScriptEngine::ScriptOwnership);
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newRecaptchaPlugin(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        return engine->newQObject(new JavaScriptRecaptchaPluginSignaller, QScriptEngine::ScriptOwnership);
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newSearchPlugin(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        return engine->newQObject(new JavaScriptSearchPluginSignaller, QScriptEngine::ScriptOwnership);
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newServicePlugin(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        return engine->newQObject(new JavaScriptServicePluginSignaller, QScriptEngine::ScriptOwnership);
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newNetworkRequest(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        switch (context->argumentCount()) {
+        case 0:
+            return engine->toScriptValue(QNetworkRequest());
+        case 1:
+            return engine->toScriptValue(QNetworkRequest(context->argument(0).toString()));
+        default:
+            return context->throwError(QScriptContext::SyntaxError,
+                    QObject::tr("NetworkRequest constructor requires either 0 or 1 arguments."));
+        }
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newSearchResult(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        switch (context->argumentCount()) {
+        case 0:
+            return engine->toScriptValue(SearchResult());
+        case 3:
+            return engine->toScriptValue(SearchResult(context->argument(0).toString(), context->argument(1).toString(),
+                                                      context->argument(2).toString()));
+        default:
+            return context->throwError(QScriptContext::SyntaxError,
+                                       QObject::tr("SearchResult constructor requires either 0 or 3 arguments."));
+        }
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
+QScriptValue JavaScriptPluginGlobalObject::newUrlResult(QScriptContext *context, QScriptEngine *engine) {
+    if (context->isCalledAsConstructor()) {
+        switch (context->argumentCount()) {
+        case 0:
+            return engine->toScriptValue(UrlResult());
+        case 2:
+            return engine->toScriptValue(UrlResult(context->argument(0).toString(), context->argument(1).toString()));
+        default:
+            return context->throwError(QScriptContext::SyntaxError,
+                    QObject::tr("UrlResult constructor requires either 0 or 2 arguments."));
+        }
+    }
+
+    return QScriptValue(QScriptValue::UndefinedValue);
+}
+
 QScriptValue JavaScriptPluginGlobalObject::newXMLHttpRequest(QScriptContext *context, QScriptEngine *engine) {
-    XMLHttpRequest *request;
-    
-    if (JavaScriptPluginGlobalObject *obj =
-        qobject_cast<JavaScriptPluginGlobalObject*>(engine->globalObject().toQObject())) {
-        request = new XMLHttpRequest(obj->networkAccessManager(), context->argument(0).toQObject());
+    if (context->isCalledAsConstructor()) {
+        XMLHttpRequest *request;
+        
+        if (JavaScriptPluginGlobalObject *obj =
+            qobject_cast<JavaScriptPluginGlobalObject*>(engine->globalObject().toQObject())) {
+            request = new XMLHttpRequest(obj->networkAccessManager());
+        }
+        else {
+            request = new XMLHttpRequest;
+        }
+        
+        return engine->newQObject(request, QScriptEngine::ScriptOwnership);
     }
-    else {
-        request = new XMLHttpRequest(context->argument(0).toQObject());
-    }
-    
-    return engine->newQObject(request, QScriptEngine::ScriptOwnership);
+
+    return QScriptValue(QScriptValue::UndefinedValue);
 }
 
 QNetworkAccessManager* JavaScriptPluginGlobalObject::networkAccessManager() {
     return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
-}
-
-void JavaScriptPluginGlobalObject::setNetworkAccessManager(QNetworkAccessManager *manager) {
-    if (manager) {
-        m_nam = manager;
-    }
 }
 
 QString JavaScriptPluginGlobalObject::atob(const QString &ascii) const {

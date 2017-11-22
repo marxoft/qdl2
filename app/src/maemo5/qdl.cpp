@@ -601,7 +601,9 @@ void Qdl::clearUrlChecks() {
 
 QVariantMap Qdl::getUrlChecks() {
     QVariantMap map;
-    map["captchaImage"] = UrlCheckModel::instance()->captchaImage();
+    map["captchaType"] = UrlCheckModel::instance()->captchaType();
+    map["captchaTypeString"] = UrlCheckModel::instance()->captchaTypeString();
+    map["captchaData"] = UrlCheckModel::instance()->captchaData();
     map["captchaTimeout"] = UrlCheckModel::instance()->captchaTimeout();
     map["captchaTimeoutString"] = UrlCheckModel::instance()->captchaTimeoutString();
     map["count"] = UrlCheckModel::instance()->rowCount();

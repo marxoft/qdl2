@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,97 +11,103 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var request = null;
+(function() {
+    var request = null;
 
-function checkUrl(url) {
-    if (/(\/gallery\.php\?gid=\d+|\/pictures\/\d+)/.test(url)) {
-        checkGalleryUrl(url);
-    }
-    else {
-        checkImageUrl(url);
-    }
-}
+    function checkGalleryUrl(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var response = request.responseText;
+                    var images = response.split("<td id=");
 
-function checkGalleryUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var response = request.responseText;
-                var images = response.split("<td id=");
+                    if (!images.length) {
+                        plugin.error(qsTr("No images found"));
+                        return;
+                    }
 
-                if (!images.length) {
-                    error(qsTr("No images found"));
-                    return;
+                    var packageName = /<title>Porn pics of ([^<]+)(\(Page *)/.exec(response)[1].trim();
+                    var results = [];
+
+                    for (var i = 1; i < images.length; i++) {
+                        var image = images[i];
+                        var link = "http://imagefap.com" + /href="([^"]+)/.exec(image)[1];
+                        var fileName = packageName + " - " + i + ".jpg";
+                        results.push(new UrlResult(link, fileName));
+                    }
+
+                    plugin.urlChecked(results, packageName);
                 }
-
-                var packageName = /<title>Porn pics of ([^<]+)(\(Page *)/.exec(response)[1];
-                var results = [];
-
-                for (var i = 1; i < images.length; i++) {
-                    var link = "http://imagefap.com" + /href="([^"]+)/.exec(images[i])[1];
-                    var fileName = /<i>([^<]+)/.exec(images[i])[1];
-                    results.push(new UrlResult(link, fileName));
+                catch(err) {
+                    plugin.error(err);
                 }
-
-                urlChecked(results, packageName);
-            }
-            catch(err) {
-                error(err);
             }
         }
+
+        request.open("GET", url + (url.indexOf("?") >= 0 ? "&view=2" : "?view=2"));
+        request.send();
     }
 
-    request.open("GET", url + (url.indexOf("?") >= 0 ? "&view=2" : "?view=2"));
-    request.send();
-}
-
-function checkImageUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var link = /itemprop="contentUrl">([^<]+)/.exec(request.responseText)[1];
-                var fileName = link.substring(link.lastIndexOf("/") + 1);
-                urlChecked(url, fileName);
-            }
-            catch(err) {
-                error(err);
-            }
-        }
-    }
-
-    request.open("GET", url);
-    request.send();
-}
-
-function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var link = /itemprop="contentUrl">([^<]+)/.exec(request.responseText)[1];
-                downloadRequest(new NetworkRequest(link));
-            }
-            catch(err) {
-                error(err);
+    function checkImageUrl(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var link = /itemprop="contentUrl">([^<]+)/.exec(request.responseText)[1];
+                    var fileName = link.substring(link.lastIndexOf("/") + 1);
+                    plugin.urlChecked(url, fileName);
+                }
+                catch(err) {
+                    plugin.error(err);
+                }
             }
         }
+
+        request.open("GET", url);
+        request.send();
     }
 
-    request.open("GET", url);
-    request.send();
-}
+    var plugin = new ServicePlugin();
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-        request = null;
-    }
+    plugin.checkUrl = function(url) {
+        if (/(\/gallery\.php\?gid=\d+|\/pictures\/\d+)/.test(url)) {
+            checkGalleryUrl(url);
+        }
+        else {
+            checkImageUrl(url);
+        }
+    };
 
-    return true;
-}
+    plugin.getDownloadRequest = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var link = /itemprop="contentUrl">([^<]+)/.exec(request.responseText)[1];
+                    plugin.downloadRequest(new NetworkRequest(link));
+                }
+                catch(err) {
+                    plugin.error(err);
+                }
+            }
+        }
 
+        request.open("GET", url);
+        request.send();
+    };
+
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
+
+        return true;
+    };
+
+    return plugin;
+})

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -28,29 +28,21 @@ class YouTubeSearchPlugin : public SearchPlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(SearchPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.YouTubeSearchPlugin")
-#endif
-
 public:
     explicit YouTubeSearchPlugin(QObject *parent = 0);
-
-    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
     virtual void fetchMore(const QVariantMap &params);
-    virtual void search();
+    virtual void search(const QVariantMap &settings);
 
     void submitSettings(const QVariantMap &settings);
 
 private Q_SLOTS:
     void onRequestFinished();
     
-private:    
-    static const QString CONFIG_FILE;
+private:
     static const QString API_KEY;
     static const QString CLIENT_ID;
     static const QString CLIENT_SECRET;
@@ -61,6 +53,18 @@ private:
     QYouTube::ResourcesRequest *m_request;
     
     QVariantMap m_params;
+};
+
+class YouTubeSearchPluginFactory : public QObject, public SearchPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(SearchPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.YouTubeSearchPluginFactory")
+#endif
+
+public:
+    virtual SearchPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // YOUTUBESEARCHPLUGIN_H

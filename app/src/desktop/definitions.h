@@ -58,12 +58,13 @@ static const QString PLUGIN_CONFIG_PATH(APP_CONFIG_PATH + "plugins/");
 static const QString DOWNLOAD_PATH(HOME_PATH + "/Downloads/qdl2/");
 
 // Captcha
-static const int CAPTCHA_TIMEOUT = 120000;
+static const int CAPTCHA_TIMEOUT = 300000;
 
 // Network
 static const int DOWNLOAD_BUFFER_SIZE = 64000;
 static const int MAX_CONCURRENT_TRANSFERS = 4;
 static const int MAX_REDIRECTS = 8;
+static const QByteArray USER_AGENT("Mozilla/5.0 (X11; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0");
 
 // Web interface
 static const QString WEB_INTERFACE_PATH("/usr/share/qdl2/webif/");
@@ -72,6 +73,6 @@ static const QStringList WEB_INTERFACE_ALLOWED_PATHS = QStringList() << WEB_INTE
                                                                      << QString("/usr/share/qdl2/plugins/icons/")
                                                                      << QString(HOME_PATH + "/qdl2/plugins/icons/");
 // Version
-static const QString VERSION_NUMBER("2.6.0");
+static const QString VERSION_NUMBER("2.7.0");
 
 #endif // DEFINITIONS_H

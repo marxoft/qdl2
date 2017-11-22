@@ -24,14 +24,14 @@
 
 struct SearchPluginPair
 {
-    SearchPluginPair(SearchPluginConfig* c, SearchPlugin* p) :
+    SearchPluginPair(SearchPluginConfig* c, SearchPluginFactory* f) :
         config(c),
-        plugin(p)
+        factory(f)
     {
     }
 
     SearchPluginConfig *config;
-    SearchPlugin *plugin;
+    SearchPluginFactory *factory;
 };
 
 typedef QList<SearchPluginPair> SearchPluginList;
@@ -54,9 +54,9 @@ public:
 public Q_SLOTS:
     SearchPluginConfig* getConfigById(const QString &id) const;
 
-    SearchPlugin* getPluginById(const QString &id) const;
+    SearchPluginFactory* getFactoryById(const QString &id) const;
 
-    SearchPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
+    SearchPlugin* createPluginById(const QString &id, QObject *parent = 0);
 
     int load();
 

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,22 +24,15 @@ class GoogleRecaptchaPlugin : public RecaptchaPlugin
 {
     Q_OBJECT
 
-    Q_INTERFACES(RecaptchaPlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.GoogleRecaptchaPlugin")
-#endif
-
 public:
     explicit GoogleRecaptchaPlugin(QObject *parent = 0);
     
-    virtual RecaptchaPlugin* createPlugin(QObject *parent = 0);
-
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
     
-    virtual void getCaptcha(const QString &captchaKey);
+    virtual void getCaptcha(int captchaType, const QString &captchaKey, const QVariantMap &settings);
 
 private Q_SLOTS:
     void onCaptchaDownloaded();
@@ -53,11 +46,27 @@ private:
     
     void downloadCaptchaImage(const QString &challenge);
 
+    static const QString CAPTCHA_CHALLENGE_URL;
+    static const QString CAPTCHA_IMAGE_URL;
+    static const QString NO_CAPTCHA_HTML;
+
     QPointer<QNetworkAccessManager> m_nam;
 
     bool m_ownManager;
 
     QString m_challenge;
+};
+
+class GoogleRecaptchaPluginFactory : public QObject, public RecaptchaPluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(RecaptchaPluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.GoogleRecaptchaPluginFactory")
+#endif
+
+public:
+    virtual RecaptchaPlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // GOOGLERECAPTCHAPLUGIN_H

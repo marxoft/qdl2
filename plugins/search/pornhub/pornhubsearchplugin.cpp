@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,22 +19,11 @@
 #include <QNetworkCookieJar>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QStringList>
 #if QT_VERSION >= 0x050000
-#include <QStandardPaths>
 #include <QUrlQuery>
 #else
-#include <QDesktopServices>
 #include <QtPlugin>
-#endif
-
-#if QT_VERSION >= 0x050000
-const QString PornhubSearchPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                               + "/.config/qdl2/plugins/qdl2-pornhubsearch");
-#else
-const QString PornhubSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                               + "/.config/qdl2/plugins/qdl2-pornhubsearch");
 #endif
 
 const QString PornhubSearchPlugin::BASE_URL("http://www.pornhub.com");
@@ -56,10 +45,6 @@ PornhubSearchPlugin::PornhubSearchPlugin(QObject *parent) :
 {
 }
 
-SearchPlugin* PornhubSearchPlugin::createPlugin(QObject *parent) {
-    return new PornhubSearchPlugin(parent);
-}
-
 bool PornhubSearchPlugin::cancelCurrentOperation() {
     emit finished();
     return true;
@@ -69,9 +54,7 @@ void PornhubSearchPlugin::fetchMore(const QVariantMap &params) {
     getVideos(params.value("url").toString());
 }
 
-void PornhubSearchPlugin::search() {
-    const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-    
+void PornhubSearchPlugin::search(const QVariantMap &settings) {
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
         QVariantMap searchQuery;
         searchQuery["type"] = "text";
@@ -98,7 +81,7 @@ void PornhubSearchPlugin::search() {
         searchOrder["key"] = "searchOrder";
         searchOrder["value"] = "";
         searchOrder["options"] = QVariantList() << date << duration << rating << relevance << views;
-        emit settingsRequest(tr("Choose search options"), QVariantList() << searchQuery << searchOrder, "search");
+        emit settingsRequest(tr("Choose search options"), QVariantList() << searchQuery << searchOrder, "getVideos");
         return;
     }
     
@@ -113,7 +96,7 @@ void PornhubSearchPlugin::search() {
     getVideos(url);
 }
 
-void PornhubSearchPlugin::search(const QVariantMap &settings) {
+void PornhubSearchPlugin::getVideos(const QVariantMap &settings) {
     const QString query = settings.value("searchQuery").toString();
     const QString order = settings.value("searchOrder").toString();
     QString url = QString("%1/video/search?search=%2").arg(BASE_URL).arg(query);
@@ -224,6 +207,10 @@ QNetworkAccessManager* PornhubSearchPlugin::networkAccessManager() {
     return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
 }
 
+SearchPlugin* PornhubSearchPluginFactory::createPlugin(QObject *parent) {
+    return new PornhubSearchPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-pornhubsearch, PornhubSearchPlugin)
+Q_EXPORT_PLUGIN2(qdl2-pornhubsearch, PornhubSearchPluginFactory)
 #endif

@@ -1,0 +1,120 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "BitPorno",
+    "icon": "qdl2-bitpornosearch.jpg",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Query",
+            "key": "q"
+        },
+
+        {
+            "type": "list",
+            "label": "Sort",
+            "key": "sort",
+            "value": "newest",
+            "options": [
+                {
+                    "label": "Newest",
+                    "value": "newest"
+                },
+
+                {
+                    "label": "Oldest",
+                    "value": "oldest"
+                },
+
+                {
+                    "label": "Most viewed",
+                    "value": "mostviewed"
+                },
+
+                {
+                    "label": "A-Z",
+                    "value": "az"
+                },
+
+                {
+                    "label": "Z-A",
+                    "value": "za"
+                }
+            ]
+        },
+
+        {
+            "type": "list",
+            "label": "Time",
+            "key": "time",
+            "value": "someday",
+            "options": [
+                {
+                    "label": "Anytime",
+                    "value": "someday"
+                },
+
+                {
+                    "label": "Today",
+                    "value": "today"
+                },
+
+                {
+                    "label": "This week",
+                    "value": "tweek"
+                },
+
+                {
+                    "label": "This month",
+                    "value": "tmonth"
+                },
+
+                {
+                    "label": "This year",
+                    "value": "tyear"
+                },
+
+                {
+                    "label": "Past",
+                    "value": "past"
+                }
+            ]
+        },
+
+        {
+            "type": "list",
+            "label": "Duration",
+            "key": "length",
+            "value": "all",
+            "options": [
+                {
+                    "label": "Any length",
+                    "value": "all"
+                },
+
+                {
+                    "label": "Short",
+                    "value": "short"
+                },
+
+                {
+                    "label": "Medium",
+                    "value": "middle"
+                },
+
+                {
+                    "label": "Long",
+                    "value": "long"
+                }
+            ]
+        }
+    ]
+}
+

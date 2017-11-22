@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,29 +16,20 @@
  */
 
 #include "fileboomplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
 #include <QTime>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
 const QRegExp FileBoomPlugin::FILE_REGEXP("(http(s|)://fboom\\.me|)/file/url\\.html\\?file=[^'\"]+");
 const QString FileBoomPlugin::LOGIN_URL("http://fboom.me/login.html");
 const QString FileBoomPlugin::RECAPTCHA_PLUGIN_ID("qdl2-genericrecaptcha");
-#if QT_VERSION >= 0x050000
-const QString FileBoomPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-fileboom");
-#else
-const QString FileBoomPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-fileboom");
-#endif
+
 const int FileBoomPlugin::MAX_REDIRECTS = 8;
 
 FileBoomPlugin::FileBoomPlugin(QObject *parent) :
@@ -58,10 +49,6 @@ QString FileBoomPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* FileBoomPlugin::createPlugin(QObject *parent) {
-    return new FileBoomPlugin(parent);
 }
 
 QNetworkAccessManager* FileBoomPlugin::networkAccessManager() {
@@ -94,7 +81,7 @@ bool FileBoomPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void FileBoomPlugin::checkUrl(const QString &url) {
+void FileBoomPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -154,10 +141,9 @@ void FileBoomPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void FileBoomPlugin::getDownloadRequest(const QString &url) {
+void FileBoomPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -175,11 +161,6 @@ void FileBoomPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -355,7 +336,7 @@ void FileBoomPlugin::checkWaitTime() {
         }
         else {
             recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, recaptchaKey, "submitCaptchaResponse");
         }
     }
 
@@ -431,7 +412,7 @@ void FileBoomPlugin::checkCaptcha() {
         }
         else {
             recaptchaKey.prepend(QString("http://%1/file/captcha.html?v=").arg(reply->url().host()));
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, recaptchaKey, "submitCaptchaResponse");
         }
     }
     else {
@@ -520,12 +501,6 @@ void FileBoomPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -577,6 +552,10 @@ void FileBoomPlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* FileBoomPluginFactory::createPlugin(QObject *parent) {
+    return new FileBoomPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-fileboom, FileBoomPlugin)
+Q_EXPORT_PLUGIN2(qdl2-fileboom, FileBoomPluginFactory)
 #endif

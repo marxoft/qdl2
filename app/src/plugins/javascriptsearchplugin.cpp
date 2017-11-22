@@ -16,234 +16,190 @@
 
 #include "javascriptsearchplugin.h"
 #include "logger.h"
-#include "pluginsettings.h"
 #include <QFile>
-#include <QNetworkAccessManager>
 
-JavaScriptSearchPlugin::JavaScriptSearchPlugin(const QString &id, const QString &fileName, QObject *parent) :
+JavaScriptSearchPlugin::JavaScriptSearchPlugin(const QScriptValue &plugin, QObject *parent) :
     SearchPlugin(parent),
-    m_global(0),
-    m_engine(0),
-    m_nam(0),
-    m_fileName(fileName),
-    m_id(id),
-    m_evaluated(false)
+    m_plugin(plugin),
+    m_initted(false)
 {
 }
 
-QString JavaScriptSearchPlugin::fileName() const {
-    return m_fileName;
-}
-
-QString JavaScriptSearchPlugin::id() const {
-    return m_id;
-}      
-
-SearchPlugin* JavaScriptSearchPlugin::createPlugin(QObject *parent) {
-    return new JavaScriptSearchPlugin(id(), fileName(), parent);
-}
-
-void JavaScriptSearchPlugin::setNetworkAccessManager(QNetworkAccessManager *manager) {
-    if (manager) {
-        m_nam = manager;
-        
-        if (m_global) {
-            m_global->setNetworkAccessManager(manager);
-        }
-    }
-}
-
-void JavaScriptSearchPlugin::initEngine() {
-    if (m_evaluated) {
-        return;
-    }
-    
-    if (!m_engine) {
-        m_engine = new QScriptEngine(this);
+bool JavaScriptSearchPlugin::init() {
+    if (m_initted) {
+        return true;
     }
 
-    QFile file(fileName());
-    
-    if (file.open(QFile::ReadOnly)) {
-        const QScriptValue result = m_engine->evaluate(file.readAll(), fileName());
-        file.close();
-        
-        if (result.isError()) {
-            Logger::log("JavaScriptSearchPlugin::initEngine(): Error evaluating JavaScript file: "
-                        + result.toString());
-            return;
-        }
-        
-        Logger::log("JavaScriptSearchPlugin::initEngine(): JavaScript file evaluated OK", Logger::HighVerbosity);
-        m_evaluated = true;
-        m_global = new JavaScriptSearchPluginGlobalObject(m_engine);
-        
-        if (m_nam) {
-            m_global->setNetworkAccessManager(m_nam);
-        }
-        
-        connect(m_global, SIGNAL(error(QString)), this, SIGNAL(error(QString)));
-        connect(m_global, SIGNAL(searchCompleted(SearchResultList)), this, SIGNAL(searchCompleted(SearchResultList)));
-        connect(m_global, SIGNAL(searchCompleted(SearchResultList, QVariantMap)),
-                this, SIGNAL(searchCompleted(SearchResultList, QVariantMap)));
-        connect(m_global, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
-                this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue)));
-        
-        m_engine->installTranslatorFunctions();
-        m_engine->globalObject().setProperty("settings", m_engine->newQObject(new PluginSettings(id(), m_engine)));
-    }
-    else {
-        Logger::log("JavaScriptSearchPlugin::initEngine(): Error reading JavaScript file: "
-                    + file.errorString());
-    }
-}
-
-bool JavaScriptSearchPlugin::cancelCurrentOperation() {
-    if (!m_engine) {
+    if (!m_plugin.property("cancelCurrentOperation").isFunction()) {
+        Logger::log("JavaScriptSearchPlugin::init(): No cancelCurrentOperation() function found");
         return false;
     }
 
-    return m_engine->globalObject().property("cancelCurrentOperation").call(QScriptValue()).toBool();
+    if (!m_plugin.property("search").isFunction()) {
+        Logger::log("JavaScriptSearchPlugin::init(): No search() function found");
+        return false;
+    }
+
+    QObject *obj = m_plugin.toQObject();
+
+    if ((!obj) || (!connect(obj, SIGNAL(error(QString)), this, SIGNAL(error(QString))))
+            || (!connect(obj, SIGNAL(searchCompleted(SearchResultList)),
+                    this, SIGNAL(searchCompleted(SearchResultList))))
+            || (!connect(obj, SIGNAL(searchCompleted(SearchResultList, QVariantMap)),
+                    this, SIGNAL(searchCompleted(SearchResultList, QVariantMap))))
+            || (!connect(obj, SIGNAL(settingsRequest(QString, QVariantList, QScriptValue)),
+                    this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue))))) {
+        Logger::log("JavaScriptSearchPlugin::init(): Not a valid SearchPlugin");
+        return false;
+    }
+
+    Logger::log("JavaScriptSearchPlugin::init(): SearchPlugin initialized OK", Logger::HighVerbosity);
+    m_initted = true;
+    return true;
+}
+
+bool JavaScriptSearchPlugin::cancelCurrentOperation() {
+    if (!init()) {
+        error(tr("Plugin not initialized"));
+        return false;
+    }
+
+    return m_plugin.property("cancelCurrentOperation").call(m_plugin).toBool();
 }
 
 void JavaScriptSearchPlugin::fetchMore(const QVariantMap &params) {
-    initEngine();
-    QScriptValue func = m_engine->globalObject().property("fetchMore");
-
-    if (func.isFunction()) {
-        const QScriptValue result = func.call(QScriptValue(), QScriptValueList() << m_engine->toScriptValue(params));
-
-        if (result.isError()) {
-            const QString errorString = result.toString();
-            Logger::log("JavaScriptSearchPlugin::search(). Error calling fetchMore(): " + errorString);
-            emit error(tr("Error calling fetchMore(): %1").arg(errorString));
-        }
+    if (!init()) {
+        error(tr("Plugin not initialized"));
+        return;
     }
-    else {
-        Logger::log("JavaScriptSearchPlugin::fetchMore(). fetchMore() function not defined");
-        emit error(tr("fetchMore() function not defined"));
+
+    const QScriptValue result = m_plugin.property("fetchMore").call(m_plugin, QScriptValueList()
+            << m_plugin.engine()->toScriptValue(params));
+
+    if (result.isError()) {
+        const QString errorString = result.toString();
+        Logger::log("JavaScriptSearchPlugin::search(). Error calling fetchMore(): " + errorString);
+        emit error(tr("Error calling fetchMore(): %1").arg(errorString));
     }
 }
 
-void JavaScriptSearchPlugin::search() {
-    initEngine();
-    QScriptValue func = m_engine->globalObject().property("search");
-
-    if (func.isFunction()) {
-        const QScriptValue result = func.call(QScriptValue());
-
-        if (result.isError()) {
-            const QString errorString = result.toString();
-            Logger::log("JavaScriptSearchPlugin::search(). Error calling search(): " + errorString);
-            emit error(tr("Error calling search(): %1").arg(errorString));
-        }
+void JavaScriptSearchPlugin::search(const QVariantMap &settings) {
+    if (!init()) {
+        error(tr("Plugin not initialized"));
+        return;
     }
-    else {
-        Logger::log("JavaScriptSearchPlugin::search(). search() function not defined");
-        emit error(tr("search() function not defined"));
+
+    const QScriptValue result = m_plugin.property("search").call(m_plugin, QScriptValueList()
+            << m_plugin.engine()->toScriptValue(settings));
+
+    if (result.isError()) {
+        const QString errorString = result.toString();
+        Logger::log("JavaScriptSearchPlugin::search(). Error calling search(): " + errorString);
+        emit error(tr("Error calling search(): %1").arg(errorString));
     }
 }
 
 void JavaScriptSearchPlugin::submitSettingsResponse(const QVariantMap &settings) {
-    initEngine();
+    if (!init()) {
+        emit error(tr("Plugin not initialized"));
+        return;
+    }
 
     if (m_callback.isFunction()) {
-        const QScriptValue result = m_callback.call(QScriptValue(), QScriptValueList()
-                                                    << m_engine->toScriptValue(settings));
+        const QScriptValue result = m_callback.call(m_plugin, QScriptValueList()
+                << m_plugin.engine()->toScriptValue(settings));
 
         if (result.isError()) {
-            emit error(tr("Settings callback error: %1").arg(result.toString()));
+            const QString errorString = result.toString();
+            Logger::log("JavaScriptSearchPlugin::submitSettingsResponse(): Error calling settings callback: "
+                    + errorString);
+            emit error(tr("Settings callback error: %1").arg(errorString));
         }
     }
     else {
-        QScriptValue func = m_engine->globalObject().property(m_callback.toString());
+        const QString funcName = m_callback.toString();
+        QScriptValue func = m_plugin.property(funcName);
 
         if (func.isFunction()) {
-            const QScriptValue result = func.call(QScriptValue(), QScriptValueList()
-                                                  << m_engine->toScriptValue(settings));
+            const QScriptValue result = func.call(m_plugin, QScriptValueList()
+                    << m_plugin.engine()->toScriptValue(settings));
 
             if (result.isError()) {
-                emit error(tr("Error calling %1: %1").arg(m_callback.toString()).arg(result.toString()));
+                const QString errorString = result.toString();
+                Logger::log("JavaScriptSearchPlugin::submitSettingsResponse(): Error calling settings callback: "
+                        + errorString);
+                emit error(tr("Settings callback error: %1").arg(errorString));
             }
         }
         else {
-            emit error(tr("%1 function not defined in the plugin").arg(m_callback.toString()));
+            Logger::log(QString("JavaScriptSearchPlugin::submitSettingsResponse(): %1 function not defined")
+                    .arg(funcName));
+            emit error(tr("%1 function not defined in the plugin").arg(funcName));
         }
     }
 }
 
 void JavaScriptSearchPlugin::onSettingsRequest(const QString &title, const QVariantList &settings,
-                                                const QScriptValue &callback) {
+        const QScriptValue &callback) {
     m_callback = callback;
     emit settingsRequest(title, settings, "submitSettingsResponse");
 }
 
-JavaScriptSearchPluginGlobalObject::JavaScriptSearchPluginGlobalObject(QScriptEngine *engine) :
-    JavaScriptPluginGlobalObject(engine)
-{
-    QScriptValue result = engine->newQObject(new JavaScriptSearchResult(engine));
-    engine->setDefaultPrototype(qMetaTypeId<SearchResult>(), result);
-    engine->setDefaultPrototype(qMetaTypeId<SearchResult*>(), result);
-    engine->globalObject().setProperty("SearchResult", engine->newFunction(newSearchResult));
-    qScriptRegisterSequenceMetaType<SearchResultList>(engine);
-}
-
-QScriptValue JavaScriptSearchPluginGlobalObject::newSearchResult(QScriptContext *context, QScriptEngine *engine) {
-    switch (context->argumentCount()) {
-    case 0:
-        return engine->toScriptValue(SearchResult());
-    case 3:
-        return engine->toScriptValue(SearchResult(context->argument(0).toString(), context->argument(1).toString(),
-                                                  context->argument(2).toString()));
-    default:
-        return context->throwError(QScriptContext::SyntaxError,
-                                   QObject::tr("SearchResult constructor requires either 0 or 3 arguments."));
-    }
-}
-
-JavaScriptSearchResult::JavaScriptSearchResult(QObject *parent) :
+JavaScriptSearchPluginSignaller::JavaScriptSearchPluginSignaller(QObject *parent) :
     QObject(parent)
 {
 }
 
-QString JavaScriptSearchResult::name() const {
-    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        return result->name;
-    }
-    
-    return QString();
+JavaScriptSearchPluginFactory::JavaScriptSearchPluginFactory(const QString &fileName, QScriptEngine *engine,
+        QObject *parent) :
+    QObject(parent),
+    m_engine(engine),
+    m_fileName(fileName),
+    m_initted(false)
+{
 }
 
-void JavaScriptSearchResult::setName(const QString &n) {
-    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        result->name = n;
+SearchPlugin* JavaScriptSearchPluginFactory::createPlugin(QObject *parent) {
+    if (init()) {
+        return new JavaScriptSearchPlugin(m_constructor.construct(), parent);
     }
+
+    return 0;
 }
 
-QString JavaScriptSearchResult::description() const {
-    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        return result->description;
+bool JavaScriptSearchPluginFactory::init() {
+    if (m_initted) {
+        return true;
     }
-    
-    return QString();
-}
 
-void JavaScriptSearchResult::setDescription(const QString &d) {
-    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        result->description = d;
+    if (!m_engine) {
+        Logger::log("JavaScriptSearchPluginFactory::init(): No JavaScript engine");
+        return false;
     }
-}
 
-QString JavaScriptSearchResult::url() const {
-    if (const SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        return result->url;
-    }
-    
-    return QString();
-}
+    QFile file(m_fileName);
 
-void JavaScriptSearchResult::setUrl(const QString &u) {
-    if (SearchResult* result = qscriptvalue_cast<SearchResult*>(thisObject())) {
-        result->url = u;
+    if (!file.open(QFile::ReadOnly)) {
+        Logger::log("JavaScriptSearchPluginFactory::init(): Cannot read file: " + m_fileName);
+        return false;
     }
+
+    m_constructor = m_engine->evaluate(QString::fromUtf8(file.readAll()), m_fileName);
+    file.close();
+
+    if (!m_constructor.isFunction()) {
+        if (m_constructor.isError()) {
+            Logger::log("JavaScriptSearchPluginFactory::init(): Error evaluating JavaScript file: "
+                    + m_constructor.toString());
+        }
+        else {
+            Logger::log("JavaScriptSearchPluginFactory::init(): No constructor function");
+        }
+
+        return false;
+    }
+
+    Logger::log("JavaScriptSearchPluginFactory::init(): Initialized OK", Logger::HighVerbosity);
+    m_initted = true;
+    return true;
 }

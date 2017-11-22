@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,29 +16,20 @@
  */
 
 #include "filespaceplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
 #include <QTime>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
 const QRegExp FilespacePlugin::FILE_REGEXP("http(s|)://[\\w-_]+\\.filespace\\.com:\\d+/[^'\"]+");
 const QString FilespacePlugin::LOGIN_URL("http://filespace.com");
 const QString FilespacePlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
-#if QT_VERSION >= 0x050000
-const QString FilespacePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                           + "/.config/qdl2/plugins/qdl2-filespace");
-#else
-const QString FilespacePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                           + "/.config/qdl2/plugins/qdl2-filespace");
-#endif
+
 const int FilespacePlugin::MAX_REDIRECTS = 8;
 
 FilespacePlugin::FilespacePlugin(QObject *parent) :
@@ -58,10 +49,6 @@ QString FilespacePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* FilespacePlugin::createPlugin(QObject *parent) {
-    return new FilespacePlugin(parent);
 }
 
 QNetworkAccessManager* FilespacePlugin::networkAccessManager() {
@@ -94,7 +81,7 @@ bool FilespacePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void FilespacePlugin::checkUrl(const QString &url) {
+void FilespacePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -160,10 +147,9 @@ void FilespacePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void FilespacePlugin::getDownloadRequest(const QString &url) {
+void FilespacePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -181,11 +167,6 @@ void FilespacePlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -423,7 +404,7 @@ void FilespacePlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else if (response.contains("wrong answer")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     else {
         emit error(tr("Unknown error"));
@@ -437,7 +418,7 @@ void FilespacePlugin::sendCaptchaRequest() {
         emit error(tr("No captcha key found"));
     }
     else {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
 }
 
@@ -447,12 +428,6 @@ void FilespacePlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -503,6 +478,10 @@ void FilespacePlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* FilespacePluginFactory::createPlugin(QObject *parent) {
+    return new FilespacePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-filespace, FilespacePlugin)
+Q_EXPORT_PLUGIN2(qdl2-filespace, FilespacePluginFactory)
 #endif

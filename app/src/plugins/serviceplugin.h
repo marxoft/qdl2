@@ -41,13 +41,6 @@ public:
     }
 
     /*!
-     * Pure virtual method.
-     *
-     * This method must be re-implemented to return an instance of the plugin with the parent set to \a parent.
-     */
-    virtual ServicePlugin* createPlugin(QObject *parent = 0) = 0;
-
-    /*!
      * Allows the plugin to share an application QNetworkNetworkManager instance.
      * 
      * The base implementation does nothing. If you choose to re-implement this function,
@@ -74,7 +67,7 @@ public Q_SLOTS:
      * 
      * \sa urlChecked(), error()
      */
-    virtual void checkUrl(const QString &url) = 0;
+    virtual void checkUrl(const QString &url, const QVariantMap &settings) = 0;
 
     /*!
      * Pure virtual method.
@@ -86,7 +79,7 @@ public Q_SLOTS:
      * 
      * \sa downloadRequest(), error()
      */
-    virtual void getDownloadRequest(const QString &url) = 0;
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings) = 0;
 
 Q_SIGNALS:
     /*!
@@ -95,7 +88,8 @@ Q_SIGNALS:
      * The \a callback method will be called when the captcha is completed and should take two strings 
      * (the challenge and the response) as arguments.
      */
-    void captchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QByteArray &callback);
+    void captchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
+            const QByteArray &callback);
 
     /*!
      * This signal should be emitted when a download request is successfully retrieved.
@@ -137,6 +131,25 @@ Q_SIGNALS:
     void waitRequest(int msecs, bool isLongDelay);
 };
 
-Q_DECLARE_INTERFACE(ServicePlugin, "org.qdl2.ServicePlugin")
+/*!
+ * Interface for creating instances of ServicePlugin.
+ *
+ * \sa ServicePlugin
+ */
+class ServicePluginFactory
+{
+
+public:
+    virtual ~ServicePluginFactory() {}
+
+    /*!
+     * Pure virtual method.
+     *
+     * This method must be re-implemented to return an instance of ServicePlugin with the parent set to \a parent.
+     */
+    virtual ServicePlugin* createPlugin(QObject *parent = 0) = 0;
+};
+
+Q_DECLARE_INTERFACE(ServicePluginFactory, "org.qdl2.ServicePluginFactory")
 
 #endif // SERVICEPLUGIN_H

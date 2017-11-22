@@ -27,9 +27,12 @@ public:
         insert(TransferItem::CanCancelRole, "canCancel");
         insert(TransferItem::CanPauseRole, "canPause");
         insert(TransferItem::CanStartRole, "canStart");
-        insert(TransferItem::CaptchaImageRole, "captchaImage");
+        insert(TransferItem::CaptchaDataRole, "captchaData");
+        insert(TransferItem::CaptchaResponseRole, "captchaResponse");
         insert(TransferItem::CaptchaTimeoutRole, "captchaTimeout");
         insert(TransferItem::CaptchaTimeoutStringRole, "captchaTimeoutString");
+        insert(TransferItem::CaptchaTypeRole, "captchaType");
+        insert(TransferItem::CaptchaTypeStringRole, "captchaTypeString");
         insert(TransferItem::CategoryRole, "category");
         insert(TransferItem::CreateSubfolderRole, "createSubfolder");
         insert(TransferItem::CustomCommandRole, "customCommand");

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,21 +19,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString Vbox7Plugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-vbox7");
-#else
-const QString Vbox7Plugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                       + "/.config/qdl2/plugins/qdl2-vbox7");
-#endif
 const QString Vbox7Plugin::BASE_URL("http://vbox7.com");
 
 const QByteArray Vbox7Plugin::USER_AGENT("Wget/1.13.4 (linux-gnu)");
@@ -48,10 +37,6 @@ Vbox7Plugin::Vbox7Plugin(QObject *parent) :
     m_redirects(0),
     m_ownManager(false)
 {
-}
-
-ServicePlugin* Vbox7Plugin::createPlugin(QObject *parent) {
-    return new Vbox7Plugin(parent);
 }
 
 QNetworkAccessManager* Vbox7Plugin::networkAccessManager() {
@@ -83,7 +68,7 @@ bool Vbox7Plugin::cancelCurrentOperation() {
     return true;
 }
 
-void Vbox7Plugin::checkUrl(const QString &url) {
+void Vbox7Plugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url).toString();
     QNetworkRequest request(m_url);
@@ -153,8 +138,9 @@ void Vbox7Plugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void Vbox7Plugin::getDownloadRequest(const QString &url) {
+void Vbox7Plugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
+    m_settings = settings;
     m_url = QUrl::fromUserInput(url).toString();
     QNetworkRequest request(m_url);
     request.setRawHeader("User-Agent", USER_AGENT);
@@ -230,10 +216,8 @@ void Vbox7Plugin::checkDownloadRequest() {
     const QString ldUrl = QString("%1_480p%2").arg(url.left(dot)).arg(url.mid(dot));
     
     if ((isHD) && (hasLD)) {
-        const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-        
-        if (settings.value("useDefaultVideoFormat", true).toBool()) {
-            if (settings.value("videoFormat", "hd").toString() == "hd") {
+        if (m_settings.value("useDefaultVideoFormat", true).toBool()) {
+            if (m_settings.value("videoFormat", "hd").toString() == "hd") {
                 emit downloadRequest(QNetworkRequest(url));
             }
             else {
@@ -307,6 +291,10 @@ void Vbox7Plugin::followRedirect(const QString &url, const char *slot) {
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
+ServicePlugin* Vbox7PluginFactory::createPlugin(QObject *parent) {
+    return new Vbox7Plugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-vbox7, Vbox7Plugin)
+Q_EXPORT_PLUGIN2(qdl2-vbox7, Vbox7PluginFactory)
 #endif

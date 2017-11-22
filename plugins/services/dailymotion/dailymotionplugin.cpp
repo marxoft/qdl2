@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,21 +19,10 @@
 #include <qdailymotion/resourcesrequest.h>
 #include <qdailymotion/streamsrequest.h>
 #include <QNetworkRequest>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString DailymotionPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-dailymotion");
-#else
-const QString DailymotionPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-dailymotion");
-#endif
 const QString DailymotionPlugin::VIDEO_FIELDS("id,title,url");
 
 const QStringList DailymotionPlugin::VIDEO_FORMATS = QStringList() << "2160" << "1080" << "720" << "480" << "380"
@@ -46,11 +35,7 @@ DailymotionPlugin::DailymotionPlugin(QObject *parent) :
 {
 }
 
-ServicePlugin* DailymotionPlugin::createPlugin(QObject *parent) {
-    return new DailymotionPlugin(parent);
-}
-
-void DailymotionPlugin::checkUrl(const QString &url) {
+void DailymotionPlugin::checkUrl(const QString &url, const QVariantMap &) {
     if (!m_resourcesRequest) {
         m_resourcesRequest = new QDailymotion::ResourcesRequest(this);
         connect(m_resourcesRequest, SIGNAL(finished()), this, SLOT(onResourcesRequestFinished()));
@@ -71,12 +56,13 @@ void DailymotionPlugin::checkUrl(const QString &url) {
     }
 }
 
-void DailymotionPlugin::getDownloadRequest(const QString &url) {    
+void DailymotionPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     if (!m_streamsRequest) {
         m_streamsRequest = new QDailymotion::StreamsRequest(this);
         connect(m_streamsRequest, SIGNAL(finished()), this, SLOT(onStreamsRequestFinished()));
     }
     
+    m_settings = settings;
     const QString id = url.section('/', -1).section('_', 0, 0);
     m_streamsRequest->list(id);
 }
@@ -154,10 +140,8 @@ void DailymotionPlugin::onStreamsRequestFinished() {
             return;
         }
 
-        const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-        
-        if (settings.value("useDefaultVideoFormat", true).toBool()) {
-            const QString format = settings.value("videoFormat", "2160").toString();
+        if (m_settings.value("useDefaultVideoFormat", true).toBool()) {
+            const QString format = m_settings.value("videoFormat", "2160").toString();
 
             for (int i = 0; i < VIDEO_FORMATS.indexOf(format); i++) {
                 for (int j = 0; j < streams.size(); j++) {
@@ -199,6 +183,10 @@ void DailymotionPlugin::onStreamsRequestFinished() {
     }   
 }
 
+ServicePlugin* DailymotionPluginFactory::createPlugin(QObject *parent) {
+    return new DailymotionPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-dailymotion, DailymotionPlugin)
+Q_EXPORT_PLUGIN2(qdl2-dailymotion, DailymotionPluginFactory)
 #endif

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,21 +19,10 @@
 #include <qvimeo/resourcesrequest.h>
 #include <qvimeo/streamsrequest.h>
 #include <QNetworkRequest>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString VimeoPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-vimeo");
-#else
-const QString VimeoPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-vimeo");
-#endif
 const QString VimeoPlugin::BASE_URL("https://vimeo.com");
 
 const QString VimeoPlugin::CLIENT_ID("0bf284bf5a0e46630f5097a590a76ef976a94322");
@@ -49,11 +38,7 @@ VimeoPlugin::VimeoPlugin(QObject *parent) :
 {
 }
 
-ServicePlugin* VimeoPlugin::createPlugin(QObject *parent) {
-    return new VimeoPlugin(parent);
-}
-
-void VimeoPlugin::checkUrl(const QString &url) {
+void VimeoPlugin::checkUrl(const QString &url, const QVariantMap &) {
     if (!m_resourcesRequest) {
         m_resourcesRequest = new QVimeo::ResourcesRequest(this);
         m_resourcesRequest->setClientId(CLIENT_ID);
@@ -67,12 +52,13 @@ void VimeoPlugin::checkUrl(const QString &url) {
     m_resourcesRequest->get("/videos/" + id);
 }
 
-void VimeoPlugin::getDownloadRequest(const QString &url) {    
+void VimeoPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     if (!m_streamsRequest) {
         m_streamsRequest = new QVimeo::StreamsRequest(this);
         connect(m_streamsRequest, SIGNAL(finished()), this, SLOT(onStreamsRequestFinished()));
     }
     
+    m_settings = settings;
     const QString id = url.mid(url.lastIndexOf("/") + 1);
     m_streamsRequest->list(id);
 }
@@ -122,10 +108,8 @@ void VimeoPlugin::onStreamsRequestFinished() {
             return;
         }
 
-        const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-        
-        if (settings.value("useDefaultVideoFormat", true).toBool()) {
-            const QString format = settings.value("videoFormat", "1080p").toString();
+        if (m_settings.value("useDefaultVideoFormat", true).toBool()) {
+            const QString format = m_settings.value("videoFormat", "1080p").toString();
 
             for (int i = 0; i < VIDEO_FORMATS.indexOf(format); i++) {
                 for (int j = 0; j < streams.size(); j++) {
@@ -167,6 +151,10 @@ void VimeoPlugin::onStreamsRequestFinished() {
     }   
 }
 
+ServicePlugin* VimeoPluginFactory::createPlugin(QObject *parent) {
+    return new VimeoPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-vimeo, VimeoPlugin)
+Q_EXPORT_PLUGIN2(qdl2-vimeo, VimeoPluginFactory)
 #endif

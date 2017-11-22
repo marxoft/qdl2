@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,23 +19,13 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
 const QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w-\\d+\\.1fichier\\.com/[^'\"]+");
 const QString OneFichierPlugin::LOGIN_URL("https://1fichier.com/login.pl");
-#if QT_VERSION >= 0x050000
-const QString OneFichierPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                            + "/.config/qdl2/plugins/qdl2-onefichier");
-#else
-const QString OneFichierPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                            + "/.config/qdl2/plugins/qdl2-onefichier");
-#endif
+
 const int OneFichierPlugin::MAX_REDIRECTS = 8;
 
 OneFichierPlugin::OneFichierPlugin(QObject *parent) :
@@ -54,10 +44,6 @@ QString OneFichierPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* OneFichierPlugin::createPlugin(QObject *parent) {
-    return new OneFichierPlugin(parent);
 }
 
 QNetworkAccessManager* OneFichierPlugin::networkAccessManager() {
@@ -89,7 +75,7 @@ bool OneFichierPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void OneFichierPlugin::checkUrl(const QString &url) {
+void OneFichierPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
@@ -151,10 +137,9 @@ void OneFichierPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void OneFichierPlugin::getDownloadRequest(const QString &url) {
+void OneFichierPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -172,11 +157,6 @@ void OneFichierPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -350,12 +330,6 @@ void OneFichierPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -386,6 +360,10 @@ void OneFichierPlugin::checkLogin() {
     reply->deleteLater();
 }
 
+ServicePlugin* OneFichierPluginFactory::createPlugin(QObject *parent) {
+    return new OneFichierPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-onefichier, OneFichierPlugin)
+Q_EXPORT_PLUGIN2(qdl2-onefichier, OneFichierPluginFactory)
 #endif

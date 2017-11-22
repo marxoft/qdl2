@@ -60,6 +60,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     setWindowTitle(tr("Add URLs"));
     setMinimumHeight(360);
     
+    m_tabBar->setStyleSheet("QTabBar::tab { height: 40px; }");
     m_tabBar->addTab(tr("URLs"));
     m_tabBar->addTab(tr("Method"));
     m_tabBar->addTab(tr("Headers"));

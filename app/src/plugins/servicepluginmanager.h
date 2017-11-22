@@ -24,14 +24,14 @@
 
 struct ServicePluginPair
 {
-    ServicePluginPair(ServicePluginConfig* c, ServicePlugin* p) :
+    ServicePluginPair(ServicePluginConfig* c, ServicePluginFactory* f) :
         config(c),
-        plugin(p)
+        factory(f)
     {
     }
 
     ServicePluginConfig *config;
-    ServicePlugin *plugin;
+    ServicePluginFactory *factory;
 };
 
 typedef QList<ServicePluginPair> ServicePluginList;
@@ -55,11 +55,11 @@ public Q_SLOTS:
     ServicePluginConfig* getConfigById(const QString &id) const;
     ServicePluginConfig* getConfigByUrl(const QString &url) const;
 
-    ServicePlugin* getPluginById(const QString &id) const;
-    ServicePlugin* getPluginByUrl(const QString &url) const;
+    ServicePluginFactory* getFactoryById(const QString &id) const;
+    ServicePluginFactory* getFactoryByUrl(const QString &url) const;
 
-    ServicePlugin* createPluginById(const QString &id, QObject *parent = 0) const;
-    ServicePlugin* createPluginByUrl(const QString &url, QObject *parent = 0) const;
+    ServicePlugin* createPluginById(const QString &id, QObject *parent = 0);
+    ServicePlugin* createPluginByUrl(const QString &url, QObject *parent = 0);
 
     bool urlIsSupported(const QString &url) const;
 

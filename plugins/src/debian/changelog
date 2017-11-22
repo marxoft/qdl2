@@ -1,3 +1,10 @@
+qdl-plugins-dev (0.2.0) unstable; urgency=low
+
+  * Add DecaptchaPluginFactory, RecaptchaPluginFactory, SearchPluginFactory and ServicePluginFactory interfaces.
+  * Add CaptchaType namespace.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 22 Nov 2017 07:52:52 +0000
+
 qdl-plugins-dev (0.1.0) unstable; urgency=low
 
   * Add SearchPlugin class and SearchResult struct.

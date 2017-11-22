@@ -1,3 +1,9 @@
+qdl-plugins-xhamster (0.2.4) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 06:46:29 +0000
+
 qdl-plugins-xhamster (0.2.3) unstable; urgency=low
 
   * Fix URL regexp and video detection.

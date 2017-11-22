@@ -20,7 +20,6 @@
 
 #include "urlresult.h"
 #include <QAbstractListModel>
-#include <QPointer>
 
 class DecaptchaPlugin;
 class RecaptchaPlugin;
@@ -53,13 +52,15 @@ class UrlCheckModel : public QAbstractListModel
 {
     Q_OBJECT
     
-    Q_PROPERTY(QByteArray captchaImage READ captchaImage NOTIFY statusChanged)
+    Q_PROPERTY(int captchaType READ captchaType NOTIFY statusChanged)
+    Q_PROPERTY(QByteArray captchaData READ captchaData NOTIFY statusChanged)
     Q_PROPERTY(int captchaTimeout READ captchaTimeout NOTIFY captchaTimeoutChanged)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QVariantList requestedSettings READ requestedSettings NOTIFY statusChanged)
     Q_PROPERTY(int requestedSettingsTimeout READ requestedSettingsTimeout NOTIFY requestedSettingsTimeoutChanged)
-    Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString NOTIFY requestedSettingsTimeoutChanged)
+    Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString
+               NOTIFY requestedSettingsTimeoutChanged)
     Q_PROPERTY(QString requestedSettingsTitle READ requestedSettingsTitle NOTIFY statusChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
@@ -89,7 +90,9 @@ public:
 
     static UrlCheckModel* instance();
 
-    QByteArray captchaImage() const;
+    int captchaType() const;
+    QString captchaTypeString() const;
+    QByteArray captchaData() const;
     int captchaTimeout() const;
     QString captchaTimeoutString() const;
 
@@ -141,10 +144,11 @@ private Q_SLOTS:
     void onUrlChecked(const UrlResult &result);
     void onUrlChecked(const UrlResultList &results, const QString &packageName);
 
-    void onCaptchaReady(const QString &challenge, const QImage &image);
-    void onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QByteArray &callback); 
+    void onCaptchaReady(int captchaType, const QByteArray &captchaData);
+    void onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
+            const QByteArray &callback); 
     void onCaptchaResponse(const QString &captchaId, const QString &response);
-    void onCaptchaResponseReported(const QString &);
+    void onCaptchaResponseReported(const QString &captchaId);
 
     void onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
     void onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
@@ -153,7 +157,7 @@ private Q_SLOTS:
     void onError(const QString &errorString);
     
 Q_SIGNALS:
-    void captchaRequest(const QImage &image);
+    void captchaRequest(int captchaType, const QByteArray &captchaData);
     void captchaTimeoutChanged(int timeout);
     void countChanged(int count);
     void progressChanged(int progress);
@@ -164,8 +168,8 @@ Q_SIGNALS:
 private:
     UrlCheckModel();
 
-    void setCaptchaImage(const QImage &image);
-    void clearCaptchaImage();
+    void setCaptchaData(int captchaType, const QByteArray &captchaData);
+    void clearCaptchaData();
     
     void setRequestedSettings(const QString &title, const QVariantList &settings, const QByteArray &callback);
     void clearRequestedSettings();
@@ -180,6 +184,9 @@ private:
     bool initServicePlugin(const QString &url);
     void clearPlugins();
 
+    bool isRedirect(const QString &url) const;
+    void followRedirect(const QString &url);
+
     void next();
 
     static UrlCheckModel *self;
@@ -190,14 +197,19 @@ private:
     
     QTimer *m_timer;
 
-    QPointer<ServicePlugin> m_servicePlugin;
-    QPointer<RecaptchaPlugin> m_recaptchaPlugin;
-    QPointer<DecaptchaPlugin> m_decaptchaPlugin;
+    ServicePlugin *m_servicePlugin;
+    RecaptchaPlugin *m_recaptchaPlugin;
+    DecaptchaPlugin *m_decaptchaPlugin;
+
+    QString m_servicePluginId;
+    QString m_recaptchaPluginId;
+    QString m_decaptchaPluginId;
     
-    QByteArray m_captchaImageData;
+    int m_captchaType;
+    QByteArray m_captchaData;
     QString m_captchaChallenge;
     QString m_captchaResponse;
-    QString m_recaptchaKey;
+    QString m_captchaKey;
     QString m_decaptchaId;
 
     QString m_requestedSettingsTitle;

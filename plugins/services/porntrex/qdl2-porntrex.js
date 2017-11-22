@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,95 +11,100 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var FILE_NAME_REGEXP = /<title>(.+)<\/title>/
-var VIDEO_FORMATS = ["video_alt_url3", "video_alt_url2", "video_alt_url", "video_url"];
-var request = null;
+(function() {
+    var FILE_NAME_REGEXP = /<title>(.+)<\/title>/
+    var VIDEO_FORMATS = ["video_alt_url3", "video_alt_url2", "video_alt_url", "video_url"];
+    var request = null;
+    var plugin = new ServicePlugin();
 
-function checkUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var fileName = FILE_NAME_REGEXP.exec(request.responseText)[1];
-                
-                if (fileName) {
-                    urlChecked(new UrlResult(url, fileName + ".mp4"));
-                }
-                else {
-                    error(qsTr("File not found"));
-                }
-            }
-            catch(err) {
-                error(err);
-            }
-        }
-    }
-    
-    
-    request.open("GET", url);
-    request.send();
-}
-
-function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var response = request.responseText;
-                var formats = [];
-                
-                for (var i = 0; i < VIDEO_FORMATS.length; i++) {
-                    var re = new RegExp(VIDEO_FORMATS[i] + ": '([^']+).+" + VIDEO_FORMATS[i] + "_text: '([^']+)");
-                    var f = re.exec(response);
+    plugin.checkUrl = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var fileName = FILE_NAME_REGEXP.exec(request.responseText)[1];
                     
-                    if (f) {
-                        formats.push({"label": f[2].toUpperCase(), "value": f[1]});
+                    if (fileName) {
+                        plugin.urlChecked(new UrlResult(url, fileName + ".mp4"));
+                    }
+                    else {
+                        plugin.error(qsTr("File not found"));
                     }
                 }
-                
-                if (!formats.length) {
-                    error(qsTr("No video formats found"));
-                    return;
+                catch(err) {
+                    plugin.error(err);
                 }
-                
-                if (settings.value("useDefaultVideoFormat", true) == true) {
-                    var format = settings.value("videoFormat", "1080P");
+            }
+        }
+        
+        
+        request.open("GET", url);
+        request.send();
+    };
+
+    plugin.getDownloadRequest = function(url, settings) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var response = request.responseText;
+                    var formats = [];
                     
-                    for (var i = 0; i < formats.length; i++) {
-                        if (formats[i].label == format) {
-                            downloadRequest(new NetworkRequest(formats[i].value));
-                            return;
+                    for (var i = 0; i < VIDEO_FORMATS.length; i++) {
+                        var re = new RegExp(VIDEO_FORMATS[i] + ": '([^']+).+" + VIDEO_FORMATS[i] + "_text: '([^']+)");
+                        var f = re.exec(response);
+                        
+                        if (f) {
+                            formats.push({"label": f[2].toUpperCase(), "value": f[1]});
                         }
                     }
                     
-                    downloadRequest(new NetworkRequest(formats[0].value));
+                    if (!formats.length) {
+                        plugin.error(qsTr("No video formats found"));
+                        return;
+                    }
+                    
+                    if (settings.useDefaultVideoFormat) {
+                        var format = settings.videoFormat || "1080P";
+                        
+                        for (var i = 0; i < formats.length; i++) {
+                            if (formats[i].label == format) {
+                                plugin.downloadRequest(new NetworkRequest(formats[i].value));
+                                return;
+                            }
+                        }
+                        
+                        plugin.downloadRequest(new NetworkRequest(formats[0].value));
+                    }
+                    else {
+                        var list = {"type": "list", "label": qsTr("Video format"), "key": "url",
+                            "value": formats[0].value, "options": formats};
+                        plugin.settingsRequest(qsTr("Choose video format"), [list], function(f) {
+                            plugin.downloadRequest(new NetworkRequest(f.url));
+                        });
+                    }
                 }
-                else {
-                    var list = {"type": "list", "label": qsTr("Video format"), "key": "url", "value": formats[0].value,
-                               "options": formats};
-                    settingsRequest(qsTr("Choose video format"), [list], function(f) {
-                        downloadRequest(new NetworkRequest(f.url));
-                    });
+                catch(err) {
+                    plugin.error(err);
                 }
-            }
-            catch(err) {
-                error(err);
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-        request = null;
-    }
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
 
-    return true;
-}
+        return true;
+    };
+
+    return plugin;
+})

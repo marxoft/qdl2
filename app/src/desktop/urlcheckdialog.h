@@ -45,7 +45,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void showContextMenu(const QPoint &pos);
     
-    void showCaptchaDialog(const QImage &image);
+    void showCaptchaDialog(int captchaType, const QByteArray &captchaData);
     void showPluginSettingsDialog(const QString &title, const QVariantList &settings);
     
     void onStatusChanged(UrlCheckModel::Status status);

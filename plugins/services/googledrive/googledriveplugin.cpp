@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -23,22 +23,12 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
-#include <QSettings>
 #if QT_VERSION >= 0x050000
-#include <QStandardPaths>
 #include <QUrlQuery>
 #else
-#include <QDesktopServices>
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString GoogleDrivePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-googledrive");
-#else
-const QString GoogleDrivePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                             + "/.config/qdl2/plugins/qdl2-googledrive");
-#endif
 const QStringList GoogleDrivePlugin::VIDEO_FORMATS = QStringList() << "37" << "46" << "22" << "45" << "44" << "35"
                                                                    << "18" << "43" << "34" << "36" << "17";
 
@@ -60,10 +50,6 @@ QString GoogleDrivePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* GoogleDrivePlugin::createPlugin(QObject *parent) {
-    return new GoogleDrivePlugin(parent);
 }
 
 QNetworkAccessManager* GoogleDrivePlugin::networkAccessManager() {
@@ -95,7 +81,7 @@ bool GoogleDrivePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void GoogleDrivePlugin::checkUrl(const QString &url) {
+void GoogleDrivePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -150,10 +136,11 @@ void GoogleDrivePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void GoogleDrivePlugin::getDownloadRequest(const QString &url) {
+void GoogleDrivePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
+    m_settings = settings;
     
-    if (QSettings(CONFIG_FILE, QSettings::IniFormat).value("useYouTubeFormats", false).toBool()) {
+    if (m_settings.value("useYouTubeFormats", false).toBool()) {
         QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(QUrl::fromUserInput(url)));
         connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
         connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
@@ -215,7 +202,7 @@ void GoogleDrivePlugin::checkDownloadRequest() {
                                           .trimmed().replace("\\u0026", "&").replace("\\u003d", "=")
                                           .remove(QRegExp("itag=\\d+"));
         const QMap<QString, QUrl> urlMap = getYouTubeVideoUrlMap(formatMap);
-        const QString format = QSettings(CONFIG_FILE, QSettings::IniFormat).value("videoFormat", "18").toString();
+        const QString format = m_settings.value("videoFormat", "18").toString();
         
         for (int i = VIDEO_FORMATS.indexOf(format); i < VIDEO_FORMATS.size(); i++) {
             const QUrl &videoUrl = urlMap.value(VIDEO_FORMATS.at(i));
@@ -377,6 +364,10 @@ QString GoogleDrivePlugin::unescape(const QString &s) {
     return QString(us);
 }
 
+ServicePlugin* GoogleDrivePluginFactory::createPlugin(QObject *parent) {
+    return new GoogleDrivePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-googledrive, GoogleDrivePlugin)
+Q_EXPORT_PLUGIN2(qdl2-googledrive, GoogleDrivePluginFactory)
 #endif

@@ -17,6 +17,7 @@
 #include "searchmodel.h"
 #include "definitions.h"
 #include "logger.h"
+#include "pluginsettings.h"
 #include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
 #include "transfermodel.h"
@@ -169,7 +170,7 @@ void SearchModel::search(const QString &pluginId) {
     
     if (SearchPlugin *p = plugin()) {
         setStatus(Active);
-        p->search();
+        p->search(PluginSettings(pluginId).values());
     }
     else {
         Logger::log("SearchModel::search(). No plugin acquired.");
@@ -204,7 +205,7 @@ void SearchModel::reload() {
     
     if (SearchPlugin *p = plugin()) {
         setStatus(Active);
-        p->search();
+        p->search(PluginSettings(m_pluginId).values());
     }
     else {
         Logger::log("SearchModel::reload(). No plugin acquired.");
@@ -237,7 +238,7 @@ bool SearchModel::submitSettingsResponse(const QVariantMap &settings) {
 
 SearchPlugin* SearchModel::plugin() {
     if (!m_plugin) {
-        m_plugin = SearchPluginManager::instance()->createPluginById(m_pluginId);
+        m_plugin = SearchPluginManager::instance()->createPluginById(m_pluginId, this);
         
         if (m_plugin) {
             connect(m_plugin, SIGNAL(error(QString)), this, SLOT(onSearchError(QString)));

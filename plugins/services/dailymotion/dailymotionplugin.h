@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,22 +31,15 @@ class DailymotionPlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.DailymotionPlugin")
-#endif
-
 public:
     explicit DailymotionPlugin(QObject *parent = 0);
-
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
 
     void submitFormat(const QVariantMap &format);
 
@@ -55,7 +48,6 @@ private Q_SLOTS:
     void onStreamsRequestFinished();
     
 private:
-    static const QString CONFIG_FILE;
     static const QString VIDEO_FIELDS;
     static const QStringList VIDEO_FORMATS;
     
@@ -64,6 +56,19 @@ private:
 
     UrlResultList m_results;
     QVariantMap m_filters;
+    QVariantMap m_settings;
+};
+
+class DailymotionPluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.DailymotionPluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // DAILYMOTIONPLUGIN_H

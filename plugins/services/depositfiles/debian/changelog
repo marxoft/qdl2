@@ -1,3 +1,9 @@
+qdl-plugins-depositfiles (0.2.3) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 03:36:15 +0000
+
 qdl-plugins-depositfiles (0.2.2) unstable; urgency=low
 
   * Fix redirect handling and file URL detection.

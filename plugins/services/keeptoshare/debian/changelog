@@ -1,3 +1,10 @@
+qdl-plugins-keeptoshare (0.2.4) unstable; urgency=low
+
+  * Changes to service plugin API.
+  * Handle 'No CAPTCHA' interactive captchas.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 22 Nov 2017 07:56:36 +0000
+
 qdl-plugins-keeptoshare (0.2.3) unstable; urgency=low
 
   * Fix filename detection.

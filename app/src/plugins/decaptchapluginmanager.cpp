@@ -18,6 +18,7 @@
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "javascriptdecaptchaplugin.h"
+#include "javascriptpluginengine.h"
 #include "logger.h"
 #include <QDir>
 #include <QFileInfo>
@@ -56,51 +57,54 @@ DecaptchaPluginList DecaptchaPluginManager::plugins() const {
 DecaptchaPluginConfig* DecaptchaPluginManager::getConfigById(const QString &id) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("DecaptchaPluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
+            Logger::log("DecaptchaPluginManager::getConfigById(). Config found: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("DecaptchaPluginManager::getConfigById(). No config found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 DecaptchaPluginConfig* DecaptchaPluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("DecaptchaPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+            Logger::log("DecaptchaPluginManager::getConfigByFilePath(). Config found: " + pair.config->id(),
                         Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+    Logger::log("DecaptchaPluginManager::getConfigByFilePath(). No config found for filePath " + filePath,
                 Logger::HighVerbosity);
     return 0;
 }
 
-DecaptchaPlugin* DecaptchaPluginManager::getPluginById(const QString &id) const {
+DecaptchaPluginFactory* DecaptchaPluginManager::getFactoryById(const QString &id) const {
     foreach (const DecaptchaPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("DecaptchaPluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
-            return pair.plugin;
+            Logger::log("DecaptchaPluginManager::getFactoryById(). Factory found: " + id, Logger::HighVerbosity);
+            return pair.factory;
         }
     }
     
-    Logger::log("DecaptchaPluginManager::getPluginById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("DecaptchaPluginManager::getFactoryById(). No factory found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
-DecaptchaPlugin* DecaptchaPluginManager::createPluginById(const QString &id, QObject *parent) const {
-    if (DecaptchaPlugin *plugin = getPluginById(id)) {
-        return plugin->createPlugin(parent);
+DecaptchaPlugin* DecaptchaPluginManager::createPluginById(const QString &id, QObject *parent) {
+    if (DecaptchaPluginFactory *factory = getFactoryById(id)) {
+        if (DecaptchaPlugin* plugin = factory->createPlugin(parent)) {
+            plugin->setNetworkAccessManager(networkAccessManager());
+            return plugin;
+        }
     }
 
     return 0;
 }
 
 QNetworkAccessManager* DecaptchaPluginManager::networkAccessManager() {
-    return m_nam ? m_nam :  m_nam = new QNetworkAccessManager(this);
+    return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
 }
 
 int DecaptchaPluginManager::load() {
@@ -121,9 +125,9 @@ int DecaptchaPluginManager::load() {
                     
                     if (config->load(info.absoluteFilePath())) {
                         if (config->pluginType() == "js") {
-                            JavaScriptDecaptchaPlugin *js =
-                            new JavaScriptDecaptchaPlugin(config->id(), config->pluginFilePath(), this);
-                            js->setNetworkAccessManager(networkAccessManager());
+                            JavaScriptDecaptchaPluginFactory *js =
+                                new JavaScriptDecaptchaPluginFactory(config->pluginFilePath(),
+                                        JavaScriptPluginEngine::instance(), this);
                             m_plugins << DecaptchaPluginPair(config, js);
                             ++count;
                             Logger::log("DecaptchaPluginManager::load(). JavaScript plugin loaded: "
@@ -134,9 +138,8 @@ int DecaptchaPluginManager::load() {
                             QObject *obj = loader.instance();
                             
                             if (obj) {
-                                if (DecaptchaPlugin *plugin = qobject_cast<DecaptchaPlugin*>(obj)) {
-                                    plugin->setNetworkAccessManager(networkAccessManager());
-                                    m_plugins << DecaptchaPluginPair(config, plugin);
+                                if (DecaptchaPluginFactory *factory = qobject_cast<DecaptchaPluginFactory*>(obj)) {
+                                    m_plugins << DecaptchaPluginPair(config, factory);
                                     ++count;
                                     Logger::log("DecaptchaPluginManager::load(). Qt Plugin loaded: "
                                                 + config->id(), Logger::MediumVerbosity);

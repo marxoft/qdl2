@@ -18,13 +18,12 @@
 #include "definitions.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
+#include "serverresponse.h"
 #include <QFile>
 
 bool FileServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     if (request->method() != QHttpRequest::HTTP_GET) {
-        response->setHeader("Content-Length", "0");
-        response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        response->end();
+        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
         return true;
     }
     
@@ -43,15 +42,11 @@ bool FileServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     QFile file(filePath);
     
     if (file.open(QFile::ReadOnly)) {
-        response->setHeader("Content-Length", QByteArray::number(file.size()));
-        response->writeHead(QHttpResponse::STATUS_OK);
-        response->end(file.readAll());
+        writeResponse(response, QHttpResponse::STATUS_OK, file.readAll());
         file.close();
         return true;
     }
     
-    response->setHeader("Content-Length", "0");
-    response->writeHead(QHttpResponse::STATUS_INTERNAL_SERVER_ERROR);
-    response->end();
+    writeResponse(response, QHttpResponse::STATUS_INTERNAL_SERVER_ERROR);
     return true;
 }

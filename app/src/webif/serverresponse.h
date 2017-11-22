@@ -19,8 +19,12 @@
 
 #include "qhttpresponse.h"
 
-inline void writeResponse(QHttpResponse *response, int responseCode, const QByteArray &data = QByteArray()) {
-    response->setHeader("Content-Type", "application/json");
+inline void writeResponse(QHttpResponse *response, int responseCode, const QByteArray &data = QByteArray(),
+        const QByteArray &contentType = QByteArray()) {
+    if (!contentType.isEmpty()) {
+        response->setHeader("Content-Type", contentType);
+    }
+
     response->setHeader("Content-Length", QByteArray::number(data.size()));
     response->writeHead(responseCode);
     response->end(data);

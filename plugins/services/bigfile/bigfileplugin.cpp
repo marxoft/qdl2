@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,16 +16,13 @@
  */
 
 #include "bigfileplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -34,13 +31,7 @@ const QRegExp BigFilePlugin::FILE_REGEXP("http(s|)://[^w]+\\.bigfile\\.to/file/[
 const QString BigFilePlugin::LOGIN_URL("https://bigfile.to/login.php");
 const QString BigFilePlugin::RECAPTCHA_URL("https://www.bigfile.to/checkReCaptcha.php");
 const QString BigFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-#if QT_VERSION >= 0x050000
-const QString BigFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-bigfile");
-#else
-const QString BigFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-bigfile");
-#endif
+
 const int BigFilePlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
@@ -62,10 +53,6 @@ QString BigFilePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* BigFilePlugin::createPlugin(QObject *parent) {
-    return new BigFilePlugin(parent);
 }
 
 QNetworkAccessManager* BigFilePlugin::networkAccessManager() {
@@ -98,7 +85,7 @@ bool BigFilePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void BigFilePlugin::checkUrl(const QString &url) {
+void BigFilePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -162,10 +149,9 @@ void BigFilePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void BigFilePlugin::getDownloadRequest(const QString &url) {
+void BigFilePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -183,11 +169,6 @@ void BigFilePlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -390,7 +371,7 @@ void BigFilePlugin::checkCaptcha() {
     const QVariantMap map = Json::parse(QString::fromUtf8(reply->readAll())).toMap();
     
     if (map.value("success") == "showCaptcha") {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     else if (map.value("fail") == "timeLimit") {
         emit waitRequest(600000, true);
@@ -461,7 +442,7 @@ void BigFilePlugin::checkCaptchaResponse() {
         const QString errorString = response.value("error").toString();
         
         if (errorString == "incorrect-captcha-sol") {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
         }
         else {
             emit error(tr("Unknown error"));
@@ -589,12 +570,6 @@ void BigFilePlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -645,6 +620,10 @@ void BigFilePlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* BigFilePluginFactory::createPlugin(QObject *parent) {
+    return new BigFilePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-bigfile, BigFilePlugin)
+Q_EXPORT_PLUGIN2(qdl2-bigfile, BigFilePluginFactory)
 #endif

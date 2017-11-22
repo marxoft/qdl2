@@ -17,6 +17,7 @@
 
 #include "servicepluginmanager.h"
 #include "definitions.h"
+#include "javascriptpluginengine.h"
 #include "javascriptserviceplugin.h"
 #include "logger.h"
 #include <QDir>
@@ -56,25 +57,25 @@ ServicePluginList ServicePluginManager::plugins() const {
 ServicePluginConfig* ServicePluginManager::getConfigById(const QString &id) const {
     foreach (const ServicePluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("ServicePluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
+            Logger::log("ServicePluginManager::getConfigById(). Config found: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("ServicePluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("ServicePluginManager::getConfigById(). No config found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 ServicePluginConfig* ServicePluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const ServicePluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("ServicePluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+            Logger::log("ServicePluginManager::getConfigByFilePath(). Config found: " + pair.config->id(),
                         Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("ServicePluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+    Logger::log("ServicePluginManager::getConfigByFilePath(). No config found for filePath " + filePath,
                 Logger::HighVerbosity);
     return 0;
 }
@@ -82,52 +83,58 @@ ServicePluginConfig* ServicePluginManager::getConfigByFilePath(const QString &fi
 ServicePluginConfig* ServicePluginManager::getConfigByUrl(const QString &url) const {
     foreach (const ServicePluginPair &pair, m_plugins) {
         if (pair.config->urlIsSupported(url)) {
-            Logger::log("ServicePluginManager::getConfigByUrl(). PluginFound: " + pair.config->id(),
+            Logger::log("ServicePluginManager::getConfigByUrl(). Config found: " + pair.config->id(),
                         Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("ServicePluginManager::getConfigByUrl(). No Plugin found for URL " + url, Logger::HighVerbosity);
+    Logger::log("ServicePluginManager::getConfigByUrl(). No config found for URL " + url, Logger::HighVerbosity);
     return 0;
 }
 
-ServicePlugin* ServicePluginManager::getPluginById(const QString &id) const {
+ServicePluginFactory* ServicePluginManager::getFactoryById(const QString &id) const {
     foreach (const ServicePluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("ServicePluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
-            return pair.plugin;
+            Logger::log("ServicePluginManager::getFactoryById(). Factory found: " + id, Logger::HighVerbosity);
+            return pair.factory;
         }
     }
     
-    Logger::log("ServicePluginManager::getPluginById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("ServicePluginManager::getFactoryById(). No factory found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
-ServicePlugin* ServicePluginManager::getPluginByUrl(const QString &url) const {
+ServicePluginFactory* ServicePluginManager::getFactoryByUrl(const QString &url) const {
     foreach (const ServicePluginPair &pair, m_plugins) {
         if (pair.config->urlIsSupported(url)) {
-            Logger::log("ServicePluginManager::getPluginByUrl(). PluginFound: " + pair.config->id(),
+            Logger::log("ServicePluginManager::getFactoryByUrl(). Factory found: " + pair.config->id(),
                         Logger::HighVerbosity);
-            return pair.plugin;
+            return pair.factory;
         }
     }
     
-    Logger::log("ServicePluginManager::getPluginByUrl(). No Plugin found for URL " + url, Logger::HighVerbosity);
+    Logger::log("ServicePluginManager::getFactoryByUrl(). No factory found for URL " + url, Logger::HighVerbosity);
     return 0;
 }
 
-ServicePlugin* ServicePluginManager::createPluginById(const QString &id, QObject *parent) const {
-    if (ServicePlugin *plugin = getPluginById(id)) {
-        return plugin->createPlugin(parent);
+ServicePlugin* ServicePluginManager::createPluginById(const QString &id, QObject *parent) {
+    if (ServicePluginFactory *factory = getFactoryById(id)) {
+        if (ServicePlugin *plugin = factory->createPlugin(parent)) {
+            plugin->setNetworkAccessManager(networkAccessManager());
+            return plugin;
+        }
     }
 
     return 0;
 }
 
-ServicePlugin* ServicePluginManager::createPluginByUrl(const QString &url, QObject *parent) const {
-    if (ServicePlugin *plugin = getPluginByUrl(url)) {
-        return plugin->createPlugin(parent);
+ServicePlugin* ServicePluginManager::createPluginByUrl(const QString &url, QObject *parent) {
+    if (ServicePluginFactory *factory = getFactoryByUrl(url)) {
+        if (ServicePlugin *plugin = factory->createPlugin(parent)) {
+            plugin->setNetworkAccessManager(networkAccessManager());
+            return plugin;
+        }
     }
 
     return 0;
@@ -163,9 +170,9 @@ int ServicePluginManager::load() {
                     
                     if (config->load(info.absoluteFilePath())) {
                         if (config->pluginType() == "js") {
-                            JavaScriptServicePlugin *js =
-                            new JavaScriptServicePlugin(config->id(), config->pluginFilePath(), this);
-                            js->setNetworkAccessManager(networkAccessManager());
+                            JavaScriptServicePluginFactory *js =
+                                new JavaScriptServicePluginFactory(config->pluginFilePath(),
+                                        JavaScriptPluginEngine::instance(), this);
                             m_plugins << ServicePluginPair(config, js);
                             ++count;
                             Logger::log("ServicePluginManager::load(). JavaScript plugin loaded: " + config->id(),
@@ -176,9 +183,8 @@ int ServicePluginManager::load() {
                             QObject *obj = loader.instance();
                             
                             if (obj) {
-                                if (ServicePlugin *plugin = qobject_cast<ServicePlugin*>(obj)) {
-                                    plugin->setNetworkAccessManager(networkAccessManager());
-                                    m_plugins << ServicePluginPair(config, plugin);
+                                if (ServicePluginFactory *factory = qobject_cast<ServicePluginFactory*>(obj)) {
+                                    m_plugins << ServicePluginPair(config, factory);
                                     ++count;
                                     Logger::log("ServicePluginManager::load(). Qt Plugin loaded: " + config->id(),
                                                 Logger::MediumVerbosity);

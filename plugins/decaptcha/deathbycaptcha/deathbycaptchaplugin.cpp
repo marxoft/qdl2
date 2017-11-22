@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,6 +15,7 @@
  */
 
 #include "deathbycaptchaplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QBuffer>
 #include <QDateTime>
@@ -22,24 +23,13 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
 const QString DeathByCaptchaPlugin::CAPTCHA_URL("http://api.dbcapi.me/api/captcha");
 const QString DeathByCaptchaPlugin::REPORT_URL("http://api.dbcapi.me/api/captcha/%1/report");
-#if QT_VERSION >= 0x050000
-const QString DeathByCaptchaPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                                + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
-#else
-const QString DeathByCaptchaPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                                + "/.config/qdl2/plugins/qdl2-deathbycaptcha");
-#endif
 
 using namespace QtJson;
 
@@ -48,10 +38,6 @@ DeathByCaptchaPlugin::DeathByCaptchaPlugin(QObject *parent) :
     m_nam(0),
     m_ownManager(false)
 {
-}
-
-DecaptchaPlugin* DeathByCaptchaPlugin::createPlugin(QObject *parent) {
-    return new DeathByCaptchaPlugin(parent);
 }
 
 QNetworkAccessManager* DeathByCaptchaPlugin::networkAccessManager() {
@@ -82,17 +68,14 @@ bool DeathByCaptchaPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void DeathByCaptchaPlugin::getCaptchaResponse(const QImage &image) {
-    m_imageData.clear();
-    QBuffer buffer(&m_imageData);
-    buffer.open(QBuffer::WriteOnly);
-
-    if (!image.save(&buffer, "JPEG")) {
-        emit error(tr("Captch image is invalid"));
+void DeathByCaptchaPlugin::getCaptchaResponse(int captchaType, const QByteArray &captchaData,
+        const QVariantMap &settings) {
+    if (captchaType != CaptchaType::Image) {
+        emit error(tr("Captcha type %1 not supported").arg(captchaType));
         return;
     }
 
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
+    m_imageData = captchaData;
     m_username = settings.value("Account/username").toString();
     m_password = settings.value("Account/password").toString();
     
@@ -108,11 +91,6 @@ void DeathByCaptchaPlugin::getCaptchaResponse(const QImage &image) {
         passwordMap["label"] = tr("Password");
         passwordMap["key"] = "password";
         list << passwordMap;
-        QVariantMap storeMap;
-        storeMap["type"] = "boolean";
-        storeMap["label"] = tr("Store credentials");
-        storeMap["key"] = "store";
-        list << storeMap;
         emit settingsRequest(tr("Login"), list, "setLogin");
     }
     else {
@@ -138,12 +116,6 @@ void DeathByCaptchaPlugin::setLogin(const QVariantMap &login) {
         emit error(tr("Invalid login provided"));
     }
     else {
-        if (login.value("store", false).toBool()) {
-            QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-            settings.setValue("Account/username", m_username);
-            settings.setValue("Account/password", m_password);
-        }
-        
         fetchCaptchaResponse(m_imageData);
     }
 }
@@ -307,6 +279,10 @@ void DeathByCaptchaPlugin::checkCaptchaReport() {
     reply->deleteLater();
 }
 
+DecaptchaPlugin* DeathByCaptchaPluginFactory::createPlugin(QObject *parent) {
+    return new DeathByCaptchaPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-deathbycaptcha, DeathByCaptchaPlugin)
+Q_EXPORT_PLUGIN2(qdl2-deathbycaptcha, DeathByCaptchaPluginFactory)
 #endif

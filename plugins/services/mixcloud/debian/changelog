@@ -1,3 +1,9 @@
+qdl-plugins-mixcloud (0.0.2) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Sat, 18 Nov 2017 21:50:15 +0000
+
 qdl-plugins-mixcloud (0.0.1) unstable; urgency=low
 
   * Inital release.

@@ -24,14 +24,14 @@
 
 struct DecaptchaPluginPair
 {
-    DecaptchaPluginPair(DecaptchaPluginConfig* c, DecaptchaPlugin* p) :
+    DecaptchaPluginPair(DecaptchaPluginConfig* c, DecaptchaPluginFactory* f) :
         config(c),
-        plugin(p)
+        factory(f)
     {
     }
 
     DecaptchaPluginConfig *config;
-    DecaptchaPlugin *plugin;
+    DecaptchaPluginFactory *factory;
 };
 
 typedef QList<DecaptchaPluginPair> DecaptchaPluginList;
@@ -54,9 +54,9 @@ public:
 public Q_SLOTS:
     DecaptchaPluginConfig* getConfigById(const QString &id) const;
 
-    DecaptchaPlugin* getPluginById(const QString &id) const;
+    DecaptchaPluginFactory* getFactoryById(const QString &id) const;
 
-    DecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0) const;
+    DecaptchaPlugin* createPluginById(const QString &id, QObject *parent = 0);
 
     int load();
 

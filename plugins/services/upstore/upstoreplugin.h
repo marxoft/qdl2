@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -30,24 +30,17 @@ class UpstorePlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.UpstorePlugin")
-#endif
-
 public:
     explicit UpstorePlugin(QObject *parent = 0);
     
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
-
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
     
     void submitCaptchaResponse(const QString &challenge, const QString &response);
     void submitLogin(const QVariantMap &credentials);
@@ -84,7 +77,6 @@ private:
     static const QRegExp WAIT_REGEXP;
     static const QString LOGIN_URL;
     static const QString RECAPTCHA_PLUGIN_ID;
-    static const QString CONFIG_FILE;
     
     static const int MAX_REDIRECTS;
 
@@ -99,6 +91,18 @@ private:
     int m_redirects;
 
     bool m_ownManager;
+};
+
+class UpstorePluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.UpstorePluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // UPSTOREPLUGIN_H

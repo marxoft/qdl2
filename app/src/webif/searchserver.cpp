@@ -16,6 +16,7 @@
 
 #include "searchserver.h"
 #include "json.h"
+#include "pluginsettings.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
 #include "searchpluginmanager.h"
@@ -51,33 +52,33 @@ bool SearchServer::handleRequest(QHttpRequest *request, QHttpResponse *response)
     const QString pluginId = Utils::urlQueryItemValue(request->url(), "pluginId");
     const QString method = Utils::urlQueryItemValue(request->url(), "method", "search");
 
-    SearchPlugin *plugin = SearchPluginManager::instance()->getPluginById(pluginId);
+    SearchPluginFactory *factory = SearchPluginManager::instance()->getFactoryById(pluginId);
 
-    if (plugin) {
+    if (factory) {
         if (method == "search") {
             if (request->method() == QHttpRequest::HTTP_GET) {
-                SearchPlugin *sp = plugin->createPlugin(this);
-                addResponse(sp, response);
-                sp->search();
+                SearchPlugin *plugin = factory->createPlugin(this);
+                addResponse(plugin, response);
+                plugin->search(PluginSettings(pluginId).values());
             }
             else if (request->method() == QHttpRequest::HTTP_POST) {
-                SearchPlugin *sp = plugin->createPlugin(this);
-                addResponse(sp, response);
-                sp->fetchMore(QtJson::Json::parse(request->body()).toMap());
+                SearchPlugin *plugin = factory->createPlugin(this);
+                addResponse(plugin, response);
+                plugin->fetchMore(QtJson::Json::parse(request->body()).toMap());
             }
             else {
                 writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
             }
         }
         else if (request->method() == QHttpRequest::HTTP_POST) {
-            SearchPlugin *sp = plugin->createPlugin(this);
+            SearchPlugin *plugin = factory->createPlugin(this);
 
-            if (QMetaObject::invokeMethod(sp, method.toUtf8(), Qt::QueuedConnection, Q_ARG(QVariantMap,
+            if (QMetaObject::invokeMethod(plugin, method.toUtf8(), Qt::QueuedConnection, Q_ARG(QVariantMap,
                             QtJson::Json::parse(request->body()).toMap()))) {
-                addResponse(sp, response);
+                addResponse(plugin, response);
             }
             else {
-                sp->deleteLater();
+                plugin->deleteLater();
                 writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
             }
         }

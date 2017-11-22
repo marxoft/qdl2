@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,16 +16,13 @@
  */
 
 #include "datafileplugin.h"
+#include "captchatype.h"
 #include "json.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -35,13 +32,7 @@ const QString DataFilePlugin::AJAX_URL("http://www.datafile.com/files/ajax.html"
 const QString DataFilePlugin::CHECK_URL("http://www.datafile.com/linkchecker.html");
 const QString DataFilePlugin::LOGIN_URL("https://www.datafile.com/login.html");
 const QString DataFilePlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-#if QT_VERSION >= 0x050000
-const QString DataFilePlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-datafile");
-#else
-const QString DataFilePlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                          + "/.config/qdl2/plugins/qdl2-datafile");
-#endif
+
 const int DataFilePlugin::MAX_REDIRECTS = 8;
 
 using namespace QtJson;
@@ -64,10 +55,6 @@ QString DataFilePlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* DataFilePlugin::createPlugin(QObject *parent) {
-    return new DataFilePlugin(parent);
 }
 
 QNetworkAccessManager* DataFilePlugin::networkAccessManager() {
@@ -100,7 +87,7 @@ bool DataFilePlugin::cancelCurrentOperation() {
     return true;
 }
 
-void DataFilePlugin::checkUrl(const QString &url) {
+void DataFilePlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     m_url = url;
     QNetworkRequest request(CHECK_URL);
@@ -160,10 +147,9 @@ void DataFilePlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void DataFilePlugin::getDownloadRequest(const QString &url) {
+void DataFilePlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = url;
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -181,11 +167,6 @@ void DataFilePlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -277,7 +258,7 @@ void DataFilePlugin::checkDownloadRequest() {
             }
         }
         else {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
         }
     }
 
@@ -353,7 +334,7 @@ void DataFilePlugin::checkCaptchaResponse() {
         QString errorString = response.value("msg").toString();
         
         if (errorString.contains("words is not valid")) {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
         }
         else {
             emit error(errorString.isEmpty() ? tr("Unknown error") : errorString.remove(QRegExp("<[^>]*>")));
@@ -440,12 +421,6 @@ void DataFilePlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -496,6 +471,10 @@ void DataFilePlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* DataFilePluginFactory::createPlugin(QObject *parent) {
+    return new DataFilePlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-datafile, DataFilePlugin)
+Q_EXPORT_PLUGIN2(qdl2-datafile, DataFilePluginFactory)
 #endif

@@ -11,6 +11,7 @@ INCLUDEPATH += \
 
 HEADERS += \
     src/base/actionmodel.h \
+    src/base/captchatype.h \
     src/base/categories.h \
     src/base/categorymodel.h \
     src/base/categoryselectionmodel.h \
@@ -37,11 +38,16 @@ HEADERS += \
     src/plugins/decaptchapluginconfig.h \
     src/plugins/decaptchapluginconfigmodel.h \
     src/plugins/decaptchapluginmanager.h \
+    src/plugins/javascriptcaptchatype.h \
     src/plugins/javascriptdecaptchaplugin.h \
+    src/plugins/javascriptnetworkrequest.h \
+    src/plugins/javascriptpluginengine.h \
     src/plugins/javascriptpluginglobalobject.h \
     src/plugins/javascriptrecaptchaplugin.h \
     src/plugins/javascriptsearchplugin.h \
+    src/plugins/javascriptsearchresult.h \
     src/plugins/javascriptserviceplugin.h \
+    src/plugins/javascripturlresult.h \
     src/plugins/pluginsettings.h \
     src/plugins/recaptchaplugin.h \
     src/plugins/recaptchapluginconfig.h \
@@ -75,10 +81,14 @@ SOURCES += \
     src/plugins/decaptchapluginconfigmodel.cpp \
     src/plugins/decaptchapluginmanager.cpp \
     src/plugins/javascriptdecaptchaplugin.cpp \
+    src/plugins/javascriptnetworkrequest.cpp \
+    src/plugins/javascriptpluginengine.cpp \
     src/plugins/javascriptpluginglobalobject.cpp \
     src/plugins/javascriptrecaptchaplugin.cpp \
     src/plugins/javascriptsearchplugin.cpp \
+    src/plugins/javascriptsearchresult.cpp \
     src/plugins/javascriptserviceplugin.cpp \
+    src/plugins/javascripturlresult.cpp \
     src/plugins/pluginsettings.cpp \
     src/plugins/recaptchapluginconfig.cpp \
     src/plugins/recaptchapluginconfigmodel.cpp \
@@ -94,7 +104,8 @@ SOURCES += \
 maemo5 {
     QT += \
         dbus \
-        maemo5
+        maemo5 \
+        webkit
 
     INCLUDEPATH += src/maemo5
 
@@ -117,6 +128,7 @@ maemo5 {
         src/maemo5/mainwindow.h \
         src/maemo5/multivalueselector.h \
         src/maemo5/networkproxydialog.h \
+        src/maemo5/nocaptchadialog.h \
         src/maemo5/package.h \
         src/maemo5/packagepropertiesdialog.h \
         src/maemo5/page.h \
@@ -158,6 +170,7 @@ maemo5 {
         src/maemo5/mainwindow.cpp \
         src/maemo5/multivalueselector.cpp \
         src/maemo5/networkproxydialog.cpp \
+        src/maemo5/nocaptchadialog.cpp \
         src/maemo5/package.cpp \
         src/maemo5/packagepropertiesdialog.cpp \
         src/maemo5/page.cpp \
@@ -269,7 +282,12 @@ maemo5 {
     QT += dbus
     
     greaterThan(QT_MAJOR_VERSION, 4) {
-        QT += widgets
+        QT += \
+            webkitwidgets \
+            widgets
+    }
+    else {
+        QT += webkit
     }
 
     INCLUDEPATH += src/desktop
@@ -290,6 +308,7 @@ maemo5 {
         src/desktop/imagecache.h \
         src/desktop/interfacesettingspage.h \
         src/desktop/networksettingspage.h \
+        src/desktop/nocaptchadialog.h \
         src/desktop/mainwindow.h \
         src/desktop/package.h \
         src/desktop/packagepropertiesdialog.h \
@@ -326,6 +345,7 @@ maemo5 {
         src/desktop/imagecache.cpp \
         src/desktop/interfacesettingspage.cpp \
         src/desktop/networksettingspage.cpp \
+        src/desktop/nocaptchadialog.cpp \
         src/desktop/main.cpp \
         src/desktop/mainwindow.cpp \
         src/desktop/package.cpp \

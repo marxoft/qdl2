@@ -19,10 +19,12 @@
 #include "actionmodel.h"
 #include "addurlsdialog.h"
 #include "captchadialog.h"
+#include "captchatype.h"
 #include "clipboardurlsdialog.h"
 #include "concurrenttransfersmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
+#include "nocaptchadialog.h"
 #include "packagepropertiesdialog.h"
 #include "pluginsettingsdialog.h"
 #include "qdl.h"
@@ -565,26 +567,55 @@ void MainWindow::showClipboardUrlsDialog() {
 
 void MainWindow::showCaptchaDialog(TransferItem *t) {
     QPointer<TransferItem> transfer(t);
-    CaptchaDialog dialog(this);
-    dialog.setImage(QImage::fromData(QByteArray::fromBase64(transfer->data(TransferItem::CaptchaImageRole).toByteArray())));
-    dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
-    connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
-    
-    switch (dialog.exec()) {
-    case QDialog::Accepted:
-        if (transfer) {
-            transfer->setData(TransferItem::CaptchaImageRole, dialog.response());
-        }
+    const int captchaType = transfer->data(TransferItem::CaptchaTypeRole).toInt();
+
+    if (captchaType == CaptchaType::NoCaptcha) {
+        NoCaptchaDialog dialog(this);
+        dialog.setHtml(transfer->data(TransferItem::CaptchaDataRole).toString(),
+                transfer->data(TransferItem::UrlRole).toString());
+        dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
+        connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
         
-        break;
-    case QDialog::Rejected:
-        if (transfer) {
-            transfer->setData(TransferItem::CaptchaImageRole, QString());
+        switch (dialog.exec()) {
+        case QDialog::Accepted:
+            if (transfer) {
+                transfer->setData(TransferItem::CaptchaResponseRole, dialog.response());
+            }
+            
+            break;
+        case QDialog::Rejected:
+            if (transfer) {
+                transfer->setData(TransferItem::CaptchaResponseRole, QString());
+            }
+            
+            break;
+        default:
+            break;
         }
+    }
+    else {
+        CaptchaDialog dialog(this);
+        dialog.setImage(QImage::fromData(QByteArray::fromBase64(transfer->data(TransferItem::CaptchaDataRole)
+                        .toByteArray())));
+        dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
+        connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
         
-        break;
-    default:
-        break;
+        switch (dialog.exec()) {
+        case QDialog::Accepted:
+            if (transfer) {
+                transfer->setData(TransferItem::CaptchaResponseRole, dialog.response());
+            }
+            
+            break;
+        case QDialog::Rejected:
+            if (transfer) {
+                transfer->setData(TransferItem::CaptchaResponseRole, QString());
+            }
+            
+            break;
+        default:
+            break;
+        }
     }
 }
 

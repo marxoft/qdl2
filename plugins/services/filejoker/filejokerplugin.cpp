@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,15 +16,12 @@
  */
 
 #include "filejokerplugin.h"
+#include "captchatype.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
 #include <QTimer>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
@@ -32,13 +29,7 @@ const QRegExp FileJokerPlugin::FILE_REGEXP("http(s|)://fs\\d+\\.filejoker\\.net/
 const QRegExp FileJokerPlugin::WAIT_REGEXP("wait (\\d+|)( hour | hours | )(\\d+|)( minute | minutes | )(\\d+|)( second | seconds | )until the next download");
 const QString FileJokerPlugin::LOGIN_URL("https://filejoker.net/login");
 const QString FileJokerPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-#if QT_VERSION >= 0x050000
-const QString FileJokerPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                           + "/.config/qdl2/plugins/qdl2-filejoker");
-#else
-const QString FileJokerPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                           + "/.config/qdl2/plugins/qdl2-filejoker");
-#endif
+
 const int FileJokerPlugin::MAX_REDIRECTS = 8;
 
 FileJokerPlugin::FileJokerPlugin(QObject *parent) :
@@ -58,10 +49,6 @@ QString FileJokerPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-ServicePlugin* FileJokerPlugin::createPlugin(QObject *parent) {
-    return new FileJokerPlugin(parent);
 }
 
 QNetworkAccessManager* FileJokerPlugin::networkAccessManager() {
@@ -94,7 +81,7 @@ bool FileJokerPlugin::cancelCurrentOperation() {
     return true;
 }
 
-void FileJokerPlugin::checkUrl(const QString &url) {
+void FileJokerPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
     QNetworkRequest request(QUrl::fromUserInput(url));
     QNetworkReply *reply = networkAccessManager()->get(request);
@@ -153,10 +140,9 @@ void FileJokerPlugin::checkUrlIsValid() {
     reply->deleteLater();
 }
 
-void FileJokerPlugin::getDownloadRequest(const QString &url) {
+void FileJokerPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
     m_url = QUrl::fromUserInput(url);
-    QSettings settings(CONFIG_FILE, QSettings::IniFormat);
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
@@ -174,11 +160,6 @@ void FileJokerPlugin::getDownloadRequest(const QString &url) {
             passwordMap["label"] = tr("Password");
             passwordMap["key"] = "password";
             list << passwordMap;
-            QVariantMap storeMap;
-            storeMap["type"] = "boolean";
-            storeMap["label"] = tr("Store credentials");
-            storeMap["key"] = "store";
-            list << storeMap;
             emit settingsRequest(tr("Login"), list, "submitLogin");
         }   
         else {
@@ -332,7 +313,7 @@ void FileJokerPlugin::checkWaitTime() {
     else {
         const int secs = response.section("alert-success\">", 1, 1).section('<', 0, 0).toInt();
         m_rand = response.section("rand\" value=\"", 1, 1).section('"', 0, 0);
-        m_recaptchaKey = response.section("google.com/recaptcha/api/challenge?k=", 1, 1).section('"', 0, 0);
+        m_recaptchaKey = response.section("data-sitekey=\"", 1, 1).section('"', 0, 0);
         
         if ((secs <= 0) || (m_rand.isEmpty()) || (m_recaptchaKey.isEmpty())) {
             emit error(tr("Unknown error"));
@@ -399,7 +380,7 @@ void FileJokerPlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else if (response.contains("Wrong Captcha")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
     else {
         emit error(tr("Unknown error"));
@@ -413,7 +394,7 @@ void FileJokerPlugin::sendCaptchaRequest() {
         emit error(tr("No captcha key found"));
     }
     else {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
     }
 }
 
@@ -423,12 +404,6 @@ void FileJokerPlugin::submitLogin(const QVariantMap &credentials) {
         const QString password = credentials.value("password").toString();
 
         if ((!username.isEmpty()) && (!password.isEmpty())) {
-            if (credentials.value("store", false).toBool()) {
-                QSettings settings(CONFIG_FILE, QSettings::IniFormat);
-                settings.setValue("Account/username", username);
-                settings.setValue("Account/password", password);
-            }
-            
             login(username, password);
             return;
         }
@@ -479,6 +454,10 @@ void FileJokerPlugin::stopWaitTimer() {
     }
 }
 
+ServicePlugin* FileJokerPluginFactory::createPlugin(QObject *parent) {
+    return new FileJokerPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-filejoker, FileJokerPlugin)
+Q_EXPORT_PLUGIN2(qdl2-filejoker, FileJokerPluginFactory)
 #endif

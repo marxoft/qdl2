@@ -17,6 +17,7 @@
 
 #include "searchpluginmanager.h"
 #include "definitions.h"
+#include "javascriptpluginengine.h"
 #include "javascriptsearchplugin.h"
 #include "logger.h"
 #include <QDir>
@@ -56,44 +57,47 @@ SearchPluginList SearchPluginManager::plugins() const {
 SearchPluginConfig* SearchPluginManager::getConfigById(const QString &id) const {
     foreach (const SearchPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("SearchPluginManager::getConfigById(). PluginFound: " + id, Logger::HighVerbosity);
+            Logger::log("SearchPluginManager::getConfigById(). Config found: " + id, Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("SearchPluginManager::getConfigById(). No Plugin found for id " + id, Logger::HighVerbosity);
+    Logger::log("SearchPluginManager::getConfigById(). No config found for id " + id, Logger::HighVerbosity);
     return 0;
 }
 
 SearchPluginConfig* SearchPluginManager::getConfigByFilePath(const QString &filePath) const {
     foreach (const SearchPluginPair &pair, m_plugins) {
         if (pair.config->filePath() == filePath) {
-            Logger::log("SearchPluginManager::getConfigByFilePath(). PluginFound: " + pair.config->id(),
+            Logger::log("SearchPluginManager::getConfigByFilePath(). Config found: " + pair.config->id(),
                         Logger::HighVerbosity);
             return pair.config;
         }
     }
     
-    Logger::log("SearchPluginManager::getConfigByFilePath(). No Plugin found for filePath " + filePath,
+    Logger::log("SearchPluginManager::getConfigByFilePath(). No config found for filePath " + filePath,
                 Logger::HighVerbosity);
     return 0;
 }
 
-SearchPlugin* SearchPluginManager::getPluginById(const QString &id) const {
+SearchPluginFactory* SearchPluginManager::getFactoryById(const QString &id) const {
     foreach (const SearchPluginPair &pair, m_plugins) {
         if (pair.config->id() == id) {
-            Logger::log("SearchPluginManager::getPluginById(). PluginFound: " + id, Logger::HighVerbosity);
-            return pair.plugin;
+            Logger::log("SearchPluginManager::getFactoryById(). Factory found: " + id, Logger::HighVerbosity);
+            return pair.factory;
         }
     }
     
-    Logger::log("SearchPluginManager::getPluginById(). No Plugin found for id ", Logger::HighVerbosity);
+    Logger::log("SearchPluginManager::getFactoryById(). No factory found for id ", Logger::HighVerbosity);
     return 0;
 }
 
-SearchPlugin* SearchPluginManager::createPluginById(const QString &id, QObject *parent) const {
-    if (SearchPlugin *plugin = getPluginById(id)) {
-        return plugin->createPlugin(parent);
+SearchPlugin* SearchPluginManager::createPluginById(const QString &id, QObject *parent) {
+    if (SearchPluginFactory *factory = getFactoryById(id)) {
+        if (SearchPlugin *plugin = factory->createPlugin(parent)) {
+            plugin->setNetworkAccessManager(networkAccessManager());
+            return plugin;
+        }
     }
 
     return 0;
@@ -121,9 +125,9 @@ int SearchPluginManager::load() {
                     
                     if (config->load(info.absoluteFilePath())) {
                         if (config->pluginType() == "js") {
-                            JavaScriptSearchPlugin *js =
-                            new JavaScriptSearchPlugin(config->id(), config->pluginFilePath(), this);
-                            js->setNetworkAccessManager(networkAccessManager());
+                            JavaScriptSearchPluginFactory *js =
+                                new JavaScriptSearchPluginFactory(config->pluginFilePath(),
+                                        JavaScriptPluginEngine::instance(), this);
                             m_plugins << SearchPluginPair(config, js);
                             ++count;
                             Logger::log("SearchPluginManager::load(). JavaScript plugin loaded: "
@@ -134,9 +138,8 @@ int SearchPluginManager::load() {
                             QObject *obj = loader.instance();
                             
                             if (obj) {
-                                if (SearchPlugin *plugin = qobject_cast<SearchPlugin*>(obj)) {
-                                    plugin->setNetworkAccessManager(networkAccessManager());
-                                    m_plugins << SearchPluginPair(config, plugin);
+                                if (SearchPluginFactory *factory = qobject_cast<SearchPluginFactory*>(obj)) {
+                                    m_plugins << SearchPluginPair(config, factory);
                                     ++count;
                                     Logger::log("SearchPluginManager::load(). Qt Plugin loaded: "
                                                 + config->id(), Logger::MediumVerbosity);

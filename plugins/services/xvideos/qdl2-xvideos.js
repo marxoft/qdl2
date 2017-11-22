@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -11,82 +11,88 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var request = null;
+(function() {
+    var request = null;
+    var plugin = new ServicePlugin();
 
-function checkUrl(url) {
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var title = /html5player\.setVideoTitle\('([^']+)'\)/.exec(request.responseText)[1];
+    plugin.checkUrl = function(url) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var title = /html5player\.setVideoTitle\('([^']+)'\)/.exec(request.responseText)[1];
 
-                if (title) {
-                    urlChecked(new UrlResult(url, title + ".mp4"));
+                    if (title) {
+                        plugin.urlChecked(new UrlResult(url, title + ".mp4"));
+                    }
+                    else {
+                        plugin.error(qsTr("File not found"));
+                    }
                 }
-                else {
-                    error(qsTr("File not found"));
+                catch(err) {
+                    plugin.error(err);
                 }
-            }
-            catch(err) {
-                error(err);
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function getDownloadRequest(url) {
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            try {
-                var lowUrl = /html5player\.setVideoUrlLow\('([^']+)'\)/.exec(request.responseText)[1];
-                var highUrl = /html5player\.setVideoUrlHigh\('([^']+)'\)/.exec(request.responseText)[1];
+    plugin.getDownloadRequest = function(url, settings) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                try {
+                    var lowUrl = /html5player\.setVideoUrlLow\('([^']+)'\)/.exec(request.responseText)[1];
+                    var highUrl = /html5player\.setVideoUrlHigh\('([^']+)'\)/.exec(request.responseText)[1];
 
-                if ((lowUrl) && (highUrl)) {
-                    var format = settings.value("videoFormat", "mp4");
+                    if ((lowUrl) && (highUrl)) {
+                        var format = settings.videoFormat || "mp4";
 
-                    if (settings.value("useDefaultVideoFormat", true) == true) {
-                        if ((format == "mp4") && (highUrl)) {
-                            downloadRequest(new NetworkRequest(highUrl));
+                        if (settings.useDefaultVideoFormat) {
+                            if ((format == "mp4") && (highUrl)) {
+                                plugin.downloadRequest(new NetworkRequest(highUrl));
+                            }
+                            else if (lowUrl) {
+                                plugin.downloadRequest(new NetworkRequest(lowUrl));
+                            }
                         }
-                        else if (lowUrl) {
-                            downloadRequest(new NetworkRequest(lowUrl));
+                        else {
+                            var settingsList = [];
+                            var formatList = {"type": "list", "label": qsTr("Video format"), "key": "url"};
+                            formatList["value"] = (format == "mp4" ? highUrl : lowUrl);
+                            formatList["options"] = [{"label": "MP4", "value": highUrl},
+                                                     {"label": "3GP", "value": lowUrl}];
+                            plugin.settingsRequest(qsTr("Video format"), [formatList],
+                                            function (f) { plugin.downloadRequest(new NetworkRequest(f.url)); });
                         }
                     }
                     else {
-                        var settingsList = [];
-                        var formatList = {"type": "list", "label": qsTr("Video format"), "key": "url"};
-                        formatList["value"] = (format == "mp4" ? highUrl : lowUrl);
-                        formatList["options"] = [{"label": "MP4", "value": highUrl},
-                                                 {"label": "3GP", "value": lowUrl}];
-                        settingsRequest(qsTr("Video format"), [formatList],
-                                        function (f) { downloadRequest(new NetworkRequest(f.url)); });
+                        plugin.error(qsTr("No video streams found"));
                     }
                 }
-                else {
-                    error(qsTr("No video streams found"));
+                catch(err) {
+                    plugin.error(err)
                 }
             }
-            catch(err) {
-                error(err)
-            }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-    }
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
 
-    return true;
-}
+        return true;
+    };
+
+    return plugin;
+})

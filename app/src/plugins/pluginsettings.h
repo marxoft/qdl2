@@ -39,6 +39,9 @@ public Q_SLOTS:
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
     void setValue(const QString &key, const QVariant &value);
 
+    QVariantMap values() const;
+    void setValues(const QVariantMap &values);
+
 Q_SIGNALS:
     void changed();
 

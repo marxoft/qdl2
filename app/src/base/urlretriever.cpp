@@ -113,7 +113,9 @@ void UrlRetriever::start(const QString &url, const QString &pluginId) {
     setUrl(url);
     setPluginId(pluginId);
     m_redirects = 0;
-    m_reply = m_nam->get(QNetworkRequest(QUrl::fromUserInput(url)));
+    QNetworkRequest request(QUrl::fromUserInput(url));
+    request.setRawHeader("User-Agent", USER_AGENT);
+    m_reply = m_nam->get(request);
     connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
 }
 
@@ -127,7 +129,9 @@ void UrlRetriever::followRedirect(const QUrl &url) {
     Logger::log("UrlRetriever::followRedirect(): " + url.toString(), Logger::MediumVerbosity);
     setStatus(Active);
     m_redirects++;
-    m_reply = m_nam->get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", USER_AGENT);
+    m_reply = m_nam->get(request);
     connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
 }
 

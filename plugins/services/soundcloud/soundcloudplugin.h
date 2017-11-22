@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,22 +31,15 @@ class SoundCloudPlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.SoundCloudPlugin")
-#endif
-
 public:
     explicit SoundCloudPlugin(QObject *parent = 0);
-
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
 
     void submitFormat(const QVariantMap &format);
 
@@ -55,12 +48,25 @@ private Q_SLOTS:
     void onStreamsRequestFinished();
     
 private:
-    static const QString CONFIG_FILE;
     static const QString CLIENT_ID;
     static const QStringList AUDIO_FORMATS;
     
     QSoundCloud::ResourcesRequest *m_resourcesRequest;
     QSoundCloud::StreamsRequest *m_streamsRequest;
+
+    QVariantMap m_settings;
+};
+
+class SoundCloudPluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.SoundCloudPluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // SOUNDCLOUDPLUGIN_H

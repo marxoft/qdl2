@@ -43,6 +43,7 @@ SUBDIRS = \
     vpornex \
     wenoo \
     xhamster \
+    xopenload \
     xvideos \
     youtube \
     zippyshare

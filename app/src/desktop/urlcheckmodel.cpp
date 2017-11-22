@@ -15,17 +15,17 @@
  */
 
 #include "urlcheckmodel.h"
+#include "captchatype.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "logger.h"
+#include "pluginsettings.h"
 #include "recaptchapluginmanager.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "transfermodel.h"
 #include "utils.h"
-#include <QBuffer>
 #include <QIcon>
-#include <QImage>
 #include <QTimer>
 
 UrlCheckModel* UrlCheckModel::self = 0;
@@ -33,6 +33,10 @@ UrlCheckModel* UrlCheckModel::self = 0;
 UrlCheckModel::UrlCheckModel() :
     QAbstractListModel(),
     m_timer(0),
+    m_servicePlugin(0),
+    m_recaptchaPlugin(0),
+    m_decaptchaPlugin(0),
+    m_captchaType(CaptchaType::Unknown),
     m_status(Idle),
     m_reportCaptchaError(false),
     m_index(-1),
@@ -55,20 +59,43 @@ UrlCheckModel* UrlCheckModel::instance() {
     return self ? self : self = new UrlCheckModel;
 }
 
-QByteArray UrlCheckModel::captchaImage() const {
-    return m_captchaImageData;
+int UrlCheckModel::captchaType() const {
+    return m_captchaType;
 }
 
-void UrlCheckModel::setCaptchaImage(const QImage &image) {
-    QByteArray ba;
-    QBuffer buffer(&ba);
-    buffer.open(QBuffer::WriteOnly);
-    image.save(&buffer, "JPEG");
-    m_captchaImageData = ba.toBase64();
+QString UrlCheckModel::captchaTypeString() const {
+    switch (captchaType()) {
+    case CaptchaType::Image:
+        return tr("Image");
+    case CaptchaType::NoCaptcha:
+        return tr("NoCaptcha");
+    default:
+        return tr("Unknown");
+    }
 }
 
-void UrlCheckModel::clearCaptchaImage() {
-    m_captchaImageData.clear();
+QByteArray UrlCheckModel::captchaData() const {
+    return m_captchaData;
+}
+
+void UrlCheckModel::setCaptchaData(int captchaType, const QByteArray &captchaData) {
+    m_captchaType = captchaType;
+
+    if (captchaType == CaptchaType::NoCaptcha) {
+        m_captchaChallenge.clear();
+        m_captchaData = captchaData;
+    }
+    else {
+        const int newline = captchaData.indexOf("\n");
+        m_captchaChallenge = QString::fromUtf8(captchaData.left(newline));
+        m_captchaData = captchaData.mid(newline + 1);
+    }
+}
+
+void UrlCheckModel::clearCaptchaData() {
+    m_captchaType = CaptchaType::Unknown;
+    m_captchaChallenge.clear();
+    m_captchaData.clear();
 }
 
 int UrlCheckModel::captchaTimeout() const {
@@ -105,7 +132,8 @@ QVariantList UrlCheckModel::requestedSettings() const {
     return m_requestedSettings;
 }
 
-void UrlCheckModel::setRequestedSettings(const QString &title, const QVariantList &settings, const QByteArray &callback) {
+void UrlCheckModel::setRequestedSettings(const QString &title, const QVariantList &settings,
+        const QByteArray &callback) {
     m_requestedSettingsTitle = title;
     m_requestedSettings = settings;
     m_callback = callback;
@@ -308,7 +336,7 @@ QVariantMap UrlCheckModel::itemData(int row) const {
 }
 
 QModelIndexList UrlCheckModel::match(const QModelIndex &start, int role, const QVariant &value, int hits,
-                                      Qt::MatchFlags flags) const {
+        Qt::MatchFlags flags) const {
     return QAbstractListModel::match(start, role, value, hits, flags);
 }
 
@@ -372,7 +400,6 @@ bool UrlCheckModel::submitCaptchaResponse(const QString &response) {
     }
 
     setStatus(Active);
-    clearCaptchaImage();
     stopWaitTimer();
 
     if (response.isEmpty()) {
@@ -386,11 +413,13 @@ bool UrlCheckModel::submitCaptchaResponse(const QString &response) {
     }
 
     if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString, m_captchaChallenge),
-                                   Q_ARG(QString, response))) {
+                Q_ARG(QString, response))) {
         onError(tr("Invalid captcha callback method"));
+        clearCaptchaData();
         return false;
     }
 
+    clearCaptchaData();
     return true;
 }
 
@@ -469,15 +498,18 @@ bool UrlCheckModel::initDecaptchaPlugin(const QString &pluginId) {
         return true;
     }
 
-    m_decaptchaPlugin = DecaptchaPluginManager::instance()->getPluginById(pluginId);
+    m_decaptchaPluginId = pluginId;
+    m_decaptchaPlugin = DecaptchaPluginManager::instance()->createPluginById(pluginId, this);
 
     if (!m_decaptchaPlugin) {
         Logger::log("UrlCheckModel::initDecaptchaPlugin(): No plugin found for " + pluginId);
         return false;
     }
 
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponse(QString, QString)), this, SLOT(onCaptchaResponse(QString, QString)));
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponseReported(QString)), this, SLOT(onCaptchaResponseReported(QString)));
+    connect(m_decaptchaPlugin, SIGNAL(captchaResponse(QString, QString)),
+            this, SLOT(onCaptchaResponse(QString, QString)));
+    connect(m_decaptchaPlugin, SIGNAL(captchaResponseReported(QString)),
+            this, SLOT(onCaptchaResponseReported(QString)));
     connect(m_decaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onError(QString)));
     connect(m_decaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
             this, SLOT(onDecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
@@ -489,14 +521,15 @@ bool UrlCheckModel::initRecaptchaPlugin(const QString &pluginId) {
         return true;
     }
 
-    m_recaptchaPlugin = RecaptchaPluginManager::instance()->getPluginById(pluginId);
+    m_recaptchaPluginId = pluginId;
+    m_recaptchaPlugin = RecaptchaPluginManager::instance()->createPluginById(pluginId, this);
 
     if (!m_recaptchaPlugin) {
         Logger::log("UrlCheckModel::initRecaptchaPlugin(): No plugin found for " + pluginId);
         return false;
     }
 
-    connect(m_recaptchaPlugin, SIGNAL(captcha(QString, QImage)), this, SLOT(onCaptchaReady(QString, QImage)));
+    connect(m_recaptchaPlugin, SIGNAL(captcha(int, QByteArray)), this, SLOT(onCaptchaReady(int, QByteArray)));
     connect(m_recaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onError(QString)));
     connect(m_recaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
             this, SLOT(onRecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
@@ -508,41 +541,74 @@ bool UrlCheckModel::initServicePlugin(const QString &url) {
         return true;
     }
     
-    m_servicePlugin = ServicePluginManager::instance()->getPluginByUrl(url);
+    const ServicePluginConfig *config = ServicePluginManager::instance()->getConfigByUrl(url);
+
+    if (!config) {
+        Logger::log("UrlCheckModel::initServicePlugin(): No config found for " + url);
+        return false;
+    }
+
+    m_servicePlugin = ServicePluginManager::instance()->createPluginByUrl(url, this);
 
     if (!m_servicePlugin) {
         Logger::log("UrlCheckModel::initServicePlugin(): No plugin found for " + url);
         return false;
     }
 
-    connect(m_servicePlugin, SIGNAL(captchaRequest(QString, QString, QByteArray)),
-            this, SLOT(onCaptchaRequest(QString, QString, QByteArray)));
+    m_servicePluginId = config->id();
+    connect(m_servicePlugin, SIGNAL(captchaRequest(QString, int, QString, QByteArray)),
+            this, SLOT(onCaptchaRequest(QString, int, QString, QByteArray)));
     connect(m_servicePlugin, SIGNAL(error(QString)), this, SLOT(onError(QString)));
     connect(m_servicePlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
             this, SLOT(onServiceSettingsRequest(QString, QVariantList, QByteArray)));
     connect(m_servicePlugin, SIGNAL(urlChecked(UrlResult)), this, SLOT(onUrlChecked(UrlResult)));
-    connect(m_servicePlugin, SIGNAL(urlChecked(UrlResultList, QString)), this, SLOT(onUrlChecked(UrlResultList, QString)));
+    connect(m_servicePlugin, SIGNAL(urlChecked(UrlResultList, QString)),
+            this, SLOT(onUrlChecked(UrlResultList, QString)));
     return true;
 }
 
 void UrlCheckModel::clearPlugins() {
     if (m_decaptchaPlugin) {
         m_decaptchaPlugin->cancelCurrentOperation();
-        disconnect(m_decaptchaPlugin, 0, this, 0);
+        m_decaptchaPlugin->deleteLater();
         m_decaptchaPlugin = 0;
+        m_decaptchaPluginId = QString();
     }
 
     if (m_recaptchaPlugin) {
         m_recaptchaPlugin->cancelCurrentOperation();
-        disconnect(m_recaptchaPlugin, 0, this, 0);
+        m_recaptchaPlugin->deleteLater();
         m_recaptchaPlugin = 0;
+        m_recaptchaPluginId = QString();
     }
 
     if (m_servicePlugin) {
         m_servicePlugin->cancelCurrentOperation();
-        disconnect(m_servicePlugin, 0, this, 0);
+        m_servicePlugin->deleteLater();
         m_servicePlugin = 0;
+        m_servicePluginId = QString();
     }
+}
+
+bool UrlCheckModel::isRedirect(const QString &url) const {
+    if (const ServicePluginConfig *config = ServicePluginManager::instance()->getConfigByUrl(url)) {
+        if (config->id() != m_servicePluginId) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void UrlCheckModel::followRedirect(const QString &url) {
+    clearPlugins();
+
+    if (!initServicePlugin(url)) {
+        onError(tr("No service plugin found"));
+        return;
+    }
+
+    m_servicePlugin->checkUrl(url, PluginSettings(m_servicePluginId).values());
 }
 
 void UrlCheckModel::next() {
@@ -564,7 +630,7 @@ void UrlCheckModel::next() {
         return;
     }
 
-    m_servicePlugin->checkUrl(url);
+    m_servicePlugin->checkUrl(url, PluginSettings(m_servicePluginId).values());
 }
 
 void UrlCheckModel::onUrlChecked(const UrlResult &result) {
@@ -572,8 +638,15 @@ void UrlCheckModel::onUrlChecked(const UrlResult &result) {
         return;
     }
 
+    if (isRedirect(result.url)) {
+        Logger::log(QString("UrlCheckModel::onUrlChecked(): %1. Following redirect: %2").arg(m_items[m_index].url)
+                .arg(result.url), Logger::MediumVerbosity);
+        followRedirect(result.url);
+        return;
+    }
+
     Logger::log(QString("UrlCheckModel::onUrlChecked(): %1 1 URL found").arg(m_items[m_index].url),
-                Logger::MediumVerbosity);
+            Logger::MediumVerbosity);
     m_items[m_index].checked = true;
     m_items[m_index].ok = true;
     const QModelIndex idx = index(m_index, 1);
@@ -588,7 +661,7 @@ void UrlCheckModel::onUrlChecked(const UrlResultList &results, const QString &pa
     }
 
     Logger::log(QString("UrlCheckModel::onUrlChecked(): %1. %2 URLs found")
-                       .arg(m_items[m_index].url).arg(results.size()), Logger::MediumVerbosity);
+            .arg(m_items[m_index].url).arg(results.size()), Logger::MediumVerbosity);
     m_items[m_index].checked = true;
     m_items[m_index].ok = !results.isEmpty();
     const QModelIndex idx = index(m_index, 1);
@@ -601,32 +674,26 @@ void UrlCheckModel::onUrlChecked(const UrlResultList &results, const QString &pa
     next();
 }
 
-void UrlCheckModel::onCaptchaReady(const QString &challenge, const QImage &image) {
-    if (image.isNull()) {
-        onError(tr("Invalid captcha image"));
-        return;
-    }
-
-    m_captchaChallenge = challenge;
+void UrlCheckModel::onCaptchaReady(int type, const QByteArray &data) {
+    setCaptchaData(type, data);
     const QString pluginId = Settings::decaptchaPlugin();
     
     if (!pluginId.isEmpty()) {
         if (initDecaptchaPlugin(pluginId)) {
             m_reportCaptchaError = true;
-            m_decaptchaPlugin->getCaptchaResponse(image);
+            m_decaptchaPlugin->getCaptchaResponse(captchaType(), captchaData(), PluginSettings(pluginId).values());
             return;
         }
     }
 
     m_reportCaptchaError = false;
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateCaptchaTimeout()));
-    setCaptchaImage(image);
     setStatus(AwaitingCaptchaResponse);
-    captchaRequest(image);
+    captchaRequest(captchaType(), captchaData());
 }
 
-void UrlCheckModel::onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey,
-                                     const QByteArray &callback) {
+void UrlCheckModel::onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
+        const QByteArray &callback) {
     Logger::log("UrlCheckModel::onCaptchaRequest()", Logger::MediumVerbosity);
 
     if (!initRecaptchaPlugin(recaptchaPluginId)) {
@@ -635,9 +702,10 @@ void UrlCheckModel::onCaptchaRequest(const QString &recaptchaPluginId, const QSt
     }
 
     setStatus(Active);
-    m_recaptchaKey = recaptchaKey;
+    m_captchaType = captchaType;
+    m_captchaKey = captchaKey;
     m_callback = callback;
-    m_recaptchaPlugin->getCaptcha(recaptchaKey);
+    m_recaptchaPlugin->getCaptcha(captchaType, captchaKey, PluginSettings(recaptchaPluginId).values());
 }
 
 void UrlCheckModel::onCaptchaResponse(const QString &captchaId, const QString &response) {
@@ -649,10 +717,13 @@ void UrlCheckModel::onCaptchaResponse(const QString &captchaId, const QString &r
     m_decaptchaId = captchaId;
     m_captchaResponse = response;
 
-    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString, m_captchaChallenge),
-                                   Q_ARG(QString, response))) {
+    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString,
+                    captchaType() == CaptchaType::NoCaptcha ? QString::fromUtf8(captchaData()) : m_captchaChallenge),
+                Q_ARG(QString, response))) {
         onError(tr("Invalid captcha callback method"));
     }
+
+    clearCaptchaData();
 }
 
 void UrlCheckModel::onCaptchaResponseReported(const QString &) {
@@ -661,11 +732,11 @@ void UrlCheckModel::onCaptchaResponseReported(const QString &) {
         return;
     }
 
-    m_recaptchaPlugin->getCaptcha(m_recaptchaKey);
+    m_recaptchaPlugin->getCaptcha(captchaType(), m_captchaKey, PluginSettings(m_recaptchaPluginId).values());
 }
 
 void UrlCheckModel::onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
-                                               const QByteArray &callback) {
+        const QByteArray &callback) {
     Logger::log("UrlCheckModel::onDecaptchaSettingsRequest()", Logger::MediumVerbosity);
     setRequestedSettings(title, settings, callback);
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
@@ -674,7 +745,7 @@ void UrlCheckModel::onDecaptchaSettingsRequest(const QString &title, const QVari
 }
 
 void UrlCheckModel::onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
-                                               const QByteArray &callback) {
+        const QByteArray &callback) {
     Logger::log("UrlCheckModel::onRecaptchaSettingsRequest()", Logger::MediumVerbosity);
     setRequestedSettings(title, settings, callback);
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
@@ -683,7 +754,7 @@ void UrlCheckModel::onRecaptchaSettingsRequest(const QString &title, const QVari
 }
 
 void UrlCheckModel::onServiceSettingsRequest(const QString &title, const QVariantList &settings,
-                                             const QByteArray &callback) {
+        const QByteArray &callback) {
     Logger::log("UrlCheckModel::onServiceSettingsRequest()", Logger::MediumVerbosity);
     setRequestedSettings(title, settings, callback);
     startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -28,24 +28,17 @@ class Vbox7Plugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.Vbox7Plugin")
-#endif
-
 public:
     explicit Vbox7Plugin(QObject *parent = 0);
-
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
     
     void submitVideoFormat(const QVariantMap &format);
 
@@ -64,7 +57,6 @@ private:
 
     void followRedirect(const QString &url, const char* slot);
 
-    static const QString CONFIG_FILE;
     static const QString BASE_URL;
 
     static const QByteArray USER_AGENT;
@@ -77,9 +69,23 @@ private:
     
     QString m_url;
 
+    QVariantMap m_settings;
+
     int m_redirects;
 
     bool m_ownManager;
+};
+
+class Vbox7PluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.Vbox7PluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // VBOX7PLUGIN_H

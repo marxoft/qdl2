@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,22 +31,15 @@ class YouTubePlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.YouTubePlugin")
-#endif
-
 public:
     explicit YouTubePlugin(QObject *parent = 0);
-
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
 
     void submitFormat(const QVariantMap &format);
 
@@ -58,7 +51,6 @@ Q_SIGNALS:
     void currentOperationCanceled();
     
 private:
-    static const QString CONFIG_FILE;
     static const QString API_KEY;
     static const QString CLIENT_ID;
     static const QString CLIENT_SECRET;
@@ -70,6 +62,19 @@ private:
     UrlResultList m_results;
     QVariantMap m_filters;
     QVariantMap m_params;
+    QVariantMap m_settings;
+};
+
+class YouTubePluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.YouTubePluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // YOUTUBEPLUGIN_H

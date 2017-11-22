@@ -11,146 +11,150 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var request = null;
+(function() {
+    var request = null;
+    var plugin = new ServicePlugin();
 
-function checkUrl(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            try {
-                var fileName = /"og:title" content="([^"]+)/.exec(request.responseText)[1];
-                urlChecked(new UrlResult(url, fileName));
-            }
-            catch(e) {
-                error(e);
+    plugin.checkUrl = function(url) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                try {
+                    var fileName = /"og:title" content="([^"]+)/.exec(request.responseText)[1].trim();
+                    plugin.urlChecked(new UrlResult(url, fileName));
+                }
+                catch(e) {
+                    plugin.error(e);
+                }
             }
         }
-    }
 
-    request.open("GET", url);
-    request.send();
-}
+        request.open("GET", url);
+        request.send();
+    };
 
-function getDownloadRequest(url) {
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            try {
-                var response = request.responseText;
-
+    plugin.getDownloadRequest = function(url, settings) {
+        request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
                 try {
-                    var sources = JSON.parse(/"sources": (\[[^\]]+\])/.exec(response)[1]);
+                    var response = request.responseText;
 
-                    if (!sources.length) {
-                        error(qsTr("No video formats found"));
-                        return;
-                    }
+                    try {
+                        var sources = JSON.parse(/"sources": (\[[^\]]+\])/.exec(response)[1]);
 
-                    if (settings.value("useDefaultFormat", false) === true) {
-                        var format = settings.value("format", "1080");
+                        if (!sources.length) {
+                            plugin.error(qsTr("No video formats found"));
+                            return;
+                        }
+
+                        if (settings.useDefaultFormat) {
+                            var format = settings.format || "1080";
+
+                            for (var i = sources.length - 1; i >= 0; i--) {
+                                var source = sources[i];
+
+                                if (source.res == format) {
+                                    plugin.downloadRequest(new NetworkRequest(source.file));
+                                    return;
+                                }
+                            }
+
+                            plugin.downloadRequest(new NetworkRequest(sources[0].file));
+                            return;
+                        }
+
+                        var options = [];
 
                         for (var i = sources.length - 1; i >= 0; i--) {
                             var source = sources[i];
-
-                            if (source.res == format) {
-                                downloadRequest(new NetworkRequest(source.file));
-                                return;
-                            }
+                            options.push({"label": source.res + "P", "value": source.file});
                         }
 
-                        downloadRequest(new NetworkRequest(sources[0].file));
-                        return;
+                        plugin.settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
+                            "label": qsTr("Video format"), "options": options, "value": options[0].value}],
+                            function (conf) { plugin.downloadRequest(new NetworkRequest(conf.url)); });
                     }
+                    catch(e) {
+                        var sources = response.split("<source ");
 
-                    var options = [];
+                        if (sources.length < 2) {
+                            plugin.error(qsTr("No video formats found"));
+                            return;
+                        }
 
-                    for (var i = sources.length - 1; i >= 0; i--) {
-                        var source = sources[i];
-                        options.push({"label": source.res + "P", "value": source.file});
-                    }
+                        if (settings.useDefaultFormat) {
+                            var format = settings.format || "1080";
 
-                    settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
-                        "label": qsTr("Video format"), "options": options, "value": options[0].value}],
-                        function (conf) { downloadRequest(new NetworkRequest(conf.url)); });
-                }
-                catch(e) {
-                    var sources = response.split("<source ");
+                            for (var i = sources.length - 1; i > 0; i--) {
+                                var source = sources[i];
+                                var res = /data-res="([^"]+)/.exec(source)[1];
 
-                    if (sources.length < 2) {
-                        error(qsTr("No video formats found"));
-                        return;
-                    }
+                                if (res == format) {
+                                    var src = /src="([^"]+)/.exec(source)[1];
 
-                    if (settings.value("useDefaultFormat", false) === true) {
-                        var format = settings.value("format", "1080");
+                                    if (src) {
+                                        plugin.downloadRequest(new NetworkRequest(src));
+                                        return;
+                                    }
+                                }
+                            }
+
+                            var src = /src="([^"]+)/.exec(sources[1])[1];
+
+                            if (src) {
+                                plugin.downloadRequest(new NetworkRequest(src));
+                            }
+                            else {
+                                plugin.error(qsTr("No video formats found"));
+                            }
+
+                            return;
+                        }
+
+                        var options = [];
 
                         for (var i = sources.length - 1; i > 0; i--) {
                             var source = sources[i];
                             var res = /data-res="([^"]+)/.exec(source)[1];
+                            var src = /src="([^"]+)/.exec(source)[1];
 
-                            if (res == format) {
-                                var src = /src="([^"]+)/.exec(source)[1];
-
-                                if (src) {
-                                    downloadRequest(new NetworkRequest(src));
-                                    return;
-                                }
+                            if ((res) && (src)) {
+                                options.push({"label": res + "P", "value": src});
                             }
                         }
 
-                        var src = /src="([^"]+)/.exec(sources[1])[1];
-
-                        if (src) {
-                            downloadRequest(new NetworkRequest(src));
-                        }
-                        else {
-                            error(qsTr("No video formats found"));
+                        if (!options.length) {
+                            plugin.error(qsTr("No video formats found"));
+                            return;
                         }
 
-                        return;
+                        plugin.settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
+                            "label": qsTr("Video format"), "options": options, "value": options[0].value}],
+                            function (conf) { plugin.downloadRequest(new NetworkRequest(conf.url)); });
                     }
-
-                    var options = [];
-
-                    for (var i = sources.length - 1; i > 0; i--) {
-                        var source = sources[i];
-                        var res = /data-res="([^"]+)/.exec(source)[1];
-                        var src = /src="([^"]+)/.exec(source)[1];
-
-                        if ((res) && (src)) {
-                            options.push({"label": res + "P", "value": src});
-                        }
-                    }
-
-                    if (!options.length) {
-                        error(qsTr("No video formats found"));
-                        return;
-                    }
-
-                    settingsRequest(qsTr("Choose video format"), [{"type": "list", "key": "url",
-                        "label": qsTr("Video format"), "options": options, "value": options[0].value}],
-                        function (conf) { downloadRequest(new NetworkRequest(conf.url)); });
+                }
+                catch(e) {
+                    plugin.error(e);
                 }
             }
-            catch(e) {
-                error(e);
-            }
         }
-    }
 
-    request.open("GET", url + "&q=0p");
-    request.send();
-}
+        request.open("GET", url + "&q=0p");
+        request.send();
+    };
 
-function cancelCurrentOperation() {
-    if (request) {
-        request.abort();
-        request = null;
-    }
+    plugin.cancelCurrentOperation = function() {
+        if (request) {
+            request.abort();
+            request = null;
+        }
 
-    return true;
-}
+        return true;
+    };
 
+    return plugin;
+})

@@ -30,8 +30,6 @@ class JavaScriptPluginGlobalObject : public QObject
 public:
     explicit JavaScriptPluginGlobalObject(QScriptEngine *engine);
     
-    void setNetworkAccessManager(QNetworkAccessManager *manager);
-
 public Q_SLOTS:
     QString atob(const QString &ascii) const;
     QString btoa(const QString &binary) const;
@@ -42,10 +40,14 @@ public Q_SLOTS:
     void setInterval(const QScriptValue &function, int msecs);
     void setTimeout(const QScriptValue &function, int msecs);
 
-protected:
-    QPointer<QScriptEngine> m_engine;
-
 private:
+    static QScriptValue newDecaptchaPlugin(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newRecaptchaPlugin(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newSearchPlugin(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newServicePlugin(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newNetworkRequest(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newSearchResult(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue newUrlResult(QScriptContext *context, QScriptEngine *engine);
     static QScriptValue newXMLHttpRequest(QScriptContext *context, QScriptEngine *engine);
     
     QNetworkAccessManager* networkAccessManager();
@@ -53,8 +55,10 @@ private:
     bool callFunction(QScriptValue function) const;
         
     virtual void timerEvent(QTimerEvent *event);
+
+    QPointer<QScriptEngine> m_engine;
     
-    QPointer<QNetworkAccessManager> m_nam;
+    QNetworkAccessManager *m_nam;
     
     QHash<int, QScriptValue> m_intervals;
     QHash<int, QScriptValue> m_timeouts;

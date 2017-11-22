@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -18,22 +18,11 @@
 #include "youtubesearchplugin.h"
 #include <qyoutube/resourcesrequest.h>
 #include <QDateTime>
-#include <QSettings>
 #include <QStringList>
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-#if QT_VERSION >= 0x050000
-const QString YouTubeSearchPlugin::CONFIG_FILE(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-youtubesearch");
-#else
-const QString YouTubeSearchPlugin::CONFIG_FILE(QDesktopServices::storageLocation(QDesktopServices::HomeLocation)
-                                         + "/.config/qdl2/plugins/qdl2-youtubesearch");
-#endif
 const QString YouTubeSearchPlugin::API_KEY("AIzaSyDhIlkLzHJKDCNr6thsjlQpZrkY3lO_Uu4");
 const QString YouTubeSearchPlugin::CLIENT_ID("957843447749-ur7hg6de229ug0svjakaiovok76s6ecr.apps.googleusercontent.com");
 const QString YouTubeSearchPlugin::CLIENT_SECRET("dDs2_WwgS16LZVuzqA9rIg-I");
@@ -44,10 +33,6 @@ YouTubeSearchPlugin::YouTubeSearchPlugin(QObject *parent) :
     SearchPlugin(parent),
     m_request(0)
 {
-}
-
-SearchPlugin* YouTubeSearchPlugin::createPlugin(QObject *parent) {
-    return new YouTubeSearchPlugin(parent);
 }
 
 bool YouTubeSearchPlugin::cancelCurrentOperation() {
@@ -63,9 +48,8 @@ void YouTubeSearchPlugin::fetchMore(const QVariantMap &params) {
     request()->list("/search", QStringList() << "snippet", params);
 }
 
-void YouTubeSearchPlugin::search() {
+void YouTubeSearchPlugin::search(const QVariantMap &settings) {
     m_params.clear();
-    const QSettings settings(CONFIG_FILE, QSettings::IniFormat);
     
     if (!settings.value("useDefaultSearchOptions", false).toBool()) {
         QVariantMap searchQuery;
@@ -199,6 +183,10 @@ void YouTubeSearchPlugin::onRequestFinished() {
     }
 }
 
+SearchPlugin* YouTubeSearchPluginFactory::createPlugin(QObject *parent) {
+    return new YouTubeSearchPlugin(parent);
+}
+
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(qdl2-youtubesearch, YouTubeSearchPlugin)
+Q_EXPORT_PLUGIN2(qdl2-youtubesearch, YouTubeSearchPluginFactory)
 #endif

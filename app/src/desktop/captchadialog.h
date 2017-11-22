@@ -30,7 +30,7 @@ class CaptchaDialog : public QDialog
     Q_OBJECT
 
     Q_PROPERTY(QImage image READ image WRITE setImage)
-    Q_PROPERTY(QString response READ response)
+    Q_PROPERTY(QString response READ response WRITE setResponse)
     Q_PROPERTY(int timeout READ timeout WRITE setTimeout)
     Q_PROPERTY(int timeRemaining READ timeRemaining)
 
@@ -48,15 +48,14 @@ public:
 
     int timeRemaining() const;
 
-protected:
-    virtual void showEvent(QShowEvent *event);
-    virtual void closeEvent(QCloseEvent *event);
-
 private Q_SLOTS:
     void onResponseChanged(const QString &response);
     void updateTimeRemaining();
 
 private:
+    virtual void showEvent(QShowEvent *event);
+    virtual void closeEvent(QCloseEvent *event);
+
     QTimer *m_timer;
     
     QLabel *m_imageLabel;

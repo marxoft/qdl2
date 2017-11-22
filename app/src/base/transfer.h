@@ -41,7 +41,10 @@ class Transfer : public TransferItem
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(QString filePath READ filePath WRITE setFilePath)
     Q_PROPERTY(QString fileSuffix READ fileSuffix)
-    Q_PROPERTY(QByteArray captchaImage READ captchaImage)
+    Q_PROPERTY(int captchaType READ captchaType)
+    Q_PROPERTY(QString captchaTypeString READ captchaTypeString)
+    Q_PROPERTY(QByteArray captchaData READ captchaData)
+    Q_PROPERTY(QString captchaResponse READ captchaResponse WRITE submitCaptchaResponse)
     Q_PROPERTY(int captchaTimeout READ captchaTimeout)
     Q_PROPERTY(QString captchaTimeoutString READ captchaTimeoutString)
     Q_PROPERTY(QString id READ id WRITE setId)
@@ -100,7 +103,10 @@ public:
     void setFilePath(const QString &fp);
     QString fileSuffix() const;
 
-    QByteArray captchaImage() const;
+    int captchaType() const;
+    QString captchaTypeString() const;
+    QByteArray captchaData() const;
+    QString captchaResponse() const;
     int captchaTimeout() const;
     QString captchaTimeoutString() const;
     
@@ -167,8 +173,9 @@ private Q_SLOTS:
     void updateSpeed();
     void updateWaitTime();
     
-    void onCaptchaReady(const QString &challenge, const QImage &image);
-    void onCaptchaRequest(const QString &recaptchaPluginId, const QString &recaptchaKey, const QByteArray &callback);
+    void onCaptchaReady(int captchaType, const QByteArray &captchaData);
+    void onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
+            const QByteArray &callback);
     void onCaptchaResponse(const QString &captchaId, const QString &response);
     void onCaptchaResponseReported(const QString &captchaId);
     void onDownloadRequest(QNetworkRequest request, const QByteArray &method, const QByteArray &data);
@@ -187,8 +194,8 @@ private Q_SLOTS:
     void onReplyFinished();
 
 private:
-    void setCaptchaImage(const QImage &image);
-    void clearCaptchaImage();
+    void setCaptchaData(int captchaType, const QByteArray &captchaData);
+    void clearCaptchaData();
 
     void setPluginIconPath(const QString &p);
     void setPluginId(const QString &i);
@@ -265,10 +272,11 @@ private:
     QString m_servicePluginId;
     QString m_servicePluginName;
 
-    QByteArray m_captchaImageData;
+    int m_captchaType;
+    QByteArray m_captchaData;
     QString m_captchaChallenge;
     QString m_captchaResponse;
-    QString m_recaptchaKey;
+    QString m_captchaKey;
     QString m_decaptchaId;
 
     QString m_requestedSettingsTitle;

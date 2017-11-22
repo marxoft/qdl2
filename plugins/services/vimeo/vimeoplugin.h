@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -31,22 +31,15 @@ class VimeoPlugin : public ServicePlugin
 {
     Q_OBJECT
     
-    Q_INTERFACES(ServicePlugin)
-#if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qdl2.VimeoPlugin")
-#endif
-
 public:
     explicit VimeoPlugin(QObject *parent = 0);
-
-    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();
 
-    virtual void checkUrl(const QString &url);
+    virtual void checkUrl(const QString &url, const QVariantMap &settings);
 
-    virtual void getDownloadRequest(const QString &url);
+    virtual void getDownloadRequest(const QString &url, const QVariantMap &settings);
 
     void submitFormat(const QVariantMap &format);
 
@@ -55,7 +48,6 @@ private Q_SLOTS:
     void onStreamsRequestFinished();
     
 private:
-    static const QString CONFIG_FILE;
     static const QString BASE_URL;
     static const QString CLIENT_ID;
     static const QString CLIENT_SECRET;
@@ -66,6 +58,20 @@ private:
     QVimeo::StreamsRequest *m_streamsRequest;
 
     UrlResultList m_results;
+
+    QVariantMap m_settings;
+};
+
+class VimeoPluginFactory : public QObject, public ServicePluginFactory
+{
+    Q_OBJECT
+    Q_INTERFACES(ServicePluginFactory)
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "org.qdl2.VimeoPluginFactory")
+#endif
+
+public:
+    virtual ServicePlugin* createPlugin(QObject *parent = 0);
 };
 
 #endif // VIMEOPLUGIN_H

@@ -1,3 +1,9 @@
+qdl-plugins-youtube (0.2.3) unstable; urgency=low
+
+  * Changes to service plugin API.
+
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 06:53:28 +0000
+
 qdl-plugins-youtube (0.2.2) unstable; urgency=low
 
   * Fix fetching of playlist videos.
