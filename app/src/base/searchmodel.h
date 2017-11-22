@@ -53,6 +53,7 @@ public:
     };
     
     explicit SearchModel(QObject *parent = 0);
+    ~SearchModel();
     
     QString errorString() const;
 

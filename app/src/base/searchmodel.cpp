@@ -38,6 +38,10 @@ SearchModel::SearchModel(QObject *parent) :
 #endif
 }
 
+SearchModel::~SearchModel() {
+    cancel();
+}
+
 QString SearchModel::errorString() const {
     return m_errorString;
 }
@@ -178,13 +182,10 @@ void SearchModel::search(const QString &pluginId) {
 }
 
 void SearchModel::cancel() {
-    if (SearchPlugin *p = plugin()) {
-        if (p->cancelCurrentOperation()) {
+    if (m_plugin) {
+        if (m_plugin->cancelCurrentOperation()) {
             setStatus(Canceled);
         }
-    }
-    else {
-        Logger::log("SearchModel::cancel(). No plugin acquired.");
     }
 }
 
