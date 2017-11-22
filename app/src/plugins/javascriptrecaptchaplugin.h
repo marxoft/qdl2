@@ -27,6 +27,7 @@ class JavaScriptRecaptchaPlugin : public RecaptchaPlugin
 
 public:
     explicit JavaScriptRecaptchaPlugin(const QScriptValue &plugin, QObject *parent = 0);
+    ~JavaScriptRecaptchaPlugin();
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();

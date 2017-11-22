@@ -27,6 +27,7 @@ class JavaScriptDecaptchaPlugin : public DecaptchaPlugin
 
 public:
     explicit JavaScriptDecaptchaPlugin(const QScriptValue &plugin, QObject *parent = 0);
+    ~JavaScriptDecaptchaPlugin();
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();

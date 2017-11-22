@@ -25,6 +25,12 @@ JavaScriptDecaptchaPlugin::JavaScriptDecaptchaPlugin(const QScriptValue &plugin,
 {
 }
 
+JavaScriptDecaptchaPlugin::~JavaScriptDecaptchaPlugin() {
+    if (QScriptEngine *engine = m_plugin.engine()) {
+        engine->collectGarbage();
+    }
+}
+
 bool JavaScriptDecaptchaPlugin::init() {
     if (m_initted) {
         return true;

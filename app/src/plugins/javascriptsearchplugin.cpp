@@ -25,6 +25,12 @@ JavaScriptSearchPlugin::JavaScriptSearchPlugin(const QScriptValue &plugin, QObje
 {
 }
 
+JavaScriptSearchPlugin::~JavaScriptSearchPlugin() {
+    if (QScriptEngine *engine = m_plugin.engine()) {
+        engine->collectGarbage();
+    }
+}
+
 bool JavaScriptSearchPlugin::init() {
     if (m_initted) {
         return true;

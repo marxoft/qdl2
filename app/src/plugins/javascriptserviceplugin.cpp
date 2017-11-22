@@ -25,6 +25,12 @@ JavaScriptServicePlugin::JavaScriptServicePlugin(const QScriptValue &plugin, QOb
 {
 }
 
+JavaScriptServicePlugin::~JavaScriptServicePlugin() {
+    if (QScriptEngine *engine = m_plugin.engine()) {
+        engine->collectGarbage();
+    }
+}
+
 bool JavaScriptServicePlugin::init() {
     if (m_initted) {
         return true;

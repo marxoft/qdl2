@@ -27,6 +27,7 @@ class JavaScriptSearchPlugin : public SearchPlugin
 
 public:
     explicit JavaScriptSearchPlugin(const QScriptValue &plugin, QObject *parent = 0);
+    ~JavaScriptSearchPlugin();
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();

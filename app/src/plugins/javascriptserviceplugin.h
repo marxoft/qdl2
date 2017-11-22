@@ -27,6 +27,7 @@ class JavaScriptServicePlugin : public ServicePlugin
 
 public:
     explicit JavaScriptServicePlugin(const QScriptValue &value, QObject *parent = 0);
+    ~JavaScriptServicePlugin();
 
 public Q_SLOTS:
     virtual bool cancelCurrentOperation();

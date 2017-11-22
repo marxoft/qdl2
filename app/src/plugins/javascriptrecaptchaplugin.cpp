@@ -25,6 +25,12 @@ JavaScriptRecaptchaPlugin::JavaScriptRecaptchaPlugin(const QScriptValue &plugin,
 {
 }
 
+JavaScriptRecaptchaPlugin::~JavaScriptRecaptchaPlugin() {
+    if (QScriptEngine *engine = m_plugin.engine()) {
+        engine->collectGarbage();
+    }
+}
+
 bool JavaScriptRecaptchaPlugin::init() {
     if (m_initted) {
         return true;
