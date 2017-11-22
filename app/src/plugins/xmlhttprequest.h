@@ -50,6 +50,7 @@ public:
     
     explicit XMLHttpRequest(QObject *parent = 0);
     explicit XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent = 0);
+    ~XMLHttpRequest();
 
     bool followRedirects() const;
     void setFollowRedirects(bool enabled);

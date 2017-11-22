@@ -43,6 +43,10 @@ XMLHttpRequest::XMLHttpRequest(QNetworkAccessManager *manager, QObject *parent) 
 {
 }
 
+XMLHttpRequest::~XMLHttpRequest() {
+    abort();
+}
+
 QNetworkAccessManager* XMLHttpRequest::networkAccessManager() {
     return m_nam ? m_nam : m_nam = new QNetworkAccessManager(this);
 }
