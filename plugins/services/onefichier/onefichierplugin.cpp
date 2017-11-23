@@ -77,7 +77,7 @@ bool OneFichierPlugin::cancelCurrentOperation() {
 
 void OneFichierPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
-    QNetworkRequest request(QUrl::fromUserInput(url));
+    QNetworkRequest request(QUrl::fromUserInput(url.left(url.indexOf("?&"))));
     request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkUrlIsValid()));
@@ -139,7 +139,7 @@ void OneFichierPlugin::checkUrlIsValid() {
 
 void OneFichierPlugin::getDownloadRequest(const QString &url, const QVariantMap &settings) {
     m_redirects = 0;
-    m_url = QUrl::fromUserInput(url);
+    m_url = QUrl::fromUserInput(url.left(url.indexOf("?&")));
 
     if (settings.value("Account/useLogin", false).toBool()) {
         const QString username = settings.value("Account/username").toString();
