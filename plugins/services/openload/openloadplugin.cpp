@@ -151,7 +151,14 @@ void OpenloadPlugin::checkUrlIsValid() {
 }
 
 void OpenloadPlugin::getDownloadRequest(const QString &url, const QVariantMap &) {
-    webPage()->mainFrame()->load(url);
+    const QString id = url.section(QRegExp("/(f|embed)/"), 1, 1);
+
+    if (id.isEmpty()) {
+        error(tr("No video ID found"));
+        return;
+    }
+
+    webPage()->mainFrame()->load(EMBED_URL + id);
 }
 
 void OpenloadPlugin::checkDownloadRequest(bool ok) {
