@@ -158,7 +158,7 @@ void PornhubSearchPlugin::checkVideos() {
 
     if (NEXT_REGEXP.indexIn(result) != -1) {
         QVariantMap params;
-        params["url"] = BASE_URL + NEXT_REGEXP.cap(1);
+        params["url"] = BASE_URL + NEXT_REGEXP.cap(1).replace("&amp;", "&");
         emit searchCompleted(results, params);
     }
     else {
