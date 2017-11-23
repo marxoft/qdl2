@@ -20,21 +20,18 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QStringList>
-#if QT_VERSION >= 0x050000
-#include <QUrlQuery>
-#else
+#if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
 
-const QString PornhubSearchPlugin::BASE_URL("http://www.pornhub.com");
-
+const QString PornhubSearchPlugin::BASE_URL("https://www.pornhub.com");
 const QString PornhubSearchPlugin::HTML =
-    QObject::tr("<a href='%1'><img width='240' height='180' src='%2' /></a><p>Duration: %3</p>");
+    QObject::tr("<a href='%1'><img width='320' height='180' src='%2' /></a><p>Duration: %3</p>");
+
+const QRegExp PornhubSearchPlugin::NEXT_REGEXP("href=\"([^\"]+)\">Next</a>");
 
 const QList<QNetworkCookie> PornhubSearchPlugin::MOBILE_COOKIES =
     QList<QNetworkCookie>() << QNetworkCookie("platform", "mobile");
-const QList<QNetworkCookie> PornhubSearchPlugin::TABLET_COOKIES =
-    QList<QNetworkCookie>() << QNetworkCookie("platform", "tablet");
 
 const int PornhubSearchPlugin::MAX_REDIRECTS = 8;
 
@@ -110,7 +107,7 @@ void PornhubSearchPlugin::getVideos(const QVariantMap &settings) {
 
 void PornhubSearchPlugin::getVideos(const QString &url) {
     m_redirects = 0;
-    networkAccessManager()->cookieJar()->setCookiesFromUrl(TABLET_COOKIES, BASE_URL);
+    networkAccessManager()->cookieJar()->setCookiesFromUrl(MOBILE_COOKIES, BASE_URL);
     QNetworkReply *reply = networkAccessManager()->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(checkVideos()));
     connect(this, SIGNAL(finished()), reply, SLOT(deleteLater()));
@@ -146,22 +143,22 @@ void PornhubSearchPlugin::checkVideos() {
     }
     
     const QString result = QString::fromUtf8(reply->readAll());
-    const QStringList videos = result.split("<li class=\"videoblock");
+    const QStringList videos = result.section("<ul class=\"videoList\"", 1, 1).section("</ul>", 0, 0).split("<li>");
     SearchResultList results;
     
     for (int i = 1; i < videos.size(); i++) {
         const QString &video = videos.at(i);
-        const QString duration = video.section("class=\"length\">", 1, 1).section("<", 0, 0);
+        const QString duration = video.section("class=\"time\">", 1, 1).section("<", 0, 0);
         const QString url = BASE_URL + video.section("href=\"", 1, 1).section("\"", 0, 0);
-        const QString thumbnailUrl = video.section("data-mediumthumb=\"", 1, 1).section("\"", 0, 0);
-        const QString title = video.section("title=\"", 1, 1).section("\"", 0, 0);
+        const QString thumbnailUrl = video.section("src=\"", 1, 1).section("\"", 0, 0);
+        const QString title = video.section("alt=\"", 1, 1).section("\"", 0, 0);
         const QString html = HTML.arg(url).arg(thumbnailUrl).arg(duration);
         results << SearchResult(title, html, url);
     }
-        
-    if (results.size() >= 20) {
+
+    if (NEXT_REGEXP.indexIn(result) != -1) {
         QVariantMap params;
-        params["url"] = incrementPageNumber(reply->url());
+        params["url"] = BASE_URL + NEXT_REGEXP.cap(1);
         emit searchCompleted(results, params);
     }
     else {
@@ -179,21 +176,6 @@ QString PornhubSearchPlugin::getRedirect(const QNetworkReply *reply) {
     }
     
     return redirect;
-}
-
-QUrl PornhubSearchPlugin::incrementPageNumber(QUrl url) {
-#if QT_VERSION >= 0x050000
-    QUrlQuery query(url);
-    const int page = qMax(2, query.queryItemValue("page").toInt() + 1);
-    query.removeQueryItem("page");
-    query.addQueryItem("page", QString::number(page));
-    url.setQuery(query);
-#else
-    const int page = qMax(2, url.queryItemValue("page").toInt() + 1);
-    url.removeQueryItem("page");
-    url.addQueryItem("page", QString::number(page));
-#endif
-    return url;
 }
 
 void PornhubSearchPlugin::followRedirect(const QString &url, const char *slot) {

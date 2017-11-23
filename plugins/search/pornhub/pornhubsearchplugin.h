@@ -19,6 +19,7 @@
 
 #include "searchplugin.h"
 #include <QNetworkCookie>
+#include <QRegExp>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -56,9 +57,10 @@ private:
     
     static const QString BASE_URL;
     static const QString HTML;
+
+    static const QRegExp NEXT_REGEXP;
     
     static const QList<QNetworkCookie> MOBILE_COOKIES;
-    static const QList<QNetworkCookie> TABLET_COOKIES;
     
     static const int MAX_REDIRECTS;    
     
