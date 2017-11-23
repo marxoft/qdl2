@@ -19,6 +19,8 @@
 #include "logger.h"
 #include <QBuffer>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
+#include <QNetworkCookieJar>
 #include <QNetworkReply>
 
 XMLHttpRequest::XMLHttpRequest(QObject *parent) :
@@ -106,6 +108,11 @@ void XMLHttpRequest::setOnReadyStateChange(const QScriptValue &function) {
 
 void XMLHttpRequest::setRequestHeader(const QString &name, const QString &value) {
     m_request.setRawHeader(name.toUtf8(), value.toUtf8());
+
+    if (name.compare("cookie", Qt::CaseInsensitive) == 0) {
+        networkAccessManager()->cookieJar()->setCookiesFromUrl(QNetworkCookie::parseCookies(value.toUtf8()),
+                m_request.url());
+    }
 }
 
 QString XMLHttpRequest::getResponseHeader(const QString &name) const {
