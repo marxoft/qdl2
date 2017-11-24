@@ -1,8 +1,9 @@
 qdl-plugins-filejoker (0.0.2) unstable; urgency=low
 
   * Changes to service plugin API.
+  * Handle 'No CAPTCHA' captchas.
 
- -- Stuart Howarth <showarth@marxoft.co.uk>  Mon, 13 Nov 2017 03:58:12 +0000
+ -- Stuart Howarth <showarth@marxoft.co.uk>  Thu, 23 Nov 2017 19:39:20 +0000
 
 qdl-plugins-filejoker (0.0.1) unstable; urgency=low
 

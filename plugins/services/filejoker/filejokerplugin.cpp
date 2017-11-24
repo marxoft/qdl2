@@ -326,10 +326,10 @@ void FileJokerPlugin::checkWaitTime() {
     reply->deleteLater();
 }
 
-void FileJokerPlugin::submitCaptchaResponse(const QString &challenge, const QString &response) {
+void FileJokerPlugin::submitCaptchaResponse(const QString &, const QString &response) {
     m_redirects = 0;
-    const QString data = QString("op=download2&id=%1&rand=%2&method_free=1&down_direct=1&recaptcha_challenge_field=%3&recaptcha_response_field=%4")
-                         .arg(m_fileId).arg(m_rand).arg(challenge).arg(response);
+    const QString data = QString("op=download2&id=%1&rand=%2&method_free=1&down_direct=1&g-recaptcha-response=%3")
+                         .arg(m_fileId).arg(m_rand).arg(response);
     QNetworkRequest request(m_url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QNetworkReply *reply = networkAccessManager()->post(request, data.toUtf8());
@@ -380,7 +380,7 @@ void FileJokerPlugin::checkCaptcha() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else if (response.contains("Wrong Captcha")) {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, m_recaptchaKey, "submitCaptchaResponse");
     }
     else {
         emit error(tr("Unknown error"));
@@ -394,7 +394,7 @@ void FileJokerPlugin::sendCaptchaRequest() {
         emit error(tr("No captcha key found"));
     }
     else {
-        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, m_recaptchaKey, "submitCaptchaResponse");
+        emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, m_recaptchaKey, "submitCaptchaResponse");
     }
 }
 
