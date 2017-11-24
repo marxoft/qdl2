@@ -17,9 +17,7 @@
 #include "deathbycaptchaplugin.h"
 #include "captchatype.h"
 #include "json.h"
-#include <QBuffer>
 #include <QDateTime>
-#include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -75,7 +73,7 @@ void DeathByCaptchaPlugin::getCaptchaResponse(int captchaType, const QByteArray 
         return;
     }
 
-    m_imageData = captchaData;
+    m_imageData = QByteArray::fromBase64(captchaData);
     m_username = settings.value("Account/username").toString();
     m_password = settings.value("Account/password").toString();
     
@@ -95,6 +93,7 @@ void DeathByCaptchaPlugin::getCaptchaResponse(int captchaType, const QByteArray 
     }
     else {
         fetchCaptchaResponse(m_imageData);
+        m_imageData.clear();
     }
 }
 
@@ -118,6 +117,8 @@ void DeathByCaptchaPlugin::setLogin(const QVariantMap &login) {
     else {
         fetchCaptchaResponse(m_imageData);
     }
+
+    m_imageData.clear();
 }
 
 void DeathByCaptchaPlugin::fetchCaptchaResponse(const QByteArray &imageData) {
