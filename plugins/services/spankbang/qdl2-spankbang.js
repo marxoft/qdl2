@@ -25,6 +25,7 @@
     var plugin = new ServicePlugin();
 
     plugin.checkUrl = function(url) {
+        url = url.replace("m.spankbang.com", "spankbang.com");
         request = new XMLHttpRequest();
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
@@ -51,6 +52,7 @@
     };
 
     plugin.getDownloadRequest = function(url, settings) {
+        url = url.replace("m.spankbang.com", "spankbang.com");
         request = new XMLHttpRequest();
         request.onreadystatechange = function () {
             if (request.readyState == 4) {

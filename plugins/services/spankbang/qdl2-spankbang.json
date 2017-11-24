@@ -3,7 +3,7 @@
     "name": "SpankBang",
     "icon": "qdl2-spankbang.jpg",
     "version": 1,
-    "regExp": "http(s|)://spankbang\\.com/\\w+/(video|embed)",
+    "regExp": "http(s|)://(m\\.|)spankbang\\.com/\\w+/(video|embed)",
     "settings": [
         {
             "type": "boolean",
