@@ -8,6 +8,7 @@ SUBDIRS = \
     pornhub \
     sexix \
     soundcloud \
+    spankbang \
     vimeo \
     vpornex \
     xopenload \

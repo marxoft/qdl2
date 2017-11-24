@@ -1,0 +1,82 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "SpankBang",
+    "icon": "qdl2-spankbangsearch.jpg",
+    "settings": [
+        {
+            "type": "boolean",
+            "label": "Use default search options",
+            "key": "useDefault",
+            "value": false
+        },
+
+        {
+            "type": "text",
+            "label": "Query",
+            "key": "query"
+        },
+
+        {
+            "type": "list",
+            "label": "Sort by",
+            "key": "order",
+            "value": "",
+            "options": [
+                {
+                    "label": "Relevant videos",
+                    "value": ""
+                },
+
+                {
+                    "label": "Popular videos",
+                    "value": "top"
+                },
+
+                {
+                    "label": "New videos",
+                    "value": "new"
+                },
+
+                {
+                    "label": "Most liked",
+                    "value": "hot"
+                }
+            ]
+        },
+
+        {
+            "type": "list",
+            "label": "Time period",
+            "key": "period",
+            "value": "",
+            "options": [
+                {
+                    "label": "Any time",
+                    "value": ""
+                },
+
+                {
+                    "label": "Today",
+                    "value": "today"
+                },
+
+                {
+                    "label": "This week",
+                    "value": "week"
+                },
+
+                {
+                    "label": "This month",
+                    "value": "month"
+                },
+
+                {
+                    "label": "This year",
+                    "value": "year"
+                }
+            ]
+        }
+    ]
+}
+
