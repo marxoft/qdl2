@@ -57,7 +57,8 @@ bool JavaScriptServicePlugin::init() {
                     this, SLOT(onSettingsRequest(QString, QVariantList, QScriptValue))))
             || (!connect(obj, SIGNAL(urlChecked(UrlResult)), this, SIGNAL(urlChecked(UrlResult))))
             || (!connect(obj, SIGNAL(urlChecked(UrlResultList, QString)),
-                    this, SIGNAL(urlChecked(UrlResultList, QString))))) {
+                    this, SIGNAL(urlChecked(UrlResultList, QString))))
+            || (!connect(obj, SIGNAL(waitRequest(int, bool)), this, SIGNAL(waitRequest(int, bool))))) {
         Logger::log("JavaScriptServicePlugin::init(): Not a valid ServicePlugin");
         return false;
     }

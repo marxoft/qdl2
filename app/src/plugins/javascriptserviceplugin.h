@@ -69,6 +69,7 @@ Q_SIGNALS:
     void settingsRequest(const QString &title, const QVariantList &settings, const QScriptValue &callback);
     void urlChecked(const UrlResult &result);
     void urlChecked(const UrlResultList &results, const QString &packageName);
+    void waitRequest(int msecs, bool isLongDelay = false);
 };
 
 class JavaScriptServicePluginFactory : public QObject, public ServicePluginFactory
