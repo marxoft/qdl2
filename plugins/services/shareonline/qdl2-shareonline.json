@@ -1,0 +1,7 @@
+{
+    "type": "js",
+    "name": "Share-Online",
+    "icon": "qdl2-shareonline.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)share-online\\.biz/(dl/|download\\.php\\?id=)[A-Z0-9]+"
+}

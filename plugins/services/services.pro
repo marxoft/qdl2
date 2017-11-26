@@ -29,6 +29,7 @@ SUBDIRS = \
     rapidvideo \
     sendvid \
     sexix \
+    shareonline \
     soundcloud \
     spankbang \
     tezfiles \
