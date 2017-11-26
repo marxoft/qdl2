@@ -11,5 +11,6 @@ SUBDIRS = \
     spankbang \
     vimeo \
     vpornex \
+    wordpress \
     xopenload \
     youtube

@@ -1,0 +1,14 @@
+{
+    "type": "js",
+    "version": 1,
+    "name": "WordPress",
+    "icon": "qdl2-wordpresssearch.jpg",
+    "settings": [
+        {
+            "type": "text",
+            "label": "Hosts",
+            "key": "hosts",
+            "value": ""
+        }
+    ]
+}
