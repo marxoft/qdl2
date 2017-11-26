@@ -152,8 +152,13 @@ void PluginSettingsDialog::addComboBox(QFormLayout *layout, const QString &label
     combobox->setModel(model);
 
     foreach (const QVariant &var, options) {
-        const QVariantMap option = var.toMap();
-        model->append(option.value("label").toString(), option.value("value"));
+        if (var.type() == QVariant::Map) {
+            const QVariantMap option = var.toMap();
+            model->append(option.value("label").toString(), option.value("value"));
+        }
+        else {
+            model->append(var.toString(), var);
+        }
     }
 
     combobox->setCurrentIndex(qMax(0, combobox->findData(value)));

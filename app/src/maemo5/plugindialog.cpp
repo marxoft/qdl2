@@ -138,8 +138,13 @@ void PluginDialog::addValueSelector(const QString &label, const QString &key, co
     selector->setModel(model);
 
     foreach (const QVariant &var, options) {
-        const QVariantMap option = var.toMap();
-        model->append(option.value("label").toString(), option.value("value"));
+        if (var.type() == QVariant::Map) {
+            const QVariantMap option = var.toMap();
+            model->append(option.value("label").toString(), option.value("value"));
+        }
+        else {
+            model->append(var.toString(), var);
+        }
     }
 
     selector->setValue(value);
