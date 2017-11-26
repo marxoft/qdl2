@@ -37,8 +37,8 @@ public Q_SLOTS:
     void clearInterval(int timerId);
     void clearTimeout(int timerId);
 
-    void setInterval(const QScriptValue &function, int msecs);
-    void setTimeout(const QScriptValue &function, int msecs);
+    int setInterval(const QScriptValue &function, int msecs);
+    int setTimeout(const QScriptValue &function, int msecs);
 
 private:
     static QScriptValue newDecaptchaPlugin(QScriptContext *context, QScriptEngine *engine);

@@ -203,16 +203,24 @@ void JavaScriptPluginGlobalObject::clearTimeout(int timerId) {
     }
 }
 
-void JavaScriptPluginGlobalObject::setInterval(const QScriptValue &function, int msecs) {
+int JavaScriptPluginGlobalObject::setInterval(const QScriptValue &function, int msecs) {
     if ((function.isFunction()) || (function.isString())) {
-        m_intervals[startTimer(msecs)] = function;
+        const int timerId = startTimer(msecs);
+        m_intervals[timerId] = function;
+        return timerId;
     }
+
+    return -1;
 }
 
-void JavaScriptPluginGlobalObject::setTimeout(const QScriptValue &function, int msecs) {
+int JavaScriptPluginGlobalObject::setTimeout(const QScriptValue &function, int msecs) {
     if ((function.isFunction()) || (function.isString())) {
-        m_timeouts[startTimer(msecs)] = function;
+        const int timerId = startTimer(msecs);
+        m_timeouts[timerId] = function;
+        return timerId;
     }
+
+    return -1;
 }
 
 bool JavaScriptPluginGlobalObject::callFunction(QScriptValue function) const {
