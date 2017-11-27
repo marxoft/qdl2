@@ -132,12 +132,18 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addMenu(m_helpMenu);
 
     m_addUrlsAction->setShortcut(tr("Ctrl+N"));
+    m_addUrlsAction->setToolTip(tr("Add URLs to downloads"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
+    m_importUrlsAction->setToolTip(tr("Import URLs from a text file"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
+    m_retrieveUrlsAction->setToolTip(tr("Retrieve supported URLs from a web page"));
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
+    m_clipboardUrlsAction->setToolTip(tr("Show URLs retrieved from the clipboard"));
     m_searchAction->setShortcut(tr("Ctrl+S"));
+    m_searchAction->setToolTip(tr("Search for content using a plugin"));
     m_searchAction->setEnabled(SearchPluginManager::instance()->count() > 0);
     m_quitAction->setShortcut(tr("Ctrl+Q"));
+    m_quitAction->setToolTip(tr("Quit the application"));
 
     m_fileMenu->addAction(m_addUrlsAction);
     m_fileMenu->addAction(m_importUrlsAction);
