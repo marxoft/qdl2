@@ -131,7 +131,7 @@ void KeepToSharePlugin::checkUrlIsValid() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
-    const QString fileName = response.section("class=\"title-file\">", 1, 1).section('<', 0, 0).trimmed();
+    const QString fileName = response.section("class=\"name-file\">", 1, 1).section('<', 0, 0).trimmed();
 
     if (fileName.isEmpty()) {
         emit error(tr("File not found"));
