@@ -10,6 +10,7 @@ SUBDIRS = \
     dropbox \
     fileboom \
     filefactory \
+    filefox \
     filejoker \
     filespace \
     googledrive \
