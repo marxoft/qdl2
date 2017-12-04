@@ -22,7 +22,7 @@
 
     function getFileName(response) {
         try {
-            return /<i class="pfo pfo-dl1"><\/i>([^<]+)/.exec(request.responseText)[1].trim();
+            return /<i class="pfo pfo-dl1"><\/i>([^<]+)/.exec(response)[1].trim();
         }
         catch(e) {
             return null;
