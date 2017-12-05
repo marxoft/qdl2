@@ -1,79 +1,52 @@
-QT += core network
-CONFIG += plugin
-TARGET = qdl2-filespace
-TEMPLATE = lib
-
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT -= gui
-}
-
-HEADERS += filespaceplugin.h
-SOURCES += filespaceplugin.cpp
+TEMPLATE = subdirs
 
 maemo5 {
-    INCLUDEPATH += /usr/include/qdl2
-    HEADERS += /usr/include/qdl2/serviceplugin.h
-
-    config.files = "$$TARGET".json
+    config.files = qdl2-filespace.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = "$$TARGET".jpg
+    icon.files = qdl2-filespace.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    target.path = /opt/qdl2/plugins/services
+    plugin.files = qdl2-filespace.js
+    plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \
-        target \
         config \
-        icon
+        icon \
+        plugin
 
 } else:symbian {
-    TARGET.UID3 = 0xE73FA3BC
-    TARGET.CAPABILITY += NetworkServices ReadUserData WriteUserData
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
-    TARGET.EPOCSTACKSIZE = 0x14000
+    config.sources = qdl2-filespace.json
+    config.path = !:/qdl2/plugins/services
 
-    INCLUDEPATH += ../../src
-    HEADERS += ../../src/serviceplugin.h
+    icon.sources = qdl2-filespace.jpg
+    icon.path = !:/qdl2/plugins/icons
+
+    plugin.sources = qdl2-filespace.js
+    plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     filespace_deployment.pkg_prerules += vendorinfo
-
-    config.sources = "$$TARGET".json
-    config.path = !:/qdl2/plugins/services
-
-    icon.sources = "$$TARGET".jpg
-    icon.path = !:/qdl2/plugins/icons
-
-    lib.sources = "$$TARGET".dll
-    lib.path = !:/sys/bin
-
-    stub.sources = "$$TARGET".qtplugin
-    stub.path = !:/qdl2/plugins/services
 
     DEPLOYMENT.display_name = QDL Plugins Filespace
     DEPLOYMENT += \
         filespace_deployment \
         config \
         icon \
-        lib \
-        stub
+        plugin
 
 } else:unix {
-    INCLUDEPATH += /usr/include/qdl2
-    HEADERS += /usr/include/qdl2/serviceplugin.h
-
-    config.files = "$$TARGET".json
+    config.files = qdl2-filespace.json
     config.path = /usr/share/qdl2/plugins/services
 
-    icon.files = "$$TARGET".jpg
+    icon.files = qdl2-filespace.jpg
     icon.path = /usr/share/qdl2/plugins/icons
 
-    target.path = /usr/share/qdl2/plugins/services
+    plugin.files = qdl2-filespace.js
+    plugin.path = /usr/share/qdl2/plugins/services
 
     INSTALLS += \
-        target \
         config \
-        icon
+        icon \
+        plugin
 }
