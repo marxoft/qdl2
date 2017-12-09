@@ -92,7 +92,7 @@
 
     function getErrorString(str) {
         try {
-            return /class="alert alert-warning alert-promo-download alert-toppad">([^<]+)/.exec(str)[1].trim();
+            return /class="(alert alert-warning alert-promo-download alert-toppad|description)">([^<]+)/.exec(str)[2].trim();
         }
         catch(e) {
             return null;
