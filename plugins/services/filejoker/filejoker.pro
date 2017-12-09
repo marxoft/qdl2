@@ -1,78 +1,52 @@
-QT += core network
-CONFIG += plugin
-TARGET = qdl2-filejoker
-TEMPLATE = lib
-
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT -= gui
-}
-
-HEADERS += filejokerplugin.h
-SOURCES += filejokerplugin.cpp
+TEMPLATE = subdirs
 
 maemo5 {
-    INCLUDEPATH += /usr/include/qdl2
-    HEADERS += /usr/include/qdl2/serviceplugin.h
-
-    config.files = "$$TARGET".json
+    config.files = qdl2-filejoker.json
     config.path = /opt/qdl2/plugins/services
 
-    icon.files = "$$TARGET".jpg
+    icon.files = qdl2-filejoker.jpg
     icon.path = /opt/qdl2/plugins/icons
 
-    target.path = /opt/qdl2/plugins/services
+    plugin.files = qdl2-filejoker.js
+    plugin.path = /opt/qdl2/plugins/services
 
     INSTALLS += \
-        target \
         config \
-        icon
-} else:symbian {
-    TARGET.UID3 = 0xE73FA3BC
-    TARGET.CAPABILITY += NetworkServices ReadUserData WriteUserData
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
-    TARGET.EPOCSTACKSIZE = 0x14000
+        icon \
+        plugin
 
-    INCLUDEPATH += ../../src
-    HEADERS += ../../src/serviceplugin.h
+} else:symbian {
+    config.sources = qdl2-filejoker.json
+    config.path = !:/qdl2/plugins/services
+
+    icon.sources = qdl2-filejoker.jpg
+    icon.path = !:/qdl2/plugins/icons
+
+    plugin.sources = qdl2-filejoker.js
+    plugin.path = !:/qdl2/plugins/services
 
     vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
     filejoker_deployment.pkg_prerules += vendorinfo
-
-    config.sources = "$$TARGET".json
-    config.path = !:/qdl2/plugins/services
-
-    icon.sources = "$$TARGET".jpg
-    icon.path = !:/qdl2/plugins/icons
-
-    lib.sources = "$$TARGET".dll
-    lib.path = !:/sys/bin
-
-    stub.sources = "$$TARGET".qtplugin
-    stub.path = !:/qdl2/plugins/services
 
     DEPLOYMENT.display_name = QDL Plugins FileJoker
     DEPLOYMENT += \
         filejoker_deployment \
         config \
         icon \
-        lib \
-        stub
+        plugin
 
 } else:unix {
-    INCLUDEPATH += /usr/include/qdl2
-    HEADERS += /usr/include/qdl2/serviceplugin.h
-
-    config.files = "$$TARGET".json
+    config.files = qdl2-filejoker.json
     config.path = /usr/share/qdl2/plugins/services
 
-    icon.files = "$$TARGET".jpg
+    icon.files = qdl2-filejoker.jpg
     icon.path = /usr/share/qdl2/plugins/icons
 
-    target.path = /usr/share/qdl2/plugins/services
+    plugin.files = qdl2-filejoker.js
+    plugin.path = /usr/share/qdl2/plugins/services
 
     INSTALLS += \
-        target \
         config \
-        icon
+        icon \
+        plugin
 }
