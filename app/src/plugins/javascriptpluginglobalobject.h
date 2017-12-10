@@ -34,6 +34,9 @@ public Q_SLOTS:
     QString atob(const QString &ascii) const;
     QString btoa(const QString &binary) const;
 
+    QString decodeHtml(const QString &text) const;
+    QString encodeHtml(const QString &text) const;
+
     void clearInterval(int timerId);
     void clearTimeout(int timerId);
 
