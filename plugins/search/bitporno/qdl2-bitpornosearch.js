@@ -44,7 +44,7 @@
 
                     try {
                         var next = /<a href="([^"]+)" class="pages">Next<\/a>/.exec(response)[1];
-                        plugin.searchCompleted(results, {"url": BASE_URL + next.replace(/&amp;/g, "&")});
+                        plugin.searchCompleted(results, {"url": BASE_URL + decodeHtml(next)});
                     }
                     catch(e) {
                         plugin.searchCompleted(results);

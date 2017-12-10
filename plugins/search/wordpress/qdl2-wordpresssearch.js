@@ -58,7 +58,8 @@
                         var post = posts[i];
 
                         try {
-                            results.push(new SearchResult(post.title.rendered, post.content.rendered, post.link));
+                            results.push(new SearchResult(decodeHtml(post.title.rendered), post.content.rendered,
+                                post.link));
                         }
                         catch(e) {
                             continue;

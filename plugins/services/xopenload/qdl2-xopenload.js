@@ -72,7 +72,7 @@
                                         results.push(new UrlResult(redirect, title + ".mp4"));
 
                                         if (urls.length) {
-                                            getRedirect.call(plugin. urls.shift());
+                                            getRedirect.call(plugin, urls.shift());
                                         }
                                         else {
                                             plugin.urlChecked(results, title);
@@ -88,7 +88,7 @@
                             request.send();
                         };
 
-                        getRedirect.call(plugin. urls.shift());
+                        getRedirect.call(plugin, urls.shift());
                     });
                 }
                 catch(e) {

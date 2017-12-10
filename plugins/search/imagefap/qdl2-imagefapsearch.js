@@ -30,7 +30,7 @@
                     for (var i = 1; i < items.length; i++) {
                         try {
                             var item = items[i];
-                            var name = /<b>([^<]+)/.exec(item)[1];
+                            var name = decodeHtml(/<b>([^<]+)/.exec(item)[1]);
                             var url = GALLERY_URL + "?gid=" + item.substring(0, item.indexOf("\""));
                             var count = /&nbsp;(\d+)&nbsp;/.exec(item)[1];
                             var quality = /alt="([^"]+)/.exec(item)[1];

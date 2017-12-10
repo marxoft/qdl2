@@ -36,7 +36,7 @@
 
                         try {
                             var url = /href="([^"]+)"/.exec(post)[1];
-                            var name = /title="([^"]+)"/.exec(post)[1];
+                            var name = decodeHtml(/title="([^"]+)"/.exec(post)[1]);
                             var thumbnail = /src="([^"]+)"/.exec(post)[1];
                             var date = formatDate(/datetime="([^"]+)"/.exec(post)[1]);
                             var html = "<a href='" + url + "'><img width='320' height='180' src='" + thumbnail
