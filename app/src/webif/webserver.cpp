@@ -19,6 +19,7 @@
 #include "categoryserver.h"
 #include "decaptchapluginconfigserver.h"
 #include "definitions.h"
+#include "downloadrequestserver.h"
 #include "fileserver.h"
 #include "imagecacheserver.h"
 #include "recaptchapluginconfigserver.h"
@@ -242,6 +243,11 @@ void WebServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     }
     else if (request->path().startsWith("/serviceplugins")) {
         if (ServicePluginConfigServer::handleRequest(request, response)) {
+            return;
+        }
+    }
+    else if (request->path().startsWith("/downloadrequest")) {
+        if (DownloadRequestServer::handleRequest(request, response)) {
             return;
         }
     }

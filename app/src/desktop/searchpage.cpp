@@ -17,9 +17,11 @@
 #include "searchpage.h"
 #include "addurlsdialog.h"
 #include "browser.h"
+#include "downloadrequestdialog.h"
 #include "pluginsettingsdialog.h"
 #include "retrieveurlsdialog.h"
 #include "settings.h"
+#include "texteditdialog.h"
 #include "transfermodel.h"
 #include "urlcheckdialog.h"
 #include <QApplication>
@@ -131,25 +133,26 @@ void SearchPage::retrieveUrls(const QModelIndex &index) {
         retrieveDialog.clear();
 
         if (!results.isEmpty()) {
-            AddUrlsDialog addDialog(this);
-            addDialog.setUrls(results);
-            
-            if (addDialog.exec() == QDialog::Accepted) {
-                const QStringList urls = addDialog.urls();
-                
-                if (!urls.isEmpty()) {
-                    if (addDialog.usePlugins()) {
-                        UrlCheckDialog checkDialog(this);
-                        checkDialog.addUrls(urls);
-                        checkDialog.exec();
-                    }
-                    else {
-                        TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                          addDialog.postData());
-                    }
-                }
-            }
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results:"));
+            dialog.exec();
         }
+    }
+}
+
+void SearchPage::fetchDownloadRequests(const QModelIndex &index) {
+    DownloadRequestDialog dialog(this);
+    dialog.addUrl(index.data(SearchModel::UrlRole).toString());
+    dialog.exec();
+    const QString results = dialog.resultsString();
+    dialog.clear();
+
+    if (!results.isEmpty()) {
+        TextEditDialog dialog(results, this);
+        dialog.setWindowTitle(tr("Retrieve download requests"));
+        dialog.setLabelText(tr("Results:"));
+        dialog.exec();
     }
 }
 
@@ -164,6 +167,7 @@ void SearchPage::showContextMenu(const QPoint &pos) {
     QAction *copyAction = menu.addAction(QIcon::fromTheme("edit-copy"), tr("&Copy URL"));
     QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("&Add URL"));
     QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"));
+    QAction *downloadAction = menu.addAction(QIcon::fromTheme("download"), tr("Retrieve &download requests"));
     QAction *action = menu.exec(m_view->mapToGlobal(pos));
     
     if (!action) {
@@ -178,6 +182,9 @@ void SearchPage::showContextMenu(const QPoint &pos) {
     }
     else if (action == retrieveAction) {
         retrieveUrls(index);
+    }
+    else if (action == downloadAction) {
+        fetchDownloadRequests(index);
     }
 }
 

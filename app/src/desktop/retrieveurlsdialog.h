@@ -44,7 +44,7 @@ public:
 
     QString text() const;
     
-    QStringList urls() const;    
+    QStringList urls() const;
 
 public Q_SLOTS:
     virtual void accept();

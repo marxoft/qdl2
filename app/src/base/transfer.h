@@ -17,18 +17,15 @@
 #ifndef TRANSFER_H
 #define TRANSFER_H
 
+#include "downloadrequester.h"
 #include "transferitem.h"
 #include <QNetworkRequest>
 #include <QTime>
 #include <QUrl>
 
-class DecaptchaPlugin;
-class RecaptchaPlugin;
-class ServicePlugin;
 class QFile;
 class QNetworkAccessManager;
 class QNetworkReply;
-class QTimer;
 
 class Transfer : public TransferItem
 {
@@ -168,35 +165,18 @@ public Q_SLOTS:
     bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
-    void updateCaptchaTimeout();
-    void updateRequestedSettingsTimeout();
-    void updateSpeed();
-    void updateWaitTime();
-    
-    void onCaptchaReady(int captchaType, const QByteArray &captchaData);
-    void onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
-            const QByteArray &callback);
-    void onCaptchaResponse(const QString &captchaId, const QString &response);
-    void onCaptchaResponseReported(const QString &captchaId);
     void onDownloadRequest(QNetworkRequest request, const QByteArray &method, const QByteArray &data);
-    void onWaitRequest(int msecs, bool isLongDelay);
-
-    void onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
-    void onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
-    void onServiceSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
-
-    void onDecaptchaError(const QString &errorString);
-    void onRecaptchaError(const QString &errorString);
-    void onServiceError(const QString &errorString);
+    void onDownloadRequestCaptchaTimeoutChanged();
+    void onDownloadRequestRequestedSettingsTimeoutChanged();
+    void onDownloadRequestWaitTimeChanged();
+    void onDownloadRequestStatusChanged(DownloadRequester::Status s);
+    void onDownloadRequestError(const QString &errorString);
 
     void onReplyMetaDataChanged();
     void onReplyReadyRead();
     void onReplyFinished();
 
 private:
-    void setCaptchaData(int captchaType, const QByteArray &captchaData);
-    void clearCaptchaData();
-
     void setPluginIconPath(const QString &p);
     void setPluginId(const QString &i);
     void setPluginName(const QString &n);
@@ -205,27 +185,16 @@ private:
     void setSize(qint64 s);
     void setSpeed(int s);
 
-    void setRequestedSettings(const QString &title, const QVariantList &settings);
-    void clearRequestedSettings();
-
     void setStatus(Status s);
     void setErrorString(const QString &e);
 
     void cleanup();
 
-    bool initDecaptchaPlugin(const QString &pluginId);
-    bool initRecaptchaPlugin(const QString &pluginId);
-    bool initServicePlugin();
-
     void initNetworkAccessManager();
+    void initRequester();
 
     bool openBuffer(const QByteArray &data);
     bool openFile();
-
-    void startSpeedTimer();
-    void startWaitTimer(int msecs, const char* slot);
-    void stopSpeedTimer();
-    void stopWaitTimer();
 
     void startDownload();
     void followRedirect(const QUrl &url);
@@ -234,14 +203,10 @@ private:
     
     static const QRegExp CONTENT_DISPOSITION_REGEXP;
     
-    DecaptchaPlugin *m_decaptchaPlugin;
-    RecaptchaPlugin *m_recaptchaPlugin;
-    ServicePlugin *m_servicePlugin;
-
+    DownloadRequester *m_requester;
     QNetworkAccessManager *m_nam;
     QNetworkReply *m_reply;
     QFile *m_file;
-    QTimer *m_timer;
 
     QString m_customCommand;
     QString m_downloadPath;
@@ -266,32 +231,16 @@ private:
     
     QString m_url;
 
-    QString m_decaptchaPluginId;
-    QString m_recaptchaPluginId;
-    QString m_servicePluginIcon;
     QString m_servicePluginId;
     QString m_servicePluginName;
+    QString m_servicePluginIcon;
 
-    int m_captchaType;
-    QByteArray m_captchaData;
-    QString m_captchaChallenge;
-    QString m_captchaResponse;
-    QString m_captchaKey;
-    QString m_decaptchaId;
-
-    QString m_requestedSettingsTitle;
-    QVariantList m_requestedSettings;
-
-    QByteArray m_callback;
-    
     bool m_customCommandOverrideEnabled;
     bool m_usePlugins;
-    bool m_reportCaptchaError;
     bool m_metadataSet;
     bool m_deleteFiles;
 
     int m_redirects;
-    int m_timeRemaining;
 };
     
 #endif // TRANSFER_H

@@ -137,13 +137,9 @@ QString TransferItem::statusString(TransferItem::Status status) {
         return tr("Submitting captcha response");
     case ReportingCaptchaResponse:
         return tr("Reporting incorrect captcha response");
-    case AwaitingDecaptchaSettingsResponse:
-    case AwaitingRecaptchaSettingsResponse:
-    case AwaitingServiceSettingsResponse:
+    case AwaitingSettingsResponse:
         return tr("Awaiting settings response");
-    case SubmittingDecaptchaSettingsResponse:
-    case SubmittingRecaptchaSettingsResponse:
-    case SubmittingServiceSettingsResponse:
+    case SubmittingSettingsResponse:
         return tr("Submitting settings response");
     case Downloading:
         return tr("Downloading");

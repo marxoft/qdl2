@@ -24,6 +24,7 @@
 #include "concurrenttransfersmodel.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
+#include "downloadrequestdialog.h"
 #include "nocaptchadialog.h"
 #include "packagepropertiesdialog.h"
 #include "pluginsettingsdialog.h"
@@ -36,6 +37,7 @@
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "settingsdialog.h"
+#include "texteditdialog.h"
 #include "transfermodel.h"
 #include "transferpropertiesdialog.h"
 #include "urlcheckdialog.h"
@@ -76,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_importUrlsAction(new QAction(QIcon::fromTheme("general_toolbar_folder"), tr("Import URLs"), this)),
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("general_search"), tr("Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("general_share"), tr("Clipboard URLs"), this)),
+    m_downloadRequestAction(new QAction(QIcon::fromTheme("notes_save"), tr("Retrieve download requests"), this)),
     m_propertiesAction(new QAction(QIcon::fromTheme("general_information"), tr("Properties"), this)),
     m_transferQueueAction(new QAction(tr("Start"), this)),
     m_transferPauseAction(new QAction(tr("Pause"), this)),
@@ -131,9 +134,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_addUrlsAction->setShortcut(tr("Ctrl+N"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
     m_retrieveUrlsAction->setShortcut(tr("Ctrl+F"));
+    m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
+    m_downloadRequestAction->setShortcut(tr("Ctrl+D"));
     m_propertiesAction->setShortcut(tr("Ctrl+I"));
     m_propertiesAction->setEnabled(false);
-    m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
 
     m_transferMenu->addAction(m_transferQueueAction);
     m_transferMenu->addAction(m_transferPauseAction);
@@ -193,6 +197,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_toolBar->addAction(m_importUrlsAction);
     m_toolBar->addAction(m_retrieveUrlsAction);
     m_toolBar->addAction(m_clipboardUrlsAction);
+    m_toolBar->addAction(m_downloadRequestAction);
     m_toolBar->addAction(m_propertiesAction);
     m_toolBar->addWidget(m_messageLabel);
     m_toolBar->addWidget(spacer);
@@ -235,6 +240,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
+    connect(m_downloadRequestAction, SIGNAL(triggered()), this, SLOT(showDownloadRequestDialog()));
     connect(m_propertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentItemProperties()));
     
     connect(m_transferQueueAction, SIGNAL(triggered()), this, SLOT(queueCurrentTransfer()));
@@ -543,7 +549,10 @@ void MainWindow::showRetrieveUrlsDialog() {
         dialog.clear();
 
         if (!results.isEmpty()) {
-            showAddUrlsDialog(results);
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results"));
+            dialog.exec();
         }
     }
 }
@@ -557,13 +566,40 @@ void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
         dialog.clear();
         
         if (!results.isEmpty()) {
-            showAddUrlsDialog(results);
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results"));
+            dialog.exec();
         }
     }
 }
 
 void MainWindow::showClipboardUrlsDialog() {
     ClipboardUrlsDialog(this).exec();
+}
+
+void MainWindow::showDownloadRequestDialog() {
+    const QStringList urls = TextEditDialog::getText(this, tr("Retrieve download requests"), tr("URLs"))
+        .split("\n", QString::SkipEmptyParts);
+
+    if (!urls.isEmpty()) {
+        showDownloadRequestDialog(urls);
+    }
+}
+
+void MainWindow::showDownloadRequestDialog(const QStringList &urls) {
+    DownloadRequestDialog dialog(this);
+    dialog.addUrls(urls);
+    dialog.exec();
+    const QString results = dialog.resultsString();
+    dialog.clear();
+
+    if (!results.isEmpty()) {
+        TextEditDialog dialog(results, this);
+        dialog.setWindowTitle(tr("Retrieve download requests"));
+        dialog.setLabelText(tr("Results"));
+        dialog.exec();
+    }
 }
 
 void MainWindow::showCaptchaDialog(TransferItem *t) {

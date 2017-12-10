@@ -905,9 +905,7 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
     case TransferItem::AwaitingCaptchaResponse:
         emit captchaRequest(transfer);
         break;
-    case TransferItem::AwaitingDecaptchaSettingsResponse:
-    case TransferItem::AwaitingRecaptchaSettingsResponse:
-    case TransferItem::AwaitingServiceSettingsResponse:
+    case TransferItem::AwaitingSettingsResponse:
         emit settingsRequest(transfer);
         break;
     default:

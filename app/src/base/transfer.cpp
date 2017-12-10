@@ -16,14 +16,8 @@
 
 #include "transfer.h"
 #include "captchatype.h"
-#include "decaptchaplugin.h"
-#include "decaptchapluginmanager.h"
 #include "definitions.h"
 #include "logger.h"
-#include "pluginsettings.h"
-#include "recaptchaplugin.h"
-#include "recaptchapluginmanager.h"
-#include "serviceplugin.h"
 #include "servicepluginconfig.h"
 #include "servicepluginmanager.h"
 #include "settings.h"
@@ -34,19 +28,15 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
-#include <QTimer>
 
 const QRegExp Transfer::CONTENT_DISPOSITION_REGEXP("(filename=|filename\\*=UTF-8''|filename\\*= UTF-8'')([^;]+)");
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
-    m_decaptchaPlugin(0),
-    m_recaptchaPlugin(0),
-    m_servicePlugin(0),
+    m_requester(0),
     m_nam(0),
     m_reply(0),
     m_file(0),
-    m_timer(0),
     m_priority(NormalPriority),
     m_lastBytesTransferred(0),
     m_size(0),
@@ -54,13 +44,10 @@ Transfer::Transfer(QObject *parent) :
     m_status(Paused),
     m_requestMethod("GET"),
     m_servicePluginIcon(DEFAULT_ICON),
-    m_captchaType(CaptchaType::Unknown),
     m_customCommandOverrideEnabled(false),
     m_usePlugins(true),
-    m_reportCaptchaError(false),
     m_metadataSet(false),
-    m_redirects(0),
-    m_timeRemaining(0)
+    m_redirects(0)
 {
 }
 
@@ -426,78 +413,27 @@ QString Transfer::fileSuffix() const {
 }
 
 int Transfer::captchaType() const {
-    return m_captchaType;
+    return m_requester ? m_requester->captchaType() : CaptchaType::Unknown;
 }
 
 QString Transfer::captchaTypeString() const {
-    switch (captchaType()) {
-    case CaptchaType::Image:
-        return tr("Image");
-    case CaptchaType::NoCaptcha:
-        return tr("NoCaptcha");
-    default:
-        return tr("Unknown");
-    }
+    return m_requester ? m_requester->captchaTypeString() : tr("Unknown");
 }
 
 QByteArray Transfer::captchaData() const {
-    return m_captchaData;
+    return m_requester ? m_requester->captchaData() : QByteArray();
 }
 
 QString Transfer::captchaResponse() const {
-    return m_captchaResponse;
-}
-
-void Transfer::setCaptchaData(int captchaType, const QByteArray &captchaData) {
-    m_captchaType = captchaType;
-
-    if (captchaType == CaptchaType::NoCaptcha) {
-        m_captchaChallenge.clear();
-        m_captchaData = captchaData;
-    }
-    else {
-        const int newline = captchaData.indexOf("\n");
-        m_captchaChallenge = QString::fromUtf8(captchaData.left(newline));
-        m_captchaData = captchaData.mid(newline + 1);
-    }
-
-    emit dataChanged(this, CaptchaTypeRole);
-    emit dataChanged(this, CaptchaDataRole);
-}
-
-void Transfer::clearCaptchaData() {
-    m_captchaType = CaptchaType::Unknown;
-    m_captchaChallenge.clear();
-    m_captchaData.clear();
-    emit dataChanged(this, CaptchaTypeRole);
-    emit dataChanged(this, CaptchaDataRole);
+    return QString();
 }
 
 int Transfer::captchaTimeout() const {
-    return status() == AwaitingCaptchaResponse ? m_timeRemaining : 0;
+    return m_requester ? m_requester->captchaTimeout() : 0;
 }
 
 QString Transfer::captchaTimeoutString() const {
-    return Utils::formatMSecs(captchaTimeout());
-}
-
-void Transfer::updateCaptchaTimeout() {
-    switch (status()) {
-    case AwaitingCaptchaResponse:
-        m_timeRemaining -= m_timer->interval();
-        emit dataChanged(this, CaptchaTimeoutRole);
-        
-        if (m_timeRemaining <= 0) {
-            stopWaitTimer();
-            setErrorString(tr("No captcha response"));
-            setStatus(Failed);
-        }
-        
-        break;
-    default:
-        stopWaitTimer();
-        break;
-    }
+    return m_requester ? m_requester->captchaTimeoutString() : QString();
 }
 
 QString Transfer::id() const {
@@ -648,73 +584,20 @@ QString Transfer::speedString() const {
     return QString("%1/s").arg(Utils::formatBytes(speed()));
 }
 
-void Transfer::updateSpeed() {
-    if (status() == Downloading) {
-        emit dataChanged(this, SpeedRole);
-    }
-    else {
-        stopSpeedTimer();
-    }
-}
-
 QVariantList Transfer::requestedSettings() const {
-    return m_requestedSettings;
-}
-
-void Transfer::setRequestedSettings(const QString &title, const QVariantList &settings) {
-    m_requestedSettingsTitle = title;
-    m_requestedSettings = settings;
-    emit dataChanged(this, RequestedSettingsRole);
-    emit dataChanged(this, RequestedSettingsTitleRole);
-}
-
-void Transfer::clearRequestedSettings() {
-    if (!m_requestedSettings.isEmpty()) {
-        m_requestedSettingsTitle.clear();
-        m_requestedSettings.clear();
-        emit dataChanged(this, RequestedSettingsRole);
-        emit dataChanged(this, RequestedSettingsTitleRole);
-    }
+    return m_requester ? m_requester->requestedSettings() : QVariantList();
 }
 
 int Transfer::requestedSettingsTimeout() const {
-    switch (status()) {
-    case AwaitingDecaptchaSettingsResponse:
-    case AwaitingRecaptchaSettingsResponse:
-    case AwaitingServiceSettingsResponse:
-        return m_timeRemaining;
-    default:
-        return 0;
-    }
+    return m_requester ? m_requester->requestedSettingsTimeout() : 0;
 }
 
 QString Transfer::requestedSettingsTimeoutString() const {
-    return Utils::formatMSecs(requestedSettingsTimeout());
+    return m_requester ? m_requester->requestedSettingsTimeoutString() : QString();
 }
 
 QString Transfer::requestedSettingsTitle() const {
-    return m_requestedSettingsTitle;
-}
-
-void Transfer::updateRequestedSettingsTimeout() {
-    switch (status()) {
-    case AwaitingDecaptchaSettingsResponse:
-    case AwaitingRecaptchaSettingsResponse:
-    case AwaitingServiceSettingsResponse:
-        m_timeRemaining -= m_timer->interval();
-        emit dataChanged(this, RequestedSettingsTimeoutRole);
-        
-        if (m_timeRemaining <= 0) {
-            stopWaitTimer();
-            setErrorString(tr("No settings response"));
-            setStatus(Failed);
-        }
-        
-        break;
-    default:
-        stopWaitTimer();
-        break;
-    }
+    return m_requester ? m_requester->requestedSettingsTitle() : QString();
 }
 
 QVariantMap Transfer::requestHeaders() const {
@@ -780,9 +663,7 @@ QString Transfer::statusString() const {
         return QString("%1: %2").arg(TransferItem::statusString(WaitingActive)).arg(waitTimeString());
     case AwaitingCaptchaResponse:
         return QString("%1: %2").arg(TransferItem::statusString(AwaitingCaptchaResponse)).arg(captchaTimeoutString());
-    case AwaitingDecaptchaSettingsResponse:
-    case AwaitingRecaptchaSettingsResponse:
-    case AwaitingServiceSettingsResponse:
+    case AwaitingSettingsResponse:
         return QString("%1: %2").arg(TransferItem::statusString(status())).arg(requestedSettingsTimeoutString());
     default:
         return TransferItem::statusString(status());
@@ -810,33 +691,11 @@ void Transfer::setUrl(const QString &u) {
 }
 
 int Transfer::waitTime() const {
-    return m_timeRemaining;
+    return m_requester ? m_requester->waitTime() : 0;
 }
 
 QString Transfer::waitTimeString() const {
-    return Utils::formatMSecs(waitTime());
-}
-
-void Transfer::updateWaitTime() {
-    switch (status()) {
-    case WaitingActive:
-    case WaitingInactive:
-        m_timeRemaining -= m_timer->interval();
-        emit dataChanged(this, WaitTimeRole);
-        
-        if (m_timeRemaining <= 0) {
-            stopWaitTimer();
-            
-            if (status() == WaitingInactive) {
-                setStatus(Queued);
-            }
-        }
-        
-        break;
-    default:
-        stopWaitTimer();
-        break;
-    }
+    return m_requester ? m_requester->waitTimeString() : QString();
 }
 
 bool Transfer::queue() {
@@ -852,17 +711,14 @@ bool Transfer::start() {
     if (canStart()) {
         if (!usePlugins()) {
             startDownload();
-            return true;
         }
-        
-        if (initServicePlugin()) {
+        else {
+            initRequester();
             setStatus(Connecting);
-            m_servicePlugin->getDownloadRequest(url(), PluginSettings(pluginId()).values());
-            return true;
+            m_requester->getDownloadRequest(url());
         }
 
-        setErrorString(tr("No service plugin found"));
-        setStatus(Failed);
+        return true;
     }
 
     return false;
@@ -878,35 +734,15 @@ bool Transfer::pause() {
     case Completed:
         return false;
     case WaitingInactive:
-        stopWaitTimer();
-        break;
     case Connecting:
     case WaitingActive:
-        if ((m_servicePlugin) && (!m_servicePlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        stopWaitTimer();
-        break;
     case RetrievingCaptchaChallenge:
-    case SubmittingRecaptchaSettingsResponse:
-        if ((m_recaptchaPlugin) && (!m_recaptchaPlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        break;
     case RetrievingCaptchaResponse:
     case ReportingCaptchaResponse:
-    case SubmittingDecaptchaSettingsResponse:
-        if ((m_decaptchaPlugin) && (!m_decaptchaPlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        break;
     case SubmittingCaptchaResponse:
-    case SubmittingServiceSettingsResponse:
-        if ((m_servicePlugin) && (!m_servicePlugin->cancelCurrentOperation())) {
-            return false;
+    case SubmittingSettingsResponse:
+        if (m_requester) {
+            m_requester->cancel();
         }
 
         break;
@@ -936,34 +772,14 @@ bool Transfer::cancel(bool deleteFiles) {
     case CanceledAndDeleted:
         return false;
     case WaitingInactive:
-        stopWaitTimer();
-        break;
     case WaitingActive:
-        if ((m_servicePlugin) && (!m_servicePlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        stopWaitTimer();
-        break;
     case RetrievingCaptchaChallenge:
-    case SubmittingRecaptchaSettingsResponse:
-        if ((m_recaptchaPlugin) && (!m_recaptchaPlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        break;
     case RetrievingCaptchaResponse:
     case ReportingCaptchaResponse:
-    case SubmittingDecaptchaSettingsResponse:
-        if ((m_decaptchaPlugin) && (!m_decaptchaPlugin->cancelCurrentOperation())) {
-            return false;
-        }
-
-        break;
     case SubmittingCaptchaResponse:
-    case SubmittingServiceSettingsResponse:
-        if ((m_servicePlugin) && (!m_servicePlugin->cancelCurrentOperation())) {
-            return false;
+    case SubmittingSettingsResponse:
+        if (m_requester) {
+            m_requester->cancel();
         }
 
         break;
@@ -1049,136 +865,17 @@ void Transfer::save(QSettings &settings) {
 }
 
 bool Transfer::submitCaptchaResponse(const QString &response) {
-    if (status() != AwaitingCaptchaResponse) {
-        return false;
-    }
-
-    stopWaitTimer();
-
-    if (response.isEmpty()) {
-        setErrorString(tr("No captcha response"));
-        setStatus(Failed);
-        clearCaptchaData();
-        return false;
-    }
-    
-    if (!initServicePlugin()) {
-        setErrorString(tr("No service plugin found"));
-        setStatus(Failed);
-        clearCaptchaData();
-        return false;
-    }
-    
-    setStatus(SubmittingCaptchaResponse);
-    m_captchaResponse = response;
-    emit dataChanged(this, CaptchaResponseRole);
-    
-    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString,
-                    captchaType() == CaptchaType::NoCaptcha ? QString::fromUtf8(captchaData()) : m_captchaChallenge),
-                Q_ARG(QString, response))) {
-        setErrorString(tr("Invalid captcha callback method"));
-        setStatus(Failed);
-        clearCaptchaData();
-        return false;
-    }
-    
-    clearCaptchaData();
-    return true;
+    return m_requester ? m_requester->submitCaptchaResponse(response) : false;
 }
 
 bool Transfer::submitSettingsResponse(const QVariantMap &settings) {
-    switch (status()) {
-    case AwaitingDecaptchaSettingsResponse:
-        clearRequestedSettings();
-        stopWaitTimer();
-        
-        if (settings.isEmpty()) {
-            setErrorString(tr("No settings response"));
-            setStatus(Failed);
-            return false;
-        }
-        
-        if (!initDecaptchaPlugin(m_decaptchaPluginId)) {
-            setErrorString(tr("No decaptcha plugin found"));
-            setStatus(Failed);
-            return false;
-        }
-
-        setStatus(SubmittingDecaptchaSettingsResponse);
-
-        if (!QMetaObject::invokeMethod(m_decaptchaPlugin, m_callback, Q_ARG(QVariantMap, settings))) {
-            setErrorString(tr("Invalid settings callback method"));
-            setStatus(Failed);
-        }
-        
-        return true;
-    case AwaitingRecaptchaSettingsResponse:
-        clearRequestedSettings();
-        stopWaitTimer();
-        
-        if (settings.isEmpty()) {
-            setErrorString(tr("No settings response"));
-            setStatus(Failed);
-            return false;
-        }
-        
-        if (!initRecaptchaPlugin(m_recaptchaPluginId)) {
-            setErrorString(tr("No recaptcha plugin found"));
-            setStatus(Failed);
-            return false;
-        }
-
-        setStatus(SubmittingRecaptchaSettingsResponse);
-
-        if (!QMetaObject::invokeMethod(m_recaptchaPlugin, m_callback, Q_ARG(QVariantMap, settings))) {
-            setErrorString(tr("Invalid settings callback method"));
-            setStatus(Failed);
-        }
-
-        return true;
-    case AwaitingServiceSettingsResponse:
-        clearRequestedSettings();
-        stopWaitTimer();
-        
-        if (settings.isEmpty()) {
-            setErrorString(tr("No settings response"));
-            setStatus(Failed);
-            return false;
-        }
-        
-        if (!initServicePlugin()) {
-            setErrorString(tr("No service plugin found"));
-            setStatus(Failed);
-            return false;
-        }
-
-        setStatus(SubmittingServiceSettingsResponse);
-
-        if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QVariantMap, settings))) {
-            setErrorString(tr("Invalid settings callback method"));
-            setStatus(Failed);
-        }
-
-        return true;
-    default:
-        return false;
-    }
+    return m_requester ? m_requester->submitSettingsResponse(settings) : false;
 }
 
 void Transfer::cleanup() {
-    if (m_decaptchaPlugin) {
-        m_decaptchaPlugin->deleteLater();
-        m_decaptchaPlugin = 0;
-    }
-
-    if (m_recaptchaPlugin) {
-        m_recaptchaPlugin->deleteLater();
-        m_recaptchaPlugin = 0;
-    }
-
-    if (m_servicePlugin) {
-        m_servicePlugin->deleteLater();
-        m_servicePlugin = 0;
+    if (m_requester) {
+        m_requester->deleteLater();
+        m_requester = 0;
     }
 
     if (m_nam) {
@@ -1197,88 +894,19 @@ void Transfer::deleteFile() {
     }
 }
 
-bool Transfer::initDecaptchaPlugin(const QString &pluginId) {
-    if ((pluginId == m_decaptchaPluginId) && (m_decaptchaPlugin)) {
-        return true;
+void Transfer::initRequester() {
+    if (!m_requester) {
+        m_requester = new DownloadRequester(this);
+        connect(m_requester, SIGNAL(captchaTimeoutChanged(int)), this, SLOT(onDownloadRequestCaptchaTimeoutChanged()));
+        connect(m_requester, SIGNAL(downloadRequest(QNetworkRequest, QByteArray, QByteArray)),
+                this, SLOT(onDownloadRequest(QNetworkRequest, QByteArray, QByteArray)));
+        connect(m_requester, SIGNAL(error(QString)), this, SLOT(onDownloadRequestError(QString)));
+        connect(m_requester, SIGNAL(requestedSettingsTimeoutChanged(int)),
+                this, SLOT(onDownloadRequestRequestedSettingsTimeoutChanged()));
+        connect(m_requester, SIGNAL(statusChanged(DownloadRequester::Status)),
+                this, SLOT(onDownloadRequestStatusChanged(DownloadRequester::Status)));
+        connect(m_requester, SIGNAL(waitTimeChanged(int)), this, SLOT(onDownloadRequestWaitTimeChanged()));
     }
-
-    m_decaptchaPluginId = pluginId;
-
-    if (m_decaptchaPlugin) {
-        m_decaptchaPlugin->deleteLater();
-        m_decaptchaPlugin = 0;
-    }
-
-    m_decaptchaPlugin = DecaptchaPluginManager::instance()->createPluginById(pluginId, this);
-
-    if (!m_decaptchaPlugin) {
-        Logger::log("Transfer::initDecaptchaPlugin(): No plugin found for " + pluginId);
-        return false;
-    }
-
-    initNetworkAccessManager();
-    m_decaptchaPlugin->setNetworkAccessManager(m_nam);
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponse(QString, QString)),
-            this, SLOT(onCaptchaResponse(QString, QString)));
-    connect(m_decaptchaPlugin, SIGNAL(captchaResponseReported(QString)),
-            this, SLOT(onCaptchaResponseReported(QString)));
-    connect(m_decaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onDecaptchaError(QString)));
-    connect(m_decaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
-            this, SLOT(onDecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
-    return true;
-}
-
-bool Transfer::initRecaptchaPlugin(const QString &pluginId) {
-    if ((pluginId == m_recaptchaPluginId) && (m_recaptchaPlugin)) {
-        return true;
-    }
-
-    m_recaptchaPluginId = pluginId;
-
-    if (m_recaptchaPlugin) {
-        m_recaptchaPlugin->deleteLater();
-        m_recaptchaPlugin = 0;
-    }
-
-    m_recaptchaPlugin = RecaptchaPluginManager::instance()->createPluginById(pluginId, this);
-
-    if (!m_recaptchaPlugin) {
-        Logger::log("Transfer::initRecaptchaPlugin(): No plugin found for " + pluginId);
-        return false;
-    }
-
-    initNetworkAccessManager();
-    m_recaptchaPlugin->setNetworkAccessManager(m_nam);
-    connect(m_recaptchaPlugin, SIGNAL(captcha(int, QByteArray)), this, SLOT(onCaptchaReady(int, QByteArray)));
-    connect(m_recaptchaPlugin, SIGNAL(error(QString)), this, SLOT(onRecaptchaError(QString)));
-    connect(m_recaptchaPlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
-            this, SLOT(onRecaptchaSettingsRequest(QString, QVariantList, QByteArray)));
-    return true;
-}
-
-bool Transfer::initServicePlugin() {
-    if (m_servicePlugin) {
-        return true;
-    }
-    
-    m_servicePlugin = ServicePluginManager::instance()->createPluginById(pluginId(), this);
-
-    if (!m_servicePlugin) {
-        Logger::log("Transfer::initServicePlugin(): No plugin found for " + url());
-        return false;
-    }
-
-    initNetworkAccessManager();
-    m_servicePlugin->setNetworkAccessManager(m_nam);
-    connect(m_servicePlugin, SIGNAL(captchaRequest(QString, int, QString, QByteArray)),
-            this, SLOT(onCaptchaRequest(QString, int, QString, QByteArray)));
-    connect(m_servicePlugin, SIGNAL(downloadRequest(QNetworkRequest, QByteArray, QByteArray)),
-            this, SLOT(onDownloadRequest(QNetworkRequest, QByteArray, QByteArray)));
-    connect(m_servicePlugin, SIGNAL(error(QString)), this, SLOT(onServiceError(QString)));
-    connect(m_servicePlugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
-            this, SLOT(onServiceSettingsRequest(QString, QVariantList, QByteArray)));
-    connect(m_servicePlugin, SIGNAL(waitRequest(int, bool)), this, SLOT(onWaitRequest(int, bool)));
-    return true;
 }
 
 void Transfer::initNetworkAccessManager() {
@@ -1304,36 +932,6 @@ bool Transfer::openFile() {
     return m_file->open(QFile::WriteOnly | QFile::Append);
 }
 
-void Transfer::startSpeedTimer() {
-    m_speedTime.start();
-}
-
-void Transfer::startWaitTimer(int msecs, const char* slot) {
-    if (!m_timer) {
-        m_timer = new QTimer(this);
-        m_timer->setInterval(1000);
-    }
-    else {
-        disconnect(m_timer, 0, this, 0);
-    }
-    
-    connect(m_timer, SIGNAL(timeout()), this, slot);
-    m_timeRemaining = msecs;
-    m_timer->start();
-}
-
-void Transfer::stopSpeedTimer() {
-    if (m_timer) {
-        m_timer->stop();
-    }
-}
-
-void Transfer::stopWaitTimer() {
-    if (m_timer) {
-        m_timer->stop();
-    }
-}
-
 void Transfer::startDownload() {
     Logger::log(QString("Transfer::startDownload(). URL: %1, Method: %2").arg(url()).arg(requestMethod()),
                 Logger::LowVerbosity);
@@ -1357,7 +955,7 @@ void Transfer::startDownload() {
 
     if (postData().isEmpty()) {
         setStatus(Downloading);
-        startSpeedTimer();
+        m_speedTime.start();
         m_reply = m_nam->sendCustomRequest(request, requestMethod().toUtf8());
         connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
         connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
@@ -1365,7 +963,7 @@ void Transfer::startDownload() {
     }
     else {
         setStatus(Downloading);
-        startSpeedTimer();
+        m_speedTime.start();
         QBuffer *buffer = new QBuffer;
         buffer->setData(postData().toUtf8());
         buffer->open(QBuffer::ReadOnly);
@@ -1395,78 +993,14 @@ void Transfer::followRedirect(const QUrl &url) {
     connect(m_reply, SIGNAL(readyRead()), this, SLOT(onReplyReadyRead()));
 }
 
-void Transfer::onCaptchaReady(int type, const QByteArray &data) {
-    setCaptchaData(type, data);
-    const QString pluginId = Settings::decaptchaPlugin();
-    
-    if (!pluginId.isEmpty()) {
-        if (initDecaptchaPlugin(pluginId)) {
-            setStatus(RetrievingCaptchaResponse);
-            m_reportCaptchaError = true;
-            m_decaptchaPlugin->getCaptchaResponse(captchaType(), captchaData(), PluginSettings(pluginId).values());
-            return;
-        }
-    }
-
-    m_reportCaptchaError = false;
-    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateCaptchaTimeout()));
-    setStatus(AwaitingCaptchaResponse);
-}
-
-void Transfer::onCaptchaRequest(const QString &recaptchaPluginId, int captchaType, const QString &captchaKey,
-                                const QByteArray &callback) {
-    if (!initRecaptchaPlugin(recaptchaPluginId)) {
-        setErrorString(tr("No recaptcha plugin found"));
-        setStatus(Failed);
-        return;
-    }
-
-    setStatus(RetrievingCaptchaChallenge);
-    m_captchaType = captchaType;
-    m_captchaKey = captchaKey;
-    m_callback = callback;
-    m_recaptchaPlugin->getCaptcha(captchaType, captchaKey, PluginSettings(recaptchaPluginId).values());
-}
-
-void Transfer::onCaptchaResponse(const QString &captchaId, const QString &response) {
-    if (!initServicePlugin()) {
-        setErrorString(tr("No service plugin found"));
-        setStatus(Failed);
-        return;
-    }
-
-    m_decaptchaId = captchaId;
-    m_captchaResponse = response;
-    emit dataChanged(this, CaptchaResponseRole);
-
-    if (!QMetaObject::invokeMethod(m_servicePlugin, m_callback, Q_ARG(QString,
-                    captchaType() == CaptchaType::NoCaptcha ? QString::fromUtf8(captchaData()) : m_captchaChallenge),
-                Q_ARG(QString, response))) {
-        setErrorString(tr("Invalid captcha callback method"));
-        setStatus(Failed);
-    }
-
-    clearCaptchaData();
-}
-
-void Transfer::onCaptchaResponseReported(const QString &) {
-    if (!initRecaptchaPlugin(m_recaptchaPluginId)) {
-        setErrorString(tr("No recaptcha plugin found"));
-        setStatus(Failed);
-        return;
-    }
-
-    m_recaptchaPlugin->getCaptcha(captchaType(), m_captchaKey, PluginSettings(m_recaptchaPluginId).values());
-}
-
 void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &method, const QByteArray &data) {
     Logger::log(QString("Transfer::onDownloadRequest(). URL: %1, Method: %2, Data: %3")
-                       .arg(request.url().toString())
-                       .arg(QString::fromUtf8(method)).arg(QString::fromUtf8(data)), Logger::LowVerbosity);
+            .arg(request.url().toString()).arg(QString::fromUtf8(method)).arg(QString::fromUtf8(data)),
+            Logger::LowVerbosity);
     m_redirects = 0;
     m_metadataSet = false;
     initNetworkAccessManager();
-    
+
     if (bytesTransferred() > 0) {
         Logger::log("Transfer::startDownload(). Setting 'Range' header to " + QString::number(bytesTransferred()),
                     Logger::MediumVerbosity);
@@ -1475,7 +1009,7 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
 
     if (data.isEmpty()) {
         setStatus(Downloading);
-        startSpeedTimer();
+        m_speedTime.start();
         m_reply = m_nam->sendCustomRequest(request, method);
         connect(m_reply, SIGNAL(finished()), this, SLOT(onReplyFinished()));
         connect(m_reply, SIGNAL(metaDataChanged()), this, SLOT(onReplyMetaDataChanged()));
@@ -1483,7 +1017,7 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
     }
     else {
         setStatus(Downloading);
-        startSpeedTimer();
+        m_speedTime.start();
         QBuffer *buffer = new QBuffer;
         buffer->setData(data);
         buffer->open(QBuffer::ReadOnly);
@@ -1495,56 +1029,58 @@ void Transfer::onDownloadRequest(QNetworkRequest request, const QByteArray &meth
     }
 }
 
-void Transfer::onWaitRequest(int msecs, bool isLongDelay) {
-    startWaitTimer(msecs, SLOT(updateWaitTime()));
+void Transfer::onDownloadRequestCaptchaTimeoutChanged() {
+    emit dataChanged(this, CaptchaTimeoutRole);
+}
 
-    if (isLongDelay) {
-        setStatus(WaitingInactive);
-    }
-    else {
+void Transfer::onDownloadRequestRequestedSettingsTimeoutChanged() {
+    emit dataChanged(this, RequestedSettingsTimeoutRole);
+}
+
+void Transfer::onDownloadRequestWaitTimeChanged() {
+    emit dataChanged(this, WaitTimeRole);
+}
+
+void Transfer::onDownloadRequestStatusChanged(DownloadRequester::Status s) {
+    switch (s) {
+    case DownloadRequester::RetrievingCaptchaChallenge:
+        setStatus(RetrievingCaptchaChallenge);
+        break;
+    case DownloadRequester::AwaitingCaptchaResponse:
+        setStatus(AwaitingCaptchaResponse);
+        break;
+    case DownloadRequester::RetrievingCaptchaResponse:
+        setStatus(RetrievingCaptchaResponse);
+        break;
+    case DownloadRequester::SubmittingCaptchaResponse:
+        setStatus(SubmittingCaptchaResponse);
+        break;
+    case DownloadRequester::ReportingCaptchaResponse:
+        setStatus(ReportingCaptchaResponse);
+        break;
+    case DownloadRequester::AwaitingDecaptchaSettingsResponse:
+    case DownloadRequester::AwaitingRecaptchaSettingsResponse:
+    case DownloadRequester::AwaitingServiceSettingsResponse:
+        setStatus(AwaitingSettingsResponse);
+        break;
+    case DownloadRequester::SubmittingDecaptchaSettingsResponse:
+    case DownloadRequester::SubmittingRecaptchaSettingsResponse:
+    case DownloadRequester::SubmittingServiceSettingsResponse:
+        setStatus(SubmittingSettingsResponse);
+        break;
+    case DownloadRequester::WaitingActive:
         setStatus(WaitingActive);
-    }    
+        break;
+    case DownloadRequester::WaitingInactive:
+        setStatus(WaitingInactive);
+        break;
+    default:
+        break;
+    }
 }
 
-void Transfer::onDecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
-                                          const QByteArray &callback) {
-    m_callback = callback;
-    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
-    setRequestedSettings(title, settings);
-    setStatus(AwaitingDecaptchaSettingsResponse);
-}
-
-void Transfer::onRecaptchaSettingsRequest(const QString &title, const QVariantList &settings,
-                                          const QByteArray &callback) {
-    m_callback = callback;
-    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
-    setRequestedSettings(title, settings);
-    setStatus(AwaitingRecaptchaSettingsResponse);
-}
-
-void Transfer::onServiceSettingsRequest(const QString &title, const QVariantList &settings,
-                                        const QByteArray &callback) {
-    m_callback = callback;
-    startWaitTimer(CAPTCHA_TIMEOUT, SLOT(updateRequestedSettingsTimeout()));
-    setRequestedSettings(title, settings);
-    setStatus(AwaitingServiceSettingsResponse);
-}
-
-void Transfer::onDecaptchaError(const QString &errorString) {
-    setErrorString(errorString.isEmpty() ? tr("Unknown decaptcha plugin error")
-                                         : tr("Decaptcha error - %1").arg(errorString));
-    setStatus(Failed);
-}
-
-void Transfer::onRecaptchaError(const QString &errorString) {
-    setErrorString(errorString.isEmpty() ? tr("Unknown recaptcha plugin error")
-                                         : tr("Recaptcha error - %1").arg(errorString));
-    setStatus(Failed);
-}
-
-void Transfer::onServiceError(const QString &errorString) {
-    setErrorString(errorString.isEmpty() ? tr("Unknown service plugin error")
-                                         : tr("Service error - %1").arg(errorString));
+void Transfer::onDownloadRequestError(const QString &errorString) {
+    setErrorString(errorString);
     setStatus(Failed);
 }
 

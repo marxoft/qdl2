@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,35 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIPBOARDURLSDIALOG_H
-#define CLIPBOARDURLSDIALOG_H
+#ifndef DOWNLOADREQUESTSERVER_H
+#define DOWNLOADREQUESTSERVER_H
 
-#include <QDialog>
+class QHttpRequest;
+class QHttpResponse;
 
-class QListView;
-class QVBoxLayout;
-
-class ClipboardUrlsDialog : public QDialog
+class DownloadRequestServer
 {
-    Q_OBJECT
 
 public:
-    explicit ClipboardUrlsDialog(QWidget *parent = 0);
-
-private Q_SLOTS:    
-    void showContextMenu(const QPoint &pos);
-    
-private:
-    void addUrls();
-    void removeUrls();
-    void retrieveUrls();
-    void fetchDownloadRequests();
-    
-    QStringList selectedUrls() const;
-    
-    QListView *m_view;
-    
-    QVBoxLayout *m_layout;
+    static bool handleRequest(QHttpRequest *request, QHttpResponse *response);
 };
 
-#endif // CLIPBOARDURLSDIALOG_H
+#endif // DOWNLOADREQUSTSERVER_H

@@ -16,6 +16,8 @@ HEADERS += \
     src/base/categorymodel.h \
     src/base/categoryselectionmodel.h \
     src/base/concurrenttransfersmodel.h \
+    src/base/downloadrequest.h \
+    src/base/downloadrequester.h \
     src/base/json.h \
     src/base/logger.h \
     src/base/loggerverbositymodel.h \
@@ -30,6 +32,8 @@ HEADERS += \
     src/base/transferitem.h \
     src/base/transferitemprioritymodel.h \
     src/base/transfermodel.h \
+    src/base/urlcheck.h \
+    src/base/urlchecker.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \
     src/base/urlretriever.h \
@@ -66,6 +70,7 @@ HEADERS += \
 SOURCES += \
     src/base/categories.cpp \
     src/base/categorymodel.cpp \
+    src/base/downloadrequester.cpp \
     src/base/json.cpp \
     src/base/logger.cpp \
     src/base/searchmodel.cpp \
@@ -74,6 +79,7 @@ SOURCES += \
     src/base/transfer.cpp \
     src/base/transferitem.cpp \
     src/base/transfermodel.cpp \
+    src/base/urlchecker.cpp \
     src/base/urlretrievalmodel.cpp \
     src/base/urlretriever.cpp \
     src/base/utils.cpp \
@@ -123,6 +129,8 @@ maemo5 {
         src/maemo5/clipboardurlsdialog.h \
         src/maemo5/decaptchapluginsdialog.h \
         src/maemo5/definitions.h \
+        src/maemo5/downloadrequestdialog.h \
+        src/maemo5/downloadrequestmodel.h \
         src/maemo5/imagecache.h \
         src/maemo5/itemdelegate.h \
         src/maemo5/mainwindow.h \
@@ -144,6 +152,7 @@ maemo5 {
         src/maemo5/servicepluginsdialog.h \
         src/maemo5/settings.h \
         src/maemo5/settingsdialog.h \
+        src/maemo5/texteditdialog.h \
         src/maemo5/textinputdialog.h \
         src/maemo5/transferpropertiesdialog.h \
         src/maemo5/urlcheckdialog.h \
@@ -164,6 +173,8 @@ maemo5 {
         src/maemo5/clipboardurlmodel.cpp \
         src/maemo5/clipboardurlsdialog.cpp \
         src/maemo5/decaptchapluginsdialog.cpp \
+        src/maemo5/downloadrequestdialog.cpp \
+        src/maemo5/downloadrequestmodel.cpp \
         src/maemo5/imagecache.cpp \
         src/maemo5/itemdelegate.cpp \
         src/maemo5/main.cpp \
@@ -186,6 +197,7 @@ maemo5 {
         src/maemo5/servicepluginsdialog.cpp \
         src/maemo5/settings.cpp \
         src/maemo5/settingsdialog.cpp \
+        src/maemo5/texteditdialog.cpp \
         src/maemo5/textinputdialog.cpp \
         src/maemo5/transferpropertiesdialog.cpp \
         src/maemo5/urlcheckdialog.cpp \
@@ -304,6 +316,8 @@ maemo5 {
         src/desktop/clipboardurlsdialog.h \
         src/desktop/definitions.h \
         src/desktop/decaptchasettingspage.h \
+        src/desktop/downloadrequestdialog.h \
+        src/desktop/downloadrequestmodel.h \
         src/desktop/generalsettingspage.h \
         src/desktop/imagecache.h \
         src/desktop/interfacesettingspage.h \
@@ -325,6 +339,7 @@ maemo5 {
         src/desktop/settings.h \
         src/desktop/settingsdialog.h \
         src/desktop/settingspage.h \
+        src/desktop/texteditdialog.h \
         src/desktop/transferdelegate.h \
         src/desktop/transferpropertiesdialog.h \
         src/desktop/urlcheckdialog.h \
@@ -341,6 +356,8 @@ maemo5 {
         src/desktop/clipboardurlmodel.cpp \
         src/desktop/clipboardurlsdialog.cpp \
         src/desktop/decaptchasettingspage.cpp \
+        src/desktop/downloadrequestdialog.cpp \
+        src/desktop/downloadrequestmodel.cpp \
         src/desktop/generalsettingspage.cpp \
         src/desktop/imagecache.cpp \
         src/desktop/interfacesettingspage.cpp \
@@ -363,6 +380,7 @@ maemo5 {
         src/desktop/settings.cpp \
         src/desktop/settingsdialog.cpp \
         src/desktop/settingspage.cpp \
+        src/desktop/texteditdialog.cpp \
         src/desktop/transferdelegate.cpp \
         src/desktop/transferpropertiesdialog.cpp \
         src/desktop/urlcheckdialog.cpp \
@@ -418,6 +436,7 @@ contains(DEFINES, WEB_INTERFACE) {
         src/webif/applicationserver.h \
         src/webif/categoryserver.h \
         src/webif/decaptchapluginconfigserver.h \
+        src/webif/downloadrequestserver.h \
         src/webif/fileserver.h \
         src/webif/imagecacheserver.h \
         src/webif/recaptchapluginconfigserver.h \
@@ -440,6 +459,7 @@ contains(DEFINES, WEB_INTERFACE) {
         src/webif/applicationserver.cpp \
         src/webif/categoryserver.cpp \
         src/webif/decaptchapluginconfigserver.cpp \
+        src/webif/downloadrequestserver.cpp \
         src/webif/fileserver.cpp \
         src/webif/imagecacheserver.cpp \
         src/webif/recaptchapluginconfigserver.cpp \

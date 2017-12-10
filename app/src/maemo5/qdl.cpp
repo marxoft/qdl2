@@ -18,6 +18,7 @@
 #include "categories.h"
 #include "clipboardurlmodel.h"
 #include "decaptchapluginmanager.h"
+#include "downloadrequestmodel.h"
 #include "logger.h"
 #include "mainwindow.h"
 #include "pluginsettings.h"
@@ -70,6 +71,18 @@ static QModelIndex getUrlRetrievalModelIndexByUrl(const QString &url) {
     return indexes.first();
 }
 
+static QModelIndex getDownloadRequestModelIndexByUrl(const QString &url) {
+    const QModelIndexList indexes =
+    DownloadRequestModel::instance()->match(DownloadRequestModel::instance()->index(0, 0, QModelIndex()),
+                                            DownloadRequestModel::UrlRole, url, 1, Qt::MatchExactly | Qt::MatchWrap);
+
+    if (indexes.isEmpty()) {
+        return QModelIndex();
+    }
+
+    return indexes.first();
+}
+
 static QVariantMap configToVariantMap(const DecaptchaPluginConfig *config) {
     QVariantMap map;
     map["displayName"] = config->displayName();
@@ -104,6 +117,25 @@ static QVariantMap configToVariantMap(const ServicePluginConfig *config) {
     map["pluginType"] = config->pluginType();
     map["regExp"] = config->regExp().pattern();
     map["version"] = config->version();
+    return map;
+}
+
+static QVariantMap downloadRequestToVariantMap(const DownloadRequest &request) {
+    QVariantMap map;
+    map["fileName"] = request.fileName;
+    map["url"] = request.request.url();
+    map["method"] = QString::fromUtf8(request.method);
+    map["data"] = QString::fromUtf8(request.data);
+
+    QVariantList headers;
+
+    foreach (const QByteArray &header, request.request.rawHeaderList()) {
+        QVariantMap h;
+        h[QString::fromUtf8(header)] = QString::fromUtf8(request.request.rawHeader(header));
+        headers << h;
+    }
+
+    map["headers"] = headers;
     return map;
 }
 
@@ -615,13 +647,13 @@ QVariantMap Qdl::getUrlChecks() {
     map["status"] = UrlCheckModel::instance()->status();
     map["statusString"] = UrlCheckModel::instance()->statusString();
     
-    QVariantList checks;
+    QVariantList urls;
     
     for (int i = 0; i < UrlCheckModel::instance()->rowCount(); i++) {
-        checks << UrlCheckModel::instance()->itemData(i);
+        urls << UrlCheckModel::instance()->itemData(i);
     }
     
-    map["checks"] = checks;
+    map["urls"] = urls;
     return map;
 }
 
@@ -660,13 +692,13 @@ QVariantMap Qdl::getUrlRetrievals() {
     map["status"] = UrlRetrievalModel::instance()->status();
     map["statusString"] = UrlRetrievalModel::instance()->statusString();
     
-    QVariantList retrievals;
+    QVariantList urls;
     
     for (int i = 0; i < UrlRetrievalModel::instance()->rowCount(); i++) {
-        retrievals << UrlRetrievalModel::instance()->itemData(i);
+        urls << UrlRetrievalModel::instance()->itemData(i);
     }
     
-    map["retrievals"] = retrievals;
+    map["urls"] = urls;
     return map;
 }
 
@@ -697,4 +729,75 @@ bool Qdl::removeUrlRetrieval(const QString &url) {
     }
 
     return UrlRetrievalModel::instance()->removeRow(index.row());
+}
+
+void Qdl::addDownloadRequests(const QStringList &urls) {
+    DownloadRequestModel::instance()->append(urls);
+}
+
+void Qdl::clearDownloadRequests() {
+    DownloadRequestModel::instance()->clear();
+}
+
+QVariantMap Qdl::getDownloadRequests() {
+    QVariantMap map;
+    map["captchaType"] = DownloadRequestModel::instance()->captchaType();
+    map["captchaTypeString"] = DownloadRequestModel::instance()->captchaTypeString();
+    map["captchaData"] = DownloadRequestModel::instance()->captchaData();
+    map["captchaTimeout"] = DownloadRequestModel::instance()->captchaTimeout();
+    map["captchaTimeoutString"] = DownloadRequestModel::instance()->captchaTimeoutString();
+    map["count"] = DownloadRequestModel::instance()->rowCount();
+    map["progress"] = DownloadRequestModel::instance()->progress();
+    map["requestedSettings"] = DownloadRequestModel::instance()->requestedSettings();
+    map["requestedSettingsTimeout"] = DownloadRequestModel::instance()->requestedSettingsTimeout();
+    map["requestedSettingsTimeoutString"] = DownloadRequestModel::instance()->requestedSettingsTimeoutString();
+    map["requestedSettingsTitle"] = DownloadRequestModel::instance()->requestedSettingsTitle();
+    map["status"] = DownloadRequestModel::instance()->status();
+    map["statusString"] = DownloadRequestModel::instance()->statusString();
+    map["waitTime"] = DownloadRequestModel::instance()->waitTime();
+    map["waitTimeString"] = DownloadRequestModel::instance()->waitTimeString();
+    
+    QVariantList urls;
+    
+    for (int i = 0; i < DownloadRequestModel::instance()->rowCount(); i++) {
+        urls << DownloadRequestModel::instance()->itemData(i);
+    }
+
+    QVariantList results;
+
+    foreach (const DownloadRequest &request, DownloadRequestModel::instance()->results()) {
+        results << downloadRequestToVariantMap(request);
+    }
+    
+    map["urls"] = urls;
+    map["results"] = results;
+    return map;
+}
+
+QVariantMap Qdl::getDownloadRequest(const QString &url) {
+    const QModelIndex index = getDownloadRequestModelIndexByUrl(url);
+
+    if (!index.isValid()) {
+        return QVariantMap();
+    }
+
+    return DownloadRequestModel::instance()->itemData(index.row());
+}
+
+bool Qdl::removeDownloadRequest(const QString &url) {
+    const QModelIndex index = getDownloadRequestModelIndexByUrl(url);
+
+    if (!index.isValid()) {
+        return false;
+    }
+
+    return DownloadRequestModel::instance()->removeRow(index.row());
+}
+
+bool Qdl::submitDownloadRequestCaptchaResponse(const QString &response) {
+    return DownloadRequestModel::instance()->submitCaptchaResponse(response);
+}
+
+bool Qdl::submitDownloadRequestSettingsResponse(const QVariantMap &settings) {
+    return DownloadRequestModel::instance()->submitSettingsResponse(settings);
 }

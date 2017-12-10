@@ -24,6 +24,7 @@
 #include "clipboardurlsdialog.h"
 #include "decaptchapluginmanager.h"
 #include "definitions.h"
+#include "downloadrequestdialog.h"
 #include "nocaptchadialog.h"
 #include "packagepropertiesdialog.h"
 #include "pluginsettingsdialog.h"
@@ -36,6 +37,7 @@
 #include "servicepluginmanager.h"
 #include "settings.h"
 #include "settingsdialog.h"
+#include "texteditdialog.h"
 #include "transferdelegate.h"
 #include "transfermodel.h"
 #include "transferpropertiesdialog.h"
@@ -76,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_importUrlsAction(new QAction(QIcon::fromTheme("document-open"), tr("&Import URLs"), this)),
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("edit-paste"), tr("Show &clipboard URLs"), this)),
+    m_downloadRequestAction(new QAction(QIcon::fromTheme("download"), tr("Retrieve &download requests"), this)),
     m_searchAction(new QAction(QIcon::fromTheme("edit-find"), tr("&Search for content"), this)),
     m_queueAction(new QAction(QIcon::fromTheme("media-playback-start"), tr("&Start all downloads"), this)),
     m_pauseAction(new QAction(QIcon::fromTheme("media-playback-pause"), tr("&Pause all downloads"), this)),
@@ -96,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_transfersAction(new QAction(tr("Downloads"), this)),
     m_pluginsAction(new QAction(QIcon::fromTheme("view-refresh"), tr("&Load plugins"), this)),
     m_settingsAction(new QAction(QIcon::fromTheme("preferences-desktop"), tr("&Preferences"), this)),
-    m_aboutAction(new QAction(QIcon::fromTheme("help-about"), tr("&About"), this)),
+    m_aboutAction(new QAction(QIcon::fromTheme("help-info"), tr("&About"), this)),
     m_transferPriorityGroup(new QActionGroup(this)),
     m_packageCategoryGroup(new QActionGroup(this)),
     m_packagePriorityGroup(new QActionGroup(this)),
@@ -139,6 +142,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_retrieveUrlsAction->setToolTip(tr("Retrieve supported URLs from a web page"));
     m_clipboardUrlsAction->setShortcut(tr("Ctrl+U"));
     m_clipboardUrlsAction->setToolTip(tr("Show URLs retrieved from the clipboard"));
+    m_downloadRequestAction->setShortcut(tr("Ctrl+D"));
+    m_downloadRequestAction->setToolTip(tr("Retrieve download request metadata from URLs"));
     m_searchAction->setShortcut(tr("Ctrl+S"));
     m_searchAction->setToolTip(tr("Search for content using a plugin"));
     m_searchAction->setEnabled(SearchPluginManager::instance()->count() > 0);
@@ -149,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_fileMenu->addAction(m_importUrlsAction);
     m_fileMenu->addAction(m_retrieveUrlsAction);
     m_fileMenu->addAction(m_clipboardUrlsAction);
-    m_fileMenu->addSeparator();
+    m_fileMenu->addAction(m_downloadRequestAction);
     m_fileMenu->addAction(m_searchAction);
     m_fileMenu->addSeparator();
     m_fileMenu->addAction(m_queueAction);
@@ -199,9 +204,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_transfersAction->setCheckable(true);
     m_transfersAction->setChecked(true);
     
-    m_pageGroup->addAction(m_transfersAction);
     m_pageGroup->setVisible(false);
-        
+    m_pageGroup->addAction(m_transfersAction);
+
     m_viewMenu->addAction(m_closePageAction);
     m_viewMenu->addAction(m_transfersAction);
 
@@ -233,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_topToolBar->addAction(m_importUrlsAction);
     m_topToolBar->addAction(m_retrieveUrlsAction);
     m_topToolBar->addAction(m_clipboardUrlsAction);
-    m_topToolBar->addSeparator();
+    m_topToolBar->addAction(m_downloadRequestAction);
     m_topToolBar->addAction(m_searchAction);
     m_topToolBar->addSeparator();
     m_topToolBar->addAction(m_queueAction);
@@ -325,6 +330,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
+    connect(m_downloadRequestAction, SIGNAL(triggered()), this, SLOT(showDownloadRequestDialog()));
     connect(m_searchAction, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
     connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
     connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
@@ -629,10 +635,10 @@ void MainWindow::search(const QString &pluginName, const QString &pluginId) {
     m_tabs->setCurrentIndex(index);
     m_tabs->show();
     QAction *action = m_viewMenu->addAction(text);
-    action->setCheckable(true);
-    action->setChecked(true);
     m_pageGroup->addAction(action);
     m_pageGroup->setVisible(true);
+    action->setCheckable(true);
+    action->setChecked(true);
     connect(page, SIGNAL(statusChanged(Page::Status)), this, SLOT(onPageStatusChanged()));
     page->search(pluginId);
 }
@@ -711,7 +717,10 @@ void MainWindow::showRetrieveUrlsDialog() {
         dialog.clear();
 
         if (!results.isEmpty()) {
-            showAddUrlsDialog(results);
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results:"));
+            dialog.exec();
         }
     }
 }
@@ -725,13 +734,40 @@ void MainWindow::showRetrieveUrlsDialog(const QStringList &urls) {
         dialog.clear();
         
         if (!results.isEmpty()) {
-            showAddUrlsDialog(results);
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results:"));
+            dialog.exec();
         }
     }
 }
 
 void MainWindow::showClipboardUrlsDialog() {
     ClipboardUrlsDialog(this).exec();
+}
+
+void MainWindow::showDownloadRequestDialog() {
+    const QStringList urls = TextEditDialog::getText(this, tr("Retrieve download requests"), tr("URLs:"))
+        .split("\n", QString::SkipEmptyParts);
+
+    if (!urls.isEmpty()) {
+        showDownloadRequestDialog(urls);
+    }
+}
+
+void MainWindow::showDownloadRequestDialog(const QStringList &urls) {
+    DownloadRequestDialog dialog(this);
+    dialog.addUrls(urls);
+    dialog.exec();
+    const QString results = dialog.resultsString();
+    dialog.clear();
+
+    if (!results.isEmpty()) {
+        TextEditDialog dialog(results, this);
+        dialog.setWindowTitle(tr("Retrieve download requests"));
+        dialog.setLabelText(tr("Results:"));
+        dialog.exec();
+    }
 }
 
 void MainWindow::showSearchDialog() {

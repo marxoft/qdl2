@@ -17,8 +17,10 @@
 #include "clipboardurlsdialog.h"
 #include "addurlsdialog.h"
 #include "clipboardurlmodel.h"
+#include "downloadrequestdialog.h"
 #include "itemdelegate.h"
 #include "retrieveurlsdialog.h"
+#include "texteditdialog.h"
 #include "transfermodel.h"
 #include "urlcheckdialog.h"
 #include <QDialogButtonBox>
@@ -88,25 +90,26 @@ void ClipboardUrlsDialog::retrieveUrls() {
         retrieveDialog.clear();
 
         if (!results.isEmpty()) {
-            AddUrlsDialog addDialog(this);
-            addDialog.setUrls(results);
-            
-            if (addDialog.exec() == QDialog::Accepted) {
-                const QStringList urls = addDialog.urls();
-                
-                if (!urls.isEmpty()) {
-                    if (addDialog.usePlugins()) {
-                        UrlCheckDialog checkDialog(this);
-                        checkDialog.addUrls(urls);
-                        checkDialog.exec();
-                    }
-                    else {
-                        TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                          addDialog.postData());
-                    }
-                }
-            }
+            TextEditDialog dialog(results.join("\n"), this);
+            dialog.setWindowTitle(tr("Retrieve URLs"));
+            dialog.setLabelText(tr("Results"));
+            dialog.exec();
         }
+    }
+}
+
+void ClipboardUrlsDialog::fetchDownloadRequests() {
+    DownloadRequestDialog dialog(this);
+    dialog.addUrls(selectedUrls());
+    dialog.exec();
+    const QString results = dialog.resultsString();
+    dialog.clear();
+
+    if (!results.isEmpty()) {
+        TextEditDialog dialog(results, this);
+        dialog.setWindowTitle(tr("Retrieve download requests"));
+        dialog.setLabelText(tr("Results"));
+        dialog.exec();
     }
 }
 
@@ -134,6 +137,7 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     QMenu menu(this);
     QAction *addAction = menu.addAction(tr("Add URL"));
     QAction *retrieveAction = menu.addAction(tr("Retrieve URLs"));
+    QAction *downloadAction = menu.addAction(tr("Retrieve download requests"));
     QAction *removeAction = menu.addAction(tr("Remove"));
     QAction *action = menu.exec(m_view->mapToGlobal(pos));
     
@@ -146,6 +150,9 @@ void ClipboardUrlsDialog::showContextMenu(const QPoint &pos) {
     }
     else if (action == retrieveAction) {
         retrieveUrls();
+    }
+    else if (action == downloadAction) {
+        fetchDownloadRequests();
     }
     else if (action == removeAction) {
         removeUrls();

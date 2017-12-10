@@ -79,6 +79,8 @@ private Q_SLOTS:
     void showRetrieveUrlsDialog();
     void showRetrieveUrlsDialog(const QStringList &urls);
     void showClipboardUrlsDialog();
+    void showDownloadRequestDialog();
+    void showDownloadRequestDialog(const QStringList &urls);
     void showSearchDialog();
     void showSettingsDialog();
     void showAboutDialog();
@@ -116,6 +118,7 @@ private:
     QAction *m_importUrlsAction;
     QAction *m_retrieveUrlsAction;
     QAction *m_clipboardUrlsAction;
+    QAction *m_downloadRequestAction;
     QAction *m_searchAction;
     QAction *m_queueAction;
     QAction *m_pauseAction;

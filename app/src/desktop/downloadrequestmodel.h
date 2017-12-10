@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -15,14 +15,16 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef URLCHECKMODEL_H
-#define URLCHECKMODEL_H
+#ifndef DOWNLOADREQUESTMODEL_H
+#define DOWNLOADREQUESTMODEL_H
 
+#include "downloadrequest.h"
+#include "downloadrequester.h"
 #include "urlcheck.h"
 #include "urlchecker.h"
 #include <QAbstractListModel>
 
-class UrlCheckModel : public QAbstractListModel
+class DownloadRequestModel : public QAbstractListModel
 {
     Q_OBJECT
     
@@ -37,6 +39,8 @@ class UrlCheckModel : public QAbstractListModel
     Q_PROPERTY(QString requestedSettingsTimeoutString READ requestedSettingsTimeoutString
                NOTIFY requestedSettingsTimeoutChanged)
     Q_PROPERTY(QString requestedSettingsTitle READ requestedSettingsTitle NOTIFY statusChanged)
+    Q_PROPERTY(DownloadRequestList results READ results NOTIFY statusChanged)
+    Q_PROPERTY(QString resultsString READ resultsString NOTIFY statusChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
 
@@ -65,9 +69,9 @@ public:
         Canceled
     };
 
-    ~UrlCheckModel();
+    ~DownloadRequestModel();
 
-    static UrlCheckModel* instance();
+    static DownloadRequestModel* instance();
 
     int captchaType() const;
     QString captchaTypeString() const;
@@ -81,6 +85,9 @@ public:
     int requestedSettingsTimeout() const;
     QString requestedSettingsTimeoutString() const;
     QString requestedSettingsTitle() const;
+
+    DownloadRequestList results() const;
+    QString resultsString() const;
 
     Status status() const;
     QString statusString() const;
@@ -120,10 +127,18 @@ public Q_SLOTS:
     bool submitSettingsResponse(const QVariantMap &settings);
 
 private Q_SLOTS:
-    void onStatusChanged(UrlChecker::Status s);
+    void onCheckerStatusChanged(UrlChecker::Status s);
+    void onRequesterStatusChanged(DownloadRequester::Status s);
+    void onCaptchaRequest(int captchaType, const QByteArray &captchaData);
+    void onCaptchaTimeoutChanged(int timeout);
+    void onRequestedSettingsTimeoutChanged(int timeout);
+    void onSettingsRequest(const QString &title, const QVariantList &settings);
+    void onWaitTimeChanged(int wait);
     void onUrlChecked(const UrlResult &result);
     void onUrlChecked(const UrlResultList &results, const QString &packageName);
-    void onError(const QString &errorString);
+    void onDownloadRequest(const QNetworkRequest &request, const QByteArray &method, const QByteArray &data);
+    void onCheckerError(const QString &errorString);
+    void onRequesterError(const QString &errorString);
     
 Q_SIGNALS:
     void captchaRequest(int captchaType, const QByteArray &captchaData);
@@ -132,25 +147,44 @@ Q_SIGNALS:
     void progressChanged(int progress);
     void requestedSettingsTimeoutChanged(int timeout);
     void settingsRequest(const QString &title, const QVariantList &settings);
-    void statusChanged(UrlCheckModel::Status status);
+    void statusChanged(DownloadRequestModel::Status status);
     void waitTimeChanged(int wait);
     
 private:
-    UrlCheckModel();
+    DownloadRequestModel();
 
     UrlChecker* checker();
+    DownloadRequester* requester();
+
+    void setCaptchaData(int captchaType, const QByteArray &captchaData);
+    void clearCaptchaData();
+
+    void setRequestedSettings(const QString &title, const QVariantList &settings);
+    void clearRequestedSettings();
 
     void setStatus(Status s);
 
-    void next();
+    void nextUrlCheck();
+    void nextDownloadRequest();
 
-    static UrlCheckModel *self;
+    static DownloadRequestModel *self;
 
     UrlChecker *m_checker;
+    DownloadRequester *m_requester;
         
     UrlCheckList m_items;
+    UrlResultList m_requests;
+    DownloadRequestList m_results;
     
     QHash<int, QByteArray> m_roles;
+
+    int m_captchaType;
+    QByteArray m_captchaData;
+
+    QString m_requestedSettingsTitle;
+    QVariantList m_requestedSettings;
+
+    int m_timeRemaining;
     
     Status m_status;
 

@@ -24,6 +24,7 @@
 #include <QVBoxLayout>
 #include <QWebFrame>
 #include <QWebPage>
+#include <QWebSettings>
 #include <QWebView>
 
 class NoCaptchaWebPage : public QWebPage
@@ -67,6 +68,10 @@ NoCaptchaDialog::NoCaptchaDialog(QWidget *parent) :
     connect(m_view, SIGNAL(loadFinished(bool)), this, SLOT(onLoadFinished(bool)));
     connect(m_view, SIGNAL(titleChanged(QString)), this, SLOT(onTitleChanged(QString)));
     connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
+NoCaptchaDialog::~NoCaptchaDialog() {
+    QWebSettings::clearMemoryCaches();
 }
 
 QString NoCaptchaDialog::html() const {
@@ -138,14 +143,12 @@ void NoCaptchaDialog::updateTimeRemaining() {
 }
 
 void NoCaptchaDialog::onLoadStarted() {
-    m_timer->stop();
     m_label->setText(tr("Loading"));
 }
 
 void NoCaptchaDialog::onLoadFinished(bool ok) {
     if (ok) {
         m_label->setText(tr("Ready"));
-        m_timer->start();
     }
     else {
         m_label->setText(tr("Error"));

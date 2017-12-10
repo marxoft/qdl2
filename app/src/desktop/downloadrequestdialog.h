@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -14,31 +14,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef URLCHECKDIALOG_H
-#define URLCHECKDIALOG_H
+#ifndef DOWNLOADREQUESTDIALOG_H
+#define DOWNLOADREQUESTDIALOG_H
 
-#include "urlcheckmodel.h"
+#include "downloadrequestmodel.h"
 #include <QDialog>
 
 class QDialogButtonBox;
-class QGridLayout;
 class QLabel;
 class QProgressBar;
 class QTreeView;
+class QVBoxLayout;
 
-class UrlCheckDialog : public QDialog
+class DownloadRequestDialog : public QDialog
 {
     Q_OBJECT
 
+    Q_PROPERTY(DownloadRequestList results READ results)
+    Q_PROPERTY(QString resultsString READ resultsString)
+
 public:
-    explicit UrlCheckDialog(QWidget *parent = 0);
+    explicit DownloadRequestDialog(QWidget *parent = 0);
+
+    DownloadRequestList results() const;
+    QString resultsString() const;
 
 public Q_SLOTS:
     void addUrl(const QString &url);
     void addUrls(const QStringList &urls);
-    
-    virtual void accept();
-    virtual void reject();
     
     void clear();
 
@@ -49,7 +52,7 @@ private Q_SLOTS:
     void showPluginSettingsDialog(const QString &title, const QVariantList &settings);
 
     void updateStatusLabel();
-    void onStatusChanged(UrlCheckModel::Status status);
+    void onStatusChanged(DownloadRequestModel::Status status);
     
 private:
     QTreeView *m_view;
@@ -60,7 +63,7 @@ private:
 
     QDialogButtonBox *m_buttonBox;
 
-    QGridLayout *m_layout;
+    QVBoxLayout *m_layout;
 };
 
-#endif // URLCHECKDIALOG_H
+#endif // DOWNLOADREQUESTDIALOG_H

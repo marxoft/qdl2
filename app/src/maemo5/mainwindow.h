@@ -78,6 +78,8 @@ private Q_SLOTS:
     void showRetrieveUrlsDialog();
     void showRetrieveUrlsDialog(const QStringList &urls);
     void showClipboardUrlsDialog();
+    void showDownloadRequestDialog();
+    void showDownloadRequestDialog(const QStringList &urls);
     
     void showCaptchaDialog(TransferItem *transfer);
     void showPluginSettingsDialog(TransferItem *transfer);
@@ -117,6 +119,7 @@ private:
     QAction *m_importUrlsAction;
     QAction *m_retrieveUrlsAction;
     QAction *m_clipboardUrlsAction;
+    QAction *m_downloadRequestAction;
     QAction *m_propertiesAction;
         
     QAction *m_transferQueueAction;

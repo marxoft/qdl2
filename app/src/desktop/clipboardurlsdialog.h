@@ -37,6 +37,7 @@ private:
     void addUrls();
     void removeUrls();
     void retrieveUrls();
+    void fetchDownloadRequests();
     
     QStringList selectedUrls() const;
     

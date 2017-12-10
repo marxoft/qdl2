@@ -1,6 +1,7 @@
 qdl (2.7.0) unstable; urgency=low
 
   * Add support for 'No CAPTCHA' interactive captchas.
+  * Add support for retrieving/displaying download requests.
   * Improve plugin handling to reduce memory usage.
 
  -- Stuart Howarth <showarth@marxoft.co.uk>  Wed, 22 Nov 2017 07:51:35 +0000

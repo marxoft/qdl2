@@ -48,6 +48,7 @@ private Q_SLOTS:
     void showCaptchaDialog(int captchaType, const QByteArray &captchaData);
     void showPluginSettingsDialog(const QString &title, const QVariantList &settings);
     
+    void updateStatusLabel();
     void onStatusChanged(UrlCheckModel::Status status);
     
 private:

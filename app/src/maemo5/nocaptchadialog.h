@@ -37,6 +37,7 @@ class NoCaptchaDialog : public QDialog
 
 public:
     explicit NoCaptchaDialog(QWidget *parent = 0);
+    ~NoCaptchaDialog();
 
     QString html() const;
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());

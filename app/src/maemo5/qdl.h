@@ -112,6 +112,14 @@ public Q_SLOTS:
     Q_SCRIPTABLE static QVariantMap getUrlRetrieval(const QString &url);
     Q_SCRIPTABLE static bool removeUrlRetrieval(const QString &url);
 
+    Q_SCRIPTABLE static void addDownloadRequests(const QStringList &urls);
+    Q_SCRIPTABLE static void clearDownloadRequests();
+    Q_SCRIPTABLE static QVariantMap getDownloadRequests();
+    Q_SCRIPTABLE static QVariantMap getDownloadRequest(const QString &url);
+    Q_SCRIPTABLE static bool removeDownloadRequest(const QString &url);
+    Q_SCRIPTABLE static bool submitDownloadRequestCaptchaResponse(const QString &response);
+    Q_SCRIPTABLE static bool submitDownloadRequestSettingsResponse(const QVariantMap &settings);
+
 private:
     Qdl();
 
