@@ -20,6 +20,7 @@
 #include <QWebElement>
 #include <QWebFrame>
 #include <QWebPage>
+#include <QWebSettings>
 #if QT_VERSION < 0x050000
 #include <QtPlugin>
 #endif
@@ -36,6 +37,10 @@ OpenloadPlugin::OpenloadPlugin(QObject *parent) :
     m_redirects(0),
     m_ownManager(false)
 {
+}
+
+OpenloadPlugin::~OpenloadPlugin() {
+    QWebSettings::clearMemoryCaches();
 }
 
 QString OpenloadPlugin::getRedirect(const QNetworkReply *reply) {
@@ -101,6 +106,7 @@ void OpenloadPlugin::checkUrl(const QString &url, const QVariantMap &) {
     QNetworkRequest request(EMBED_URL + id);
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkUrlIsValid()));
+    connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
 
 void OpenloadPlugin::checkUrlIsValid() {
@@ -167,7 +173,7 @@ void OpenloadPlugin::checkDownloadRequest(bool ok) {
         return;
     }
 
-    const QString url = webPage()->mainFrame()->findFirstElement("#streamurl").toPlainText();
+    const QString url = webPage()->mainFrame()->findFirstElement("#streamuri").toPlainText();
 
     if (url.isEmpty()) {
         emit error(tr("No video stream URL found"));

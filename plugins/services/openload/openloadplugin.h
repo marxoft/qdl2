@@ -29,6 +29,7 @@ class OpenloadPlugin : public ServicePlugin
 
 public:
     explicit OpenloadPlugin(QObject *parent = 0);
+    ~OpenloadPlugin();
 
     virtual void setNetworkAccessManager(QNetworkAccessManager *manager);
 
