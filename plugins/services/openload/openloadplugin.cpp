@@ -17,6 +17,7 @@
 #include "openloadplugin.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QRegExp>
 #include <QWebElement>
 #include <QWebFrame>
 #include <QWebPage>
@@ -87,7 +88,7 @@ QWebPage* OpenloadPlugin::webPage() {
 
 bool OpenloadPlugin::cancelCurrentOperation() {
     if (m_page) {
-        m_page->mainFrame()->load(QUrl());
+        m_page->triggerAction(QWebPage::Stop);
     }
 
     emit currentOperationCanceled();
@@ -173,13 +174,13 @@ void OpenloadPlugin::checkDownloadRequest(bool ok) {
         return;
     }
 
-    const QString url = webPage()->mainFrame()->findFirstElement("#streamuri").toPlainText();
-
-    if (url.isEmpty()) {
-        emit error(tr("No video stream URL found"));
+    QRegExp re("id=\"stream[^\"]+\">([^<]+)");
+    
+    if (re.indexIn(webPage()->mainFrame()->toHtml()) != -1) {
+        emit downloadRequest(QNetworkRequest(STREAM_URL + re.cap(1)));
     }
     else {
-        emit downloadRequest(QNetworkRequest(STREAM_URL + url));
+        emit error(tr("No video stream URL found"));
     }
 }
 
