@@ -49,6 +49,8 @@ static const QString LIB_SUFFIX(".so");
 
 // Icons
 static const QString DEFAULT_ICON("/opt/qdl2/icons/qdl2.png");
+static const QString OK_ICON("widgets_tickmark_grid");
+static const QString ERROR_ICON("general_stop");
 
 // Config
 static const QString APP_CONFIG_PATH(HOME_PATH + "/.config/qdl2/");

@@ -16,6 +16,7 @@
 
 #include "utils.h"
 #include "json.h"
+#include <QDir>
 #include <QFile>
 #include <QRegExp>
 #include <QUuid>
@@ -63,8 +64,16 @@ QString Utils::formatMSecs(qint64 msecs) {
 }
 
 QString Utils::formatSecs(qint64 secs) {    
-    return secs > 0 ? QString("%1:%2").arg(secs / 60, 2, 10, QChar('0')).arg(secs % 60, 2, 10, QChar('0'))
-                    : QString("--:--");
+    if (secs >= 3600) {
+        return QString("%1:%2:%3").arg(int(secs / 3600), 2, 10, QChar('0')).arg(int(secs % 3600 / 60), 2, 10, QChar('0'))
+            .arg(secs % 60, 2, 10, QChar('0'));
+    }
+
+    if (secs > 0) {
+        return QString("%1:%2").arg(secs / 60, 2, 10, QChar('0')).arg(secs % 60, 2, 10, QChar('0'));
+    }
+
+    return QString("--:--");
 }
 
 bool Utils::isArchive(const QString &fileName) {
@@ -90,8 +99,31 @@ QString Utils::getSanitizedFileName(const QString &fileName) {
     return QString(fileName).replace(QRegExp("[\\/\\\\\\|]"), "_");
 }
 
+QString Utils::getSaveDirectory(const QString &directory) {
+    QDir dir;
+
+    if (!dir.exists(directory)) {
+        return directory;
+    }
+
+    QString newDirectory;
+    int i = 1;
+    
+    do {
+        newDirectory = QString("%1(%2)").arg(directory).arg(i);
+        ++i;
+    } while ((dir.exists(newDirectory)) && (i < 99));
+
+    if (i == 100) {
+        return QString();
+    }
+
+    return newDirectory;
+}
+
 QString Utils::getSaveFileName(const QString &fileName, const QString &outputDirectory) {
-    QString newFileName = outputDirectory + fileName;
+    QString newFileName = QString("%1%2%3").arg(outputDirectory).arg(outputDirectory.endsWith("/") ? QString() : QString("/"))
+                                           .arg(fileName);
 
     if (!QFile::exists(newFileName)) {
         return newFileName;
@@ -107,7 +139,7 @@ QString Utils::getSaveFileName(const QString &fileName, const QString &outputDir
     do {
         newFileName = QString("%1%2(%3)%4").arg(outputDirectory).arg(fileName.left(lastDot)).arg(i)
                                            .arg(fileName.mid(lastDot));
-        i++;
+        ++i;
     } while ((QFile::exists(newFileName)) && (i < 99));
 
     if (i == 100) {

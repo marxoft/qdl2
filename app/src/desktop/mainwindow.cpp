@@ -57,7 +57,6 @@
 #include <QStackedWidget>
 #include <QTabBar>
 #include <QToolBar>
-#include <QToolButton>
 #include <QTreeView>
 #include <QVBoxLayout>
 
@@ -121,10 +120,7 @@ MainWindow::MainWindow(QWidget *parent) :
     addToolBar(Qt::TopToolBarArea, m_topToolBar);
     addToolBar(Qt::BottomToolBarArea, m_bottomToolBar);
 
-    if (!restoreGeometry(Settings::windowGeometry())) {
-        resize(1000, 600);
-    }
-
+    restoreGeometry(Settings::windowGeometry());
     restoreState(Settings::windowState());
 
     menuBar()->addMenu(m_fileMenu);
@@ -302,8 +298,9 @@ MainWindow::MainWindow(QWidget *parent) :
         const QFontMetrics fm = header->fontMetrics();
         header->resizeSection(0, 300);
         header->resizeSection(1, fm.width(TransferModel::instance()->headerData(1).toString()) + 20);
-        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)") + 20);
-        header->resizeSection(3, fm.width("999.99KB/s") + 20);
+        header->resizeSection(2, fm.width(TransferModel::instance()->headerData(2).toString()) + 20);
+        header->resizeSection(3, fm.width("999.99MB of 999.99MB (99.99%)") + 20);
+        header->resizeSection(4, fm.width("999.99KB/s") + 20);
     }
     
     m_stack->addWidget(m_view);
@@ -372,6 +369,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this, SLOT(onCurrentRowChanged(QModelIndex)));
+}
+
+QSize MainWindow::sizeHint() const {
+    return QSize(1000, 600);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -652,12 +653,14 @@ void MainWindow::showAddUrlsDialog() {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }
@@ -673,12 +676,14 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }
@@ -697,12 +702,14 @@ void MainWindow::showImportUrlsDialog() {
             if (!urls.isEmpty()) {
                 if (addDialog.usePlugins()) {
                     UrlCheckDialog checkDialog(this);
-                    checkDialog.addUrls(urls);
+                    checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                            addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                     checkDialog.exec();
                 }
                 else {
                     TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                      addDialog.postData());
+                            addDialog.postData(), addDialog.category(), addDialog.createSubfolder(),
+                            addDialog.priority(), addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 }
             }
         }
@@ -795,7 +802,7 @@ void MainWindow::showCaptchaDialog(TransferItem *t) {
         dialog.setHtml(transfer->data(TransferItem::CaptchaDataRole).toString(),
                 transfer->data(TransferItem::UrlRole).toString());
         dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
-        connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
+        connect(transfer, SIGNAL(statusChanged(TransferItem*, TransferItem::Status)), &dialog, SLOT(close()));
         
         switch (dialog.exec()) {
         case QDialog::Accepted:
@@ -819,7 +826,7 @@ void MainWindow::showCaptchaDialog(TransferItem *t) {
         dialog.setImage(QImage::fromData(QByteArray::fromBase64(transfer->data(TransferItem::CaptchaDataRole)
                         .toByteArray())));
         dialog.setTimeout(transfer->data(TransferItem::CaptchaTimeoutRole).toInt());
-        connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
+        connect(transfer, SIGNAL(statusChanged(TransferItem*, TransferItem::Status)), &dialog, SLOT(close()));
         
         switch (dialog.exec()) {
         case QDialog::Accepted:
@@ -845,7 +852,7 @@ void MainWindow::showPluginSettingsDialog(TransferItem *t) {
     PluginSettingsDialog dialog(transfer->data(TransferItem::RequestedSettingsRole).toList(), this);
     dialog.setWindowTitle(transfer->data(TransferItem::RequestedSettingsTitleRole).toString());
     dialog.setTimeout(transfer->data(TransferItem::RequestedSettingsTimeoutRole).toInt());
-    connect(transfer, SIGNAL(finished(TransferItem*)), &dialog, SLOT(close()));
+    connect(transfer, SIGNAL(statusChanged(TransferItem*, TransferItem::Status)), &dialog, SLOT(close()));
     
     switch (dialog.exec()) {
     case QDialog::Accepted:
@@ -881,7 +888,7 @@ void MainWindow::loadPlugins() {
     const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
-        showMessage(tr("%1 new plugins found").arg(count));
+        showMessage(tr("%1 new plugin(s) found").arg(count));
         
         if (search > 0) {
             m_searchAction->setEnabled(true);

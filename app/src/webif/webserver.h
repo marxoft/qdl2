@@ -20,8 +20,6 @@
 #include <QObject>
 #include <QHash>
 
-class ImageCacheServer;
-class SearchServer;
 class QHttpServer;
 class QHttpRequest;
 class QHttpResponse;
@@ -95,8 +93,6 @@ private:
     static WebServer *self;
     
     QHttpServer *m_server;
-    ImageCacheServer *m_imageServer;
-    SearchServer *m_searchServer;
     
     int m_port;
     

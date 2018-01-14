@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,85 +19,138 @@
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
 
-bool UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
-    
-    if ((parts.isEmpty()) || (parts.size() > 2) || ((parts.first() != "urlcheck")
-                && (parts.first() != "urlcheckcaptcha") && (parts.first() != "urlchecksettings"))) {
-        return false;
-    }
+void UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+    const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();
 
-    if (parts.size() == 1) {
-        if (request->method() == QHttpRequest::HTTP_GET) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getUrlChecks()));
-            return true;
-        }
+    if (method == "addchecks") {
+        // Add URL checks
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
+            const QStringList urls = properties.value("urls").toStringList();
 
-        if (request->method() == QHttpRequest::HTTP_POST) {                
-            if (parts.first() == "urlcheckcaptcha") {
-                if (Qdl::submitUrlCheckCaptchaResponse(QString::fromUtf8(request->body()))) {
-                    writeResponse(response, QHttpResponse::STATUS_OK,
-                            QtJson::Json::serialize(Qdl::getDownloadRequests()));
-                }
-                else {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
-            }
-            else if (parts.first() == "urlchecksettings") {
-                if (Qdl::submitUrlCheckSettingsResponse(QtJson::Json::parse(request->body()).toMap())) {
-                    writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getUrlChecks()));
-                }
-                else {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
+            if (!urls.isEmpty()) {
+                // OK
+                const QString category = properties.value("category").toString();
+                const bool createSubfolder = properties.value("createSubfolder", false).toBool();
+                const int priority = properties.value("priority", TransferItem::NormalPriority).toInt();
+                const QString customCommand = properties.value("customCommand").toString();
+                const bool overrideGlobalCommand = properties.value("customCommandOverrideEnabled", false).toBool();
+                Qdl::addUrlChecks(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+                const QVariantList checks = Qdl::getUrlChecks();
+                const QByteArray json = QtJson::Json::serialize(checks);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-                const QStringList urls = properties.value("urls").toStringList();
-                
-                if (urls.isEmpty()) {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
-                else {
-                    Qdl::addUrlChecks(urls, properties.value("category").toString());
-                    writeResponse(response, QHttpResponse::STATUS_CREATED);
-                }
-                
-                return true;
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
         }
-
-        if (request->method() == QHttpRequest::HTTP_DELETE) {
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "clearchecks") {
+        // Clear URL checks
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
             Qdl::clearUrlChecks();
-            writeResponse(response, QHttpResponse::STATUS_OK);
-            return true;
-        }
-    }
-
-    if (request->method() == QHttpRequest::HTTP_GET) {
-        const QVariantMap data = Qdl::getUrlCheck(parts.at(1));
-
-        if (!data.isEmpty()) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(data));
-            return true;
-        }
-
-        return false;
-    }
-
-    if (request->method() == QHttpRequest::HTTP_DELETE) {
-        if (Qdl::removeUrlCheck(parts.at(1))) {
-            writeResponse(response, QHttpResponse::STATUS_OK);
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end();
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
+    else if (method == "getchecks") {
+        // Get URL checks
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantList checks = Qdl::getUrlChecks();
+            const QByteArray json = QtJson::Json::serialize(checks);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "getstatus") {
+        // Get status
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantMap status = Qdl::getUrlChecksStatus();
+            const QByteArray json = QtJson::Json::serialize(status);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "submitcaptcharesponse") {
+        // Submit captcha response
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QString captcha = QString::fromUtf8(request->body());
 
-    writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-    return true;
+            if (Qdl::submitUrlCheckCaptchaResponse(captcha)) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "submitsettingsresponse") {
+        // Submit settings response
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QVariantMap settings = QtJson::Json::parse(request->body()).toMap();
+
+            if (Qdl::submitUrlCheckSettingsResponse(settings)) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else {
+        // Bad request
+        response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+        response->end();
+    }
 }

@@ -18,10 +18,9 @@
 #define TRANSFERITEM_H
 
 #include <QObject>
-#include <QPersistentModelIndex>
+#include <QVariantMap>
 
 class QSettings;
-class QVariant;
 
 class TransferItem : public QObject
 {
@@ -186,6 +185,7 @@ protected Q_SLOTS:
 Q_SIGNALS:
     void dataChanged(TransferItem *item, int role);
     void finished(TransferItem *item);
+    void statusChanged(TransferItem *item, TransferItem::Status status);
 
 private:
     void connectItemSignals(TransferItem *item);

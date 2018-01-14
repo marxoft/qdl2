@@ -17,11 +17,12 @@
 #ifndef ADDURLSDIALOG_H
 #define ADDURLSDIALOG_H
 
+#include "transferitem.h"
 #include <QDialog>
-#include <QVariantMap>
 
 class CategorySelectionModel;
 class SelectionModel;
+class TransferItemPriorityModel;
 class QCheckBox;
 class QComboBox;
 class QDialogButtonBox;
@@ -37,17 +38,32 @@ class AddUrlsDialog : public QDialog
 {
     Q_OBJECT
 
+    Q_PROPERTY(QString category READ category WRITE setCategory)
+    Q_PROPERTY(bool createSubfolder READ createSubfolder WRITE setCreateSubfolder)
+    Q_PROPERTY(QString customCommand READ customCommand WRITE setCustomCommand)
+    Q_PROPERTY(bool customCommandOverrideEnabled READ customCommandOverrideEnabled
+               WRITE setCustomCommandOverrideEnabled)
     Q_PROPERTY(QString postData READ postData WRITE setPostData)
+    Q_PROPERTY(TransferItem::Priority priority READ priority WRITE setPriority)
     Q_PROPERTY(QVariantMap requestHeaders READ requestHeaders WRITE setRequestHeaders)
     Q_PROPERTY(QString requestMethod READ requestMethod WRITE setRequestMethod)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(QStringList urls READ urls WRITE setUrls)
-    Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugin)
+    Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins)
 
 public:
     explicit AddUrlsDialog(QWidget *parent = 0);
+
+    QString category() const;
+
+    bool createSubfolder() const;
+
+    QString customCommand() const;
+    bool customCommandOverrideEnabled() const;
     
     QString postData() const;
+
+    TransferItem::Priority priority() const;
     
     QVariantMap requestHeaders() const;
     
@@ -61,8 +77,17 @@ public:
 
 public Q_SLOTS:
     virtual void accept();
+
+    void setCategory(const QString &category);
+
+    void setCreateSubfolder(bool enabled);
+
+    void setCustomCommand(const QString &command);
+    void setCustomCommandOverrideEnabled(bool enabled);
     
     void setPostData(const QString &data);
+
+    void setPriority(TransferItem::Priority priority);
     
     void setRequestHeaders(const QVariantMap &headers);
     void addRequestHeader(const QString &name, const QVariant &value);
@@ -78,7 +103,7 @@ public Q_SLOTS:
 
     void importUrls(const QString &fileName);
     
-    void setUsePlugin(bool enabled);
+    void setUsePlugins(bool enabled);
 
 protected:
     virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -102,6 +127,7 @@ private Q_SLOTS:
 
 private:
     CategorySelectionModel *m_categoryModel;
+    TransferItemPriorityModel *m_priorityModel;
     SelectionModel *m_headerModel;
     
     QTabBar *m_tabBar;
@@ -117,7 +143,12 @@ private:
     QTextEdit *m_urlsEdit;
     
     QComboBox *m_categorySelector;
+    QComboBox *m_prioritySelector;
+
+    QLineEdit *m_commandEdit;
     
+    QCheckBox *m_subfolderCheckBox;
+    QCheckBox *m_commandCheckBox;
     QCheckBox *m_pluginCheckBox;
         
     QFormLayout *m_urlsLayout;

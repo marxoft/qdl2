@@ -93,7 +93,7 @@ void DownloadRequestDialog::clear() {
     DownloadRequestModel::instance()->clear();
 }
 
-DownloadRequestList DownloadRequestDialog::results() const {
+DownloadResultList DownloadRequestDialog::results() const {
     return DownloadRequestModel::instance()->results();
 }
 

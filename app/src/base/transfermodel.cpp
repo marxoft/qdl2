@@ -142,7 +142,7 @@ int TransferModel::rowCount(const QModelIndex &parent) const {
 }
 
 int TransferModel::columnCount(const QModelIndex &) const {
-    return 5;
+    return 6;
 }
 
 QModelIndex TransferModel::index(int row, int column, const QModelIndex &parent) const {
@@ -192,12 +192,14 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
     case 0:
         return tr("Name");
     case 1:
-        return tr("Priority");
+        return tr("Category");
     case 2:
-        return tr("Progress");
+        return tr("Priority");
     case 3:
-        return tr("Speed");
+        return tr("Progress");
     case 4:
+        return tr("Speed");
+    case 5:
         return tr("Status");
     default:
         return QVariant();
@@ -212,12 +214,14 @@ QVariant TransferModel::data(const QModelIndex &index, int role) const {
             case 0:
                 return item->data(TransferItem::NameRole);
             case 1:
-                return item->data(TransferItem::PriorityStringRole);
+                return item->data(TransferItem::CategoryRole);
             case 2:
-                return item->data(TransferItem::ProgressStringRole);
+                return item->data(TransferItem::PriorityStringRole);
             case 3:
-                return item->data(TransferItem::SpeedStringRole);
+                return item->data(TransferItem::ProgressStringRole);
             case 4:
+                return item->data(TransferItem::SpeedStringRole);
+            case 5:
                 return item->data(TransferItem::StatusStringRole);
             default:
                 return QVariant();
@@ -405,14 +409,18 @@ TransferItem* TransferModel::get(const QVariant &index) const {
     return get(index.value<QModelIndex>());
 }
 
-void TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
-                           const QString &postData) {
+TransferItem* TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
+        const QString &postData, const QString &category, bool createSubfolder, int priority, const QString &customCommand,
+        bool overrideGlobalCommand) {
     Logger::log("TransferModel::append(): " + url + " " + requestMethod, Logger::LowVerbosity);
     const QString fileName = url.mid(url.lastIndexOf("/") + 1);
     TransferItem *package = findPackage(fileName);
 
     if (!package) {
         package = createPackage(fileName);
+        package->setData(TransferItem::CategoryRole, category);
+        package->setData(TransferItem::CreateSubfolderRole, createSubfolder);
+        package->setData(TransferItem::PriorityRole, priority);
         const int packageCount = m_packages->rowCount();        
         beginInsertRows(QModelIndex(), packageCount, packageCount);
         m_packages->appendRow(package);
@@ -423,10 +431,13 @@ void TransferModel::append(const QString &url, const QString &requestMethod, con
     const QString transferId = Utils::createId();
     Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
     Transfer *transfer = new Transfer(package);
+    transfer->setCustomCommand(customCommand);
+    transfer->setCustomCommandOverrideEnabled(overrideGlobalCommand);
     transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
     transfer->setFileName(Utils::getSanitizedFileName(fileName));
     transfer->setId(transferId);
     transfer->setPostData(postData);
+    transfer->setPriority(TransferItem::Priority(priority));
     transfer->setRequestHeaders(requestHeaders);
     transfer->setRequestMethod(requestMethod);
     transfer->setUrl(url);
@@ -441,21 +452,33 @@ void TransferModel::append(const QString &url, const QString &requestMethod, con
     if (Settings::startTransfersAutomatically()) {
         transfer->queue();
     }
+
+    return transfer;
 }
 
-void TransferModel::append(const QStringList &urls, const QString &requestMethod, const QVariantMap &requestHeaders,
-                           const QString &postData) {
+QList<TransferItem*> TransferModel::append(const QStringList &urls, const QString &requestMethod,
+        const QVariantMap &requestHeaders, const QString &postData, const QString &category, bool createSubfolder,
+        int priority, const QString &customCommand, bool overrideGlobalCommand) {
+    QList<TransferItem*> transfers;
+
     foreach (const QString &url, urls) {
-        append(url, requestMethod, requestHeaders, postData);
+        transfers << append(url, requestMethod, requestHeaders, postData, category, createSubfolder, priority,
+                customCommand, overrideGlobalCommand);
     }
+
+    return transfers;
 }
 
-void TransferModel::append(const UrlResult &result) {
+TransferItem* TransferModel::append(const UrlResult &result, const QString &category, bool createSubfolder,
+        int priority, const QString &customCommand, bool overrideGlobalCommand) {
     Logger::log("TransferModel::append(): " + result.url + " " + result.fileName, Logger::LowVerbosity);
     TransferItem *package = findPackage(result.fileName);
 
     if (!package) {
         package = createPackage(result.fileName);
+        package->setData(TransferItem::CategoryRole, category);
+        package->setData(TransferItem::CreateSubfolderRole, createSubfolder);
+        package->setData(TransferItem::PriorityRole, priority);
         const int packageCount = m_packages->rowCount();        
         beginInsertRows(QModelIndex(), packageCount, packageCount);
         m_packages->appendRow(package);
@@ -466,9 +489,12 @@ void TransferModel::append(const UrlResult &result) {
     const QString transferId = Utils::createId();
     Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
     Transfer *transfer = new Transfer(package);
+    transfer->setCustomCommand(customCommand);
+    transfer->setCustomCommandOverrideEnabled(overrideGlobalCommand);
     transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
     transfer->setFileName(Utils::getSanitizedFileName(result.fileName));
     transfer->setId(transferId);
+    transfer->setPriority(TransferItem::Priority(priority));
     transfer->setUrl(result.url);
 
     beginInsertRows(index(package->row(), 0, QModelIndex()), transferCount, transferCount);
@@ -480,16 +506,25 @@ void TransferModel::append(const UrlResult &result) {
     if (Settings::startTransfersAutomatically()) {
         transfer->queue();
     }
+
+    return transfer;
 }
 
-void TransferModel::append(const UrlResultList &results, const QString &packageName) {
+QList<TransferItem*> TransferModel::append(const UrlResultList &results, const QString &packageName,
+        const QString &category, bool createSubfolder, int priority, const QString &customCommand,
+        bool overrideGlobalCommand) {
+    QList<TransferItem*> transfers;
+
     if (results.isEmpty()) {
         Logger::log("TransferModel::append(). URL list is empty for package " + packageName, Logger::LowVerbosity);
-        return;
+        return transfers;
     }
     
     Logger::log("TransferModel::append(): " + packageName, Logger::LowVerbosity);
     TransferItem *package = createPackage(packageName);
+    package->setData(TransferItem::CategoryRole, category);
+    package->setData(TransferItem::CreateSubfolderRole, createSubfolder);
+    package->setData(TransferItem::PriorityRole, priority);
     const int packageCount = m_packages->rowCount();
     beginInsertRows(QModelIndex(), packageCount, packageCount);
     m_packages->appendRow(package);
@@ -500,6 +535,8 @@ void TransferModel::append(const UrlResultList &results, const QString &packageN
         const QString transferId = Utils::createId();
         Logger::log("TransferModel::append(): Creating transfer " + transferId, Logger::MediumVerbosity);
         Transfer *transfer = new Transfer(package);
+        transfer->setCustomCommand(customCommand);
+        transfer->setCustomCommandOverrideEnabled(overrideGlobalCommand);
         transfer->setDownloadPath(QString("%1.incomplete/%2").arg(Settings::downloadPath()).arg(transferId));
         transfer->setFileName(Utils::getSanitizedFileName(results.at(i).fileName));
         transfer->setId(transferId);
@@ -513,7 +550,11 @@ void TransferModel::append(const UrlResultList &results, const QString &packageN
         if (Settings::startTransfersAutomatically()) {
             transfer->queue();
         }
+
+        transfers << transfer;
     }
+
+    return transfers;
 }
 
 void TransferModel::queue() {
@@ -553,7 +594,7 @@ void TransferModel::restore() {
         Logger::log("TransferModel::restore(): Restoring package " + settings.value("id").toString(),
                     Logger::MediumVerbosity);
         Package *package = new Package(m_packages);
-	package->restore(settings);
+        package->restore(settings);
         const int transferCount = settings.beginReadArray("transfers");
 
         for (int j = 0; j < transferCount; j++) {
@@ -681,6 +722,7 @@ void TransferModel::removeActiveTransfer(TransferItem *transfer) {
 void TransferModel::startNextTransfers() {
     if (m_packages->rowCount() == 0) {
         Logger::log("TransferModel::startNextTransfers(): Transfer queue is empty.", Logger::MediumVerbosity);
+        save();
         return;
     }
 
@@ -709,6 +751,7 @@ void TransferModel::startNextTransfers() {
     if (queued.isEmpty()) {
         Logger::log("TransferModel::startNextTransfers(): No transfers have status TransferItem::Queued.",
                     Logger::MediumVerbosity);
+        save();
         return;
     }
     
@@ -736,7 +779,7 @@ void TransferModel::onMaximumConcurrentTransfersChanged(int maximum) {
             for (int i = m_activeTransfers.size() - 1; i >= 0; i--) {
                 if (m_activeTransfers.at(i)->data(TransferItem::PriorityRole) == priority) {
                     m_activeTransfers.at(i)->pause();
-                    active--;
+                    --active;
                 
                     if (active == maximum) {
                         return;
@@ -748,26 +791,25 @@ void TransferModel::onMaximumConcurrentTransfersChanged(int maximum) {
 }
 
 void TransferModel::onPackageDataChanged(TransferItem *package, int role) {
-    int column = 2;
+    int column = 3;
         
     switch (role) {
     case TransferItem::RowCountRole:
     case TransferItem::ProgressRole:
         break;
-    case TransferItem::SpeedRole:
-        column = 3;
-        emit totalSpeedChanged(totalSpeed());
-        break;
     case TransferItem::StatusRole:
         onPackageStatusChanged(package);
-        column = 4;
+        column = 5;
         break;
     case TransferItem::ExpandedRole:
     case TransferItem::NameRole:
         column = 0;
         break;
-    case TransferItem::PriorityRole:
+    case TransferItem::CategoryRole:
         column = 1;
+        break;
+    case TransferItem::PriorityRole:
+        column = 2;
         break;
     default:
         return;
@@ -778,7 +820,7 @@ void TransferModel::onPackageDataChanged(TransferItem *package, int role) {
 }
 
 void TransferModel::onTransferDataChanged(TransferItem *transfer, int role) {
-    int column = 2;
+    int column = 3;
         
     switch (role) {
     case TransferItem::BytesTransferredRole:
@@ -786,17 +828,17 @@ void TransferModel::onTransferDataChanged(TransferItem *transfer, int role) {
     case TransferItem::SizeRole:
         break;
     case TransferItem::SpeedRole:
-        column = 3;
+        column = 4;
         emit totalSpeedChanged(totalSpeed());
         break;
     case TransferItem::CaptchaTimeoutRole:
     case TransferItem::RequestedSettingsTimeoutRole:
     case TransferItem::WaitTimeRole:
-        column = 4;
+        column = 5;
         break;
     case TransferItem::StatusRole:
         onTransferStatusChanged(transfer);
-        column = 4;
+        column = 5;
         break;
     case TransferItem::ExpandedRole:
     case TransferItem::FileNameRole:
@@ -805,7 +847,7 @@ void TransferModel::onTransferDataChanged(TransferItem *transfer, int role) {
         column = 0;
         break;
     case TransferItem::PriorityRole:
-        column = 1;
+        column = 2;
         break;
     default:
         return;
@@ -857,6 +899,7 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
         case Qdl::Pause:
             if (activeTransfers() == 0) {
                 pause();
+                save();
             }
             
             break;
@@ -873,7 +916,6 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
             break;
         }
 
-        save();
         break;
     case TransferItem::Canceled:
     case TransferItem::CanceledAndDeleted:
@@ -899,8 +941,10 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
         if (Settings::nextAction() == Qdl::Continue) {
             m_queueTimer->start();
         }
+        else if (activeTransfers() == 0) {
+            save();
+        }
 
-        save();
         break;
     case TransferItem::AwaitingCaptchaResponse:
         emit captchaRequest(transfer);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -24,7 +24,7 @@ class UrlCheckServer
 {
 
 public:
-    static bool handleRequest(QHttpRequest *request, QHttpResponse *response);
+    static void handleRequest(QHttpRequest *request, QHttpResponse *response);
 };
 
 #endif // URLCHECKSERVER_H

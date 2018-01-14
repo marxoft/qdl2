@@ -214,7 +214,7 @@ void UrlChecker::updateWaitTime() {
         stopWaitTimer();
         
         if (status() == WaitingInactive) {
-            checkUrl();
+            setStatus(Idle);
         }
     }
 }

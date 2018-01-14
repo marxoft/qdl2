@@ -649,6 +649,7 @@ void Transfer::setStatus(TransferItem::Status s) {
             break;
         }
         
+        emit statusChanged(this, s);
         emit dataChanged(this, StatusRole);
     }
 }
@@ -1043,6 +1044,9 @@ void Transfer::onDownloadRequestWaitTimeChanged() {
 
 void Transfer::onDownloadRequestStatusChanged(DownloadRequester::Status s) {
     switch (s) {
+    case DownloadRequester::Idle:
+        setStatus(Queued);
+        break;
     case DownloadRequester::RetrievingCaptchaChallenge:
         setStatus(RetrievingCaptchaChallenge);
         break;

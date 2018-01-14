@@ -26,6 +26,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTextEdit>
+#include <QUrl>
 #include <QVBoxLayout>
 
 RetrieveUrlsDialog::RetrieveUrlsDialog(QWidget *parent) :

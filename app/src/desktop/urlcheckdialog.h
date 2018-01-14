@@ -34,8 +34,12 @@ public:
     explicit UrlCheckDialog(QWidget *parent = 0);
 
 public Q_SLOTS:
-    void addUrl(const QString &url);
-    void addUrls(const QStringList &urls);
+    void addUrl(const QString &url, const QString &category = QString(), bool createSubfolder = false,
+            int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+            bool overrideGlobalCommand = false);
+    void addUrls(const QStringList &urls, const QString &category = QString(), bool createSubfolder = false,
+            int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+            bool overrideGlobalCommand = false);
     
     virtual void accept();
     virtual void reject();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,79 +19,115 @@
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
+#include "utils.h"
 
-bool CategoryServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
-    
-    if ((parts.isEmpty()) || (parts.size() > 2) || (parts.first() != "categories")) {
-        return false;
-    }
+void CategoryServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+    const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();
 
-    if (parts.size() == 1) {
-        if (request->method() == QHttpRequest::HTTP_GET) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getCategories()));
-            return true;
-        }
-
+    if (method == "addcategory") {
+        // Add category
         if (request->method() == QHttpRequest::HTTP_POST) {
-            const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-            const QString name = properties.value("name").toString();
-            const QString path = properties.value("path").toString();
+            QVariantMap category = QtJson::Json::parse(request->body()).toMap();
+            const QString name = category.value("name").toString();
+            const QString path = category.value("path").toString();
 
-            if ((name.isEmpty()) || (path.isEmpty()) || (!Qdl::addCategory(name, path))) {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            if ((!name.isEmpty()) && (!path.isEmpty())) {
+                // OK
+                category = Qdl::addCategory(name, path);
+                const QByteArray json = QtJson::Json::serialize(category);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_CREATED);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-
-            return true;
-        }
-
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
-    }
-
-    if (request->method() == QHttpRequest::HTTP_GET) {
-        const QVariantMap category = Qdl::getCategory(parts.at(1));
-
-        if (category.isEmpty()) {
-            return false;
-        }
-
-        writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(category));
-        return true;
-    }
-
-    if (request->method() == QHttpRequest::HTTP_PUT) {
-        const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-        const QString path = properties.value("path").toString();
-
-        if ((path.isEmpty()) || (!Qdl::addCategory(parts.at(1), path))) {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_OK);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
-
-    if (request->method() == QHttpRequest::HTTP_DELETE) {
-        const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-        const QString name = properties.value("name").toString();
-
-        if ((name.isEmpty()) || (!Qdl::removeCategory(name))) {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+    else if (method == "getcategories") {
+        // Get categories
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantList categories = Qdl::getCategories();
+            const QByteArray json = QtJson::Json::serialize(categories);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_OK);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
+    else if (method == "getcategory") {
+        // Get category
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString name = Utils::urlQueryItemValue(request->url(), "name");
 
-    writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-    return true;
+            if (!name.isEmpty()) {
+                const QVariantMap category = Qdl::getCategory(name);
+
+                if (!category.isEmpty()) {
+                    // OK
+                    const QByteArray json = QtJson::Json::serialize(category);
+                    response->setHeader("Content-Type", "application/json");
+                    response->setHeader("Content-Length", QString::number(json.size()));
+                    response->writeHead(QHttpResponse::STATUS_OK);
+                    response->end(json);
+                }
+                else {
+                    // Not found
+                    response->writeHead(QHttpResponse::STATUS_NOT_FOUND);
+                    response->end();
+                }
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "removecategory") {
+        // Remove category
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString name = Utils::urlQueryItemValue(request->url(), "name");
+
+            if ((!name.isEmpty()) && (Qdl::removeCategory(name))) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else {
+        // Bad request
+        response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+        response->end();
+    }
 }

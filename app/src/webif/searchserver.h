@@ -17,33 +17,14 @@
 #ifndef SEARCHSERVER_H
 #define SEARCHSERVER_H
 
-#include "searchplugin.h"
-
 class QHttpRequest;
 class QHttpResponse;
 
-class SearchServer : public QObject
+class SearchServer
 {
-    Q_OBJECT
 
 public:
-    explicit SearchServer(QObject *parent = 0);
-
-    bool handleRequest(QHttpRequest *request, QHttpResponse *response);
-
-private Q_SLOTS:
-    void onSearchCompleted(const SearchResultList &results);
-    void onSearchCompleted(const SearchResultList &results, const QVariantMap &nextParams);
-    void onSearchError(const QString &errorString);
-    void onSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback);
-    void onResponseDone();
-
-private:
-    void addResponse(SearchPlugin *plugin, QHttpResponse *response);
-    QHttpResponse* getResponse(SearchPlugin *plugin);
-    void removeResponse(QHttpResponse *response);
-
-    QHash<SearchPlugin*, QHttpResponse*> m_hash;
+    static void handleRequest(QHttpRequest *request, QHttpResponse *response);
 };
 
 #endif // SEARCHSERVER_H

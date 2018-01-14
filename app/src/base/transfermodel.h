@@ -89,16 +89,27 @@ public:
     QString totalSpeedString() const;
 
     TransferItem* get(const QModelIndex &index) const;
-    Q_INVOKABLE TransferItem *get(const QVariant &index) const;
+    Q_INVOKABLE TransferItem* get(const QVariant &index) const;
 
 public Q_SLOTS:
-    void append(const QString &url, const QString &requestMethod = QByteArray("GET"),
-                const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QByteArray());
-    void append(const QStringList &urls, const QString &requestMethod = QByteArray("GET"),
-                const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QByteArray());
+    TransferItem* append(const QString &url, const QString &requestMethod = QString("GET"),
+                         const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
+                         const QString &category = QString(), bool createSubfolder = false,
+                         int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+                         bool overrideGlobalCommand = false);
+    QList<TransferItem*> append(const QStringList &urls, const QString &requestMethod = QString("GET"),
+                                const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
+                                const QString &category = QString(), bool createSubfolder = false,
+                                int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+                                bool overrideGlobalCommand = false);
     
-    void append(const UrlResult &result);
-    void append(const UrlResultList &results, const QString &packageName);
+    TransferItem* append(const UrlResult &result, const QString &category, bool createSubfolder = false,
+                         int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+                         bool overrideGlobalCommand = false);
+    QList<TransferItem*> append(const UrlResultList &results, const QString &packageName,
+                                const QString &category = QString(), bool createSubfolder = false,
+                                int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
+                                bool overrideGlobalCommand = false);
 
     void queue();
     void pause();

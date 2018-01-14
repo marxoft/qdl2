@@ -102,8 +102,6 @@ private:
     
     ValueSelectorAction *m_concurrentAction;
     ValueSelectorAction *m_nextAction;
-    QAction *m_queueAction;
-    QAction *m_pauseAction;
     QAction *m_searchAction;
     QAction *m_settingsAction;
     QAction *m_pluginsAction;
@@ -114,12 +112,16 @@ private:
     QAction *m_lastPageAction;
     QAction *m_nextPageAction;
     QAction *m_previousPageAction;
+    QAction *m_scrollBottomAction;
+    QAction *m_scrollTopAction;
     
     QAction *m_addUrlsAction;
     QAction *m_importUrlsAction;
     QAction *m_retrieveUrlsAction;
     QAction *m_clipboardUrlsAction;
     QAction *m_downloadRequestAction;
+    QAction *m_queueAction;
+    QAction *m_pauseAction;
     QAction *m_propertiesAction;
         
     QAction *m_transferQueueAction;
@@ -143,7 +145,6 @@ private:
     QToolBar *m_toolBar;
     
     QLabel *m_messageLabel;
-    QLabel *m_speedLabel;
     
     QVBoxLayout *m_layout;
 };

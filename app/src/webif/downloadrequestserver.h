@@ -24,7 +24,7 @@ class DownloadRequestServer
 {
 
 public:
-    static bool handleRequest(QHttpRequest *request, QHttpResponse *response);
+    static void handleRequest(QHttpRequest *request, QHttpResponse *response);
 };
 
 #endif // DOWNLOADREQUSTSERVER_H

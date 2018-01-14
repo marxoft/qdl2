@@ -17,7 +17,6 @@
 #include "urlretrievalmodel.h"
 #include "logger.h"
 #include "urlretriever.h"
-#include <QIcon>
 
 UrlRetrievalModel* UrlRetrievalModel::self = 0;
 
@@ -58,10 +57,6 @@ void UrlRetrievalModel::setStatus(UrlRetrievalModel::Status s) {
     if (s != status()) {
         m_status = s;
         emit statusChanged(s);
-
-        if (s != Active) {
-            m_index = -1;
-        }
     }
 }
 
@@ -127,21 +122,12 @@ QVariant UrlRetrievalModel::data(const QModelIndex &index, int role) const {
         switch (index.column()) {
         case 0:
             return m_items.at(index.row()).url;
-        default:
-            return QVariant();
-        }
-    case Qt::DecorationRole:
-        switch (index.column()) {
         case 1:
             if (m_items.at(index.row()).done) {
-                if (!m_items.at(index.row()).results.isEmpty()) {
-                    return QIcon::fromTheme("go-next");
-                }
-                
-                return QIcon::fromTheme("dialog-error");
+                return m_items.at(index.row()).results.size();
             }
 
-            return QIcon::fromTheme("dialog-question");
+            return QVariant();
         default:
             return QVariant();
         }
@@ -235,17 +221,16 @@ void UrlRetrievalModel::cancel() {
 void UrlRetrievalModel::clear() {
     if (!m_items.isEmpty()) {
         cancel();
-        setStatus(Idle);
-        m_index = -1;
         beginResetModel();
         m_items.clear();
+        m_index = -1;
         endResetModel();
         emit countChanged(0);
     }
 }
 
 void UrlRetrievalModel::next() {
-    m_index++;
+    ++m_index;
     emit progressChanged(progress());
 
     if (m_index >= m_items.size()) {

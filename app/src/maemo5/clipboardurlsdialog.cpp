@@ -61,12 +61,14 @@ void ClipboardUrlsDialog::addUrls() {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }

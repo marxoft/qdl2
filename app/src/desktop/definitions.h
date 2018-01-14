@@ -49,6 +49,8 @@ static const QString LIB_SUFFIX(".so");
 
 // Icons
 static const QString DEFAULT_ICON("/usr/share/qdl2/icons/qdl2.png");
+static const QString OK_ICON("dialog-yes");
+static const QString ERROR_ICON("dialog-no");
 
 // Config
 static const QString APP_CONFIG_PATH(HOME_PATH + "/.config/qdl2/");

@@ -46,6 +46,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 {
     setWindowTitle(tr("Preferences"));
 
+    m_tabBar->setExpanding(false);
     m_tabBar->addTab(tr("General"));
     m_tabBar->addTab(tr("Network"));
     m_tabBar->addTab(tr("Interfaces"));

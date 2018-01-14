@@ -20,8 +20,6 @@
 #include "pluginsettings.h"
 #include "searchpluginmanager.h"
 #include "servicepluginmanager.h"
-#include "transfermodel.h"
-#include "utils.h"
 #include <QIcon>
 
 SearchModel::SearchModel(QObject *parent) :

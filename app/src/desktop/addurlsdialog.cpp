@@ -17,6 +17,7 @@
 #include "addurlsdialog.h"
 #include "categoryselectionmodel.h"
 #include "settings.h"
+#include "transferitemprioritymodel.h"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
@@ -38,6 +39,7 @@
 AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     QDialog(parent),
     m_categoryModel(new CategorySelectionModel(this)),
+    m_priorityModel(new TransferItemPriorityModel(this)),
     m_headerModel(new SelectionModel(this)),
     m_tabBar(new QTabBar(this)),
     m_stack(new QStackedWidget(this)),
@@ -46,6 +48,10 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_urlsTab(new QWidget(m_stack)),
     m_urlsEdit(new QTextEdit(m_urlsTab)),
     m_categorySelector(new QComboBox(m_urlsTab)),
+    m_prioritySelector(new QComboBox(m_urlsTab)),
+    m_commandEdit(new QLineEdit(m_urlsTab)),
+    m_subfolderCheckBox(new QCheckBox(tr("Create sub&folder"), m_urlsTab)),
+    m_commandCheckBox(new QCheckBox(tr("&Override global custom command"), m_urlsTab)),
     m_pluginCheckBox(new QCheckBox(tr("Use &plugins"), m_urlsTab)),
     m_urlsLayout(new QFormLayout(m_urlsTab)),
     m_methodTab(0),
@@ -59,7 +65,6 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_headerButton(0),
     m_headerLayout(0),
     m_method("GET")
-    
 {
     setWindowTitle(tr("Add URLs"));
     setAcceptDrops(true);
@@ -69,16 +74,26 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_tabBar->addTab(tr("Headers"));
     m_tabBar->setTabEnabled(1, !Settings::usePlugins());
     m_tabBar->setTabEnabled(2, !Settings::usePlugins());
+    m_tabBar->setExpanding(false);
 
     m_urlsEdit->setFocus(Qt::OtherFocusReason);
     
     m_categorySelector->setModel(m_categoryModel);
     m_categorySelector->setCurrentIndex(m_categorySelector->findData(Settings::defaultCategory()));
-    
+
+    m_prioritySelector->setModel(m_priorityModel);
+    m_prioritySelector->setCurrentIndex(m_prioritySelector->findData(TransferItem::NormalPriority));
+
+    m_subfolderCheckBox->setChecked(Settings::createSubfolders());
+
     m_pluginCheckBox->setChecked(Settings::usePlugins());
     
     m_urlsLayout->addRow(m_urlsEdit);
     m_urlsLayout->addRow(tr("&Category:"), m_categorySelector);
+    m_urlsLayout->addRow(tr("&Priority:"), m_prioritySelector);
+    m_urlsLayout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
+    m_urlsLayout->addRow(m_commandCheckBox);
+    m_urlsLayout->addRow(m_subfolderCheckBox);
     m_urlsLayout->addRow(m_pluginCheckBox);
     
     m_stack->addWidget(m_urlsTab);
@@ -99,9 +114,42 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
 }
 
 void AddUrlsDialog::accept() {
-    Settings::setDefaultCategory(m_categorySelector->itemData(m_categorySelector->currentIndex()).toString());
-    Settings::setUsePlugins(m_pluginCheckBox->isChecked());
+    Settings::setDefaultCategory(category());
+    Settings::setCreateSubfolders(createSubfolder());
+    Settings::setUsePlugins(usePlugins());
     QDialog::accept();
+}
+
+QString AddUrlsDialog::category() const {
+    return m_categorySelector->itemData(m_categorySelector->currentIndex()).toString();
+}
+
+void AddUrlsDialog::setCategory(const QString &category) {
+    m_categorySelector->setCurrentIndex(m_categorySelector->findData(category));
+}
+
+bool AddUrlsDialog::createSubfolder() const {
+    return m_subfolderCheckBox->isChecked();
+}
+
+void AddUrlsDialog::setCreateSubfolder(bool enabled) {
+    m_subfolderCheckBox->setChecked(enabled);
+}
+
+QString AddUrlsDialog::customCommand() const {
+    return m_commandEdit->text();
+}
+
+void AddUrlsDialog::setCustomCommand(const QString &command) {
+    m_commandEdit->setText(command);
+}
+
+bool AddUrlsDialog::customCommandOverrideEnabled() const {
+    return m_commandCheckBox->isChecked();
+}
+
+void AddUrlsDialog::setCustomCommandOverrideEnabled(bool enabled) {
+    m_commandCheckBox->setChecked(enabled);
 }
 
 QString AddUrlsDialog::postData() const {
@@ -114,6 +162,14 @@ void AddUrlsDialog::setPostData(const QString &data) {
     if (m_postEdit) {
         m_postEdit->setText(data);
     }
+}
+
+TransferItem::Priority AddUrlsDialog::priority() const {
+    return TransferItem::Priority(m_prioritySelector->itemData(m_prioritySelector->currentIndex()).toInt());
+}
+
+void AddUrlsDialog::setPriority(TransferItem::Priority priority) {
+    m_prioritySelector->setCurrentIndex(m_prioritySelector->findData(priority));
 }
 
 QVariantMap AddUrlsDialog::requestHeaders() const {
@@ -208,7 +264,7 @@ bool AddUrlsDialog::usePlugins() const {
     return m_pluginCheckBox->isChecked();
 }
 
-void AddUrlsDialog::setUsePlugin(bool enabled) {
+void AddUrlsDialog::setUsePlugins(bool enabled) {
     m_pluginCheckBox->setChecked(enabled);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,210 +19,344 @@
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
-#include "transfermodel.h"
 #include "utils.h"
 
-bool TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
-    
-    if ((parts.isEmpty()) || (parts.size() > 2) || (parts.first() != "transfers")) {
-        return false;
-    }
-    
-    if (parts.size() == 1) {
-        if (request->method() == QHttpRequest::HTTP_GET) {
-            const bool includeChildren = Utils::urlQueryItemValue(request->url(), "includeChildren") == "true";
-            const int offset = qMax(0, Utils::urlQueryItemValue(request->url(), "offset").toInt());
-            const int limit = Utils::urlQueryItemValue(request->url(), "limit").toInt();
-            writeResponse(response, QHttpResponse::STATUS_OK,
-                          QtJson::Json::serialize(Qdl::getTransfers(offset, limit, includeChildren)));
-            return true;
+void TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+    const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();
+
+    if (method == "addtransfer") {
+        // Add transfer
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
+            const QString url = properties.value("url").toString();
+
+            if (!url.isEmpty()) {
+                // OK
+                const QString method = properties.value("requestMethod", "GET").toString();
+                const QVariantMap headers = properties.value("requestHeaders").toMap();
+                const QString data = properties.value("postData").toString();
+                const QString category = properties.value("category").toString();
+                const bool createSubfolder = properties.value("createSubfolder", false).toBool();
+                const int priority = properties.value("priority", TransferItem::NormalPriority).toInt();
+                const QString customCommand = properties.value("customCommand").toString();
+                const bool overrideGlobalCommand = properties.value("customCommandOverrideEnabled", false).toBool();
+                const QVariantMap transfer = Qdl::addTransfer(url, method, headers, data, category, createSubfolder,
+                        priority, customCommand, overrideGlobalCommand);
+                const QByteArray json = QtJson::Json::serialize(transfer);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
         }
-        
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "addtransfers") {
+        // Add transfers
         if (request->method() == QHttpRequest::HTTP_POST) {
             const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
             const QStringList urls = properties.value("urls").toStringList();
-            const QString method = properties.value("requestMethod", "GET").toString();
-            const QVariantMap headers = properties.value("requestHeaders").toMap();
-            const QString data = properties.value("postData").toString();
-            
-            if (urls.isEmpty()) {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+
+            if (!urls.isEmpty()) {
+                // OK
+                const QString method = properties.value("requestMethod", "GET").toString();
+                const QVariantMap headers = properties.value("requestHeaders").toMap();
+                const QString data = properties.value("postData").toString();
+                const QString category = properties.value("category").toString();
+                const bool createSubfolder = properties.value("createSubfolder", false).toBool();
+                const int priority = properties.value("priority", TransferItem::NormalPriority).toInt();
+                const QString customCommand = properties.value("customCommand").toString();
+                const bool overrideGlobalCommand = properties.value("customCommandOverrideEnabled", false).toBool();
+                const QVariantList transfers = Qdl::addTransfers(urls, method, headers, data, category,
+                        createSubfolder, priority, customCommand, overrideGlobalCommand);
+                const QByteArray json = QtJson::Json::serialize(transfers);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                Qdl::addTransfers(urls, method, headers, data);
-                writeResponse(response, QHttpResponse::STATUS_CREATED);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-            
-            return true;
         }
-        
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-
-    if (parts.at(1) == "status") {
+    else if (method == "gettransfers") {
+        // Get transfers
         if (request->method() == QHttpRequest::HTTP_GET) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getTransfersStatus()));
-            return true;
+            // OK
+            const int offset = Utils::urlQueryItemValue(request->url(), "offset", "0").toInt();
+            const int limit = Utils::urlQueryItemValue(request->url(), "limit", "-1").toInt();
+            const QVariantList transfers = Qdl::getTransfers(offset, limit);
+            const QByteArray json = QtJson::Json::serialize(transfers);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
         }
-
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-    
-    if (parts.at(1) == "search") {
+    else if (method == "gettransfersstatus") {
+        // Get transfers status
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantMap status = Qdl::getTransfersStatus();
+            const QByteArray json = QtJson::Json::serialize(status);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "gettransfer") {
+        // Get transfer
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString id = Utils::urlQueryItemValue(request->url(), "id");
+
+            if (!id.isEmpty()) {
+                const QVariantMap transfer = Qdl::getTransfer(id);
+
+                if (!transfer.isEmpty()) {
+                    // OK
+                    const QByteArray json = QtJson::Json::serialize(transfer);
+                    response->setHeader("Content-Type", "application/json");
+                    response->setHeader("Content-Length", QString::number(json.size()));
+                    response->writeHead(QHttpResponse::STATUS_OK);
+                    response->end(json);
+                }
+                else {
+                    // Not found
+                    response->writeHead(QHttpResponse::STATUS_NOT_FOUND);
+                    response->end();
+                }
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "searchtransfers") {
+        // Search transfers
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString property = Utils::urlQueryItemValue(request->url(), "property");
-            const QString value = Utils::urlQueryItemValue(request->url(), "value");
-            const int matchFlags = qMax(0, Utils::urlQueryItemValue(request->url(), "matchFlags").toInt());
-            const int offset = qMax(0, Utils::urlQueryItemValue(request->url(), "offset").toInt());
-            const int limit = Utils::urlQueryItemValue(request->url(), "limit").toInt();
-            const bool includeChildren = Utils::urlQueryItemValue(request->url(), "includeChildren") == "true";
-            
-            if ((property.isEmpty()) || (value.isEmpty())) {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+
+            if (!property.isEmpty()) {
+                // OK
+                const QString value = Utils::urlQueryItemValue(request->url(), "value");
+                const int offset = Utils::urlQueryItemValue(request->url(), "offset", "0").toInt();
+                const int limit = Utils::urlQueryItemValue(request->url(), "limit", "-1").toInt();
+                const QVariantList transfers = Qdl::searchTransfers(property, value, offset, limit);
+                const QByteArray json = QtJson::Json::serialize(transfers);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_OK,
-                QtJson::Json::serialize(Qdl::searchTransfers(property, value, matchFlags, offset, limit,
-                                        includeChildren)));
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-            
-            return true;
         }
-        
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-    
-    if (parts.at(1) == "start") {
+    else if (method == "settransferproperties") {
+        // Set transfer properties
+        if (request->method() == QHttpRequest::HTTP_PUT) {
+            const QString id = Utils::urlQueryItemValue(request->url(), "id");
+
+            if (!id.isEmpty()) {
+                const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
+
+                if (Qdl::setTransferProperties(id, properties)) {
+                    // OK
+                    const QVariantMap transfer = Qdl::getTransfer(id);
+                    const QByteArray json = QtJson::Json::serialize(transfer);
+                    response->setHeader("Content-Type", "application/json");
+                    response->setHeader("Content-Length", QString::number(json.size()));
+                    response->writeHead(QHttpResponse::STATUS_OK);
+                    response->end(json);
+                    return;
+                }
+            }
+
+            // Bad request
+            response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+            response->end();
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "starttransfer") {
+        // Start transfer
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString id = Utils::urlQueryItemValue(request->url(), "id");
 
-            if (id.isEmpty()) {
-                TransferModel::instance()->queue();
-                writeResponse(response, QHttpResponse::STATUS_OK);
-                return true;
-            }
-            
-            if (Qdl::startTransfer(id)) {
-                writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getTransfer(id)));
+            if ((!id.isEmpty()) && (Qdl::startTransfer(id))) {
+                // OK
+                const QVariantMap transfer = Qdl::getTransfer(id);
+                const QByteArray json = QtJson::Json::serialize(transfer);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-            
-            return true;
         }
-        
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-    
-    if (parts.at(1) == "pause") {
+    else if (method == "pausetransfer") {
+        // Pause transfer
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString id = Utils::urlQueryItemValue(request->url(), "id");
 
-            if (id.isEmpty()) {
-                TransferModel::instance()->pause();
-                writeResponse(response, QHttpResponse::STATUS_OK);
-                return true;
-            }
-            
-            if (Qdl::pauseTransfer(id)) {
-                writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getTransfer(id)));
+            if ((!id.isEmpty()) && (Qdl::pauseTransfer(id))) {
+                // OK
+                const QVariantMap transfer = Qdl::getTransfer(id);
+                const QByteArray json = QtJson::Json::serialize(transfer);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-            
-            return true;
         }
-        
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-    
-    if (parts.at(1) == "remove") {
+    else if (method == "removetransfer") {
+        // Remove transfer
         if (request->method() == QHttpRequest::HTTP_GET) {
             const QString id = Utils::urlQueryItemValue(request->url(), "id");
-            const bool deleteFiles = Utils::urlQueryItemValue(request->url(), "deleteFiles") == "true";
+            const bool deleteFiles = Utils::urlQueryItemValue(request->url(), "deleteFiles", "false") == "true";
 
             if ((!id.isEmpty()) && (Qdl::removeTransfer(id, deleteFiles))) {
-                writeResponse(response, QHttpResponse::STATUS_OK);
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-            
-            return true;
         }
-        
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
     }
-
-    if (parts.at(1) == "move") {
+    else if (method == "movetransfers") {
+        // Move transfer
         if (request->method() == QHttpRequest::HTTP_GET) {
-            const QString sourceId = Utils::urlQueryItemValue(request->url(), "sourceId");
+            const QString sourceParentId = Utils::urlQueryItemValue(request->url(), "sourceParentId");
+            const QString destinationParentId = Utils::urlQueryItemValue(request->url(), "destinationParentId");
+            const int sourceRow = Utils::urlQueryItemValue(request->url(), "sourceRow", "0").toInt();
+            const int count = Utils::urlQueryItemValue(request->url(), "count", "1").toInt();
+            const int destinationRow = Utils::urlQueryItemValue(request->url(), "destinationRow", "0").toInt();
 
-            if ((!sourceId.isEmpty()) && (Qdl::moveTransfer(sourceId, Utils::urlQueryItemValue(request->url(),
-                "destinationId"), Utils::urlQueryItemValue(request->url(), "destinationRow").toInt()))) {
-                writeResponse(response, QHttpResponse::STATUS_OK);
+            if (Qdl::moveTransfers(sourceParentId, sourceRow, count, destinationParentId, destinationRow)) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
             }
             else {
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
-
-            return true;
-        }
-
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
-    }
-    
-    if (request->method() == QHttpRequest::HTTP_GET) {
-        const QVariantMap data = Qdl::getTransfer(parts.at(1), Utils::urlQueryItemValue(request->url(),
-                                                  "includeChildren") == "true");
-        
-        if (!data.isEmpty()) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(data));
-            return true;
-        }
-        
-        return false;
-    }
-    
-    if (request->method() == QHttpRequest::HTTP_PUT) {
-        const QString &id = parts.at(1);        
-        const QVariantMap properties = QtJson::Json::parse(request->body()).toMap();
-        
-        if ((properties.isEmpty()) || (!Qdl::setTransferProperties(id, properties))) {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getTransfer(id)));
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
-    
-    if (request->method() == QHttpRequest::HTTP_DELETE) {
-        const QString &id = parts.at(1);
-        const bool deleteFiles = Utils::urlQueryItemValue(request->url(), "deleteFiles") == "true";
-
-        if (Qdl::removeTransfer(id, deleteFiles)) {
-            writeResponse(response, QHttpResponse::STATUS_OK);
+    else if (method == "starttransfers") {
+        // Start transfers
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            Qdl::startTransfers();
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end();
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
-    
-    writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-    return true;
+    else if (method == "pausetransfers") {
+        // Pause transfers
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            Qdl::pauseTransfers();
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end();
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else {
+        // Bad request
+        response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+        response->end();
+    }
 }

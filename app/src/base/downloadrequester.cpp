@@ -214,7 +214,7 @@ void DownloadRequester::updateWaitTime() {
         stopWaitTimer();
         
         if (status() == WaitingInactive) {
-            getDownloadRequest();
+            setStatus(Idle);
         }
     }
 }

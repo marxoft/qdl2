@@ -81,12 +81,14 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
     onStatusChanged(UrlCheckModel::instance()->status());
 }
 
-void UrlCheckDialog::addUrl(const QString &url) {
-    UrlCheckModel::instance()->append(url);
+void UrlCheckDialog::addUrl(const QString &url, const QString &category, bool createSubfolder, int priority,
+        const QString &customCommand, bool overrideGlobalCommand) {
+    UrlCheckModel::instance()->append(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
 }
 
-void UrlCheckDialog::addUrls(const QStringList &urls) {
-    UrlCheckModel::instance()->append(urls);
+void UrlCheckDialog::addUrls(const QStringList &urls, const QString &category, bool createSubfolder, int priority,
+        const QString &customCommand, bool overrideGlobalCommand) {
+    UrlCheckModel::instance()->append(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
 }
 
 void UrlCheckDialog::accept() {

@@ -16,164 +16,120 @@
 
 #include "searchserver.h"
 #include "json.h"
-#include "pluginsettings.h"
+#include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "searchpluginmanager.h"
-#include "serverresponse.h"
 #include "utils.h"
 
-static QVariantList searchResultsToVariantList(const SearchResultList &results) {
-    QVariantList list;
+void SearchServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+    const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();
 
-    foreach (const SearchResult &result, results) {
-        QVariantMap m;
-        m["name"] = result.name;
-        m["description"] = result.description;
-        m["url"] = result.url;
-        list << m;
-    }
-
-    return list;
-}
-
-SearchServer::SearchServer(QObject *parent) :
-    QObject(parent)
-{
-}
-
-bool SearchServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
-    
-    if ((parts.size() != 1) || (parts.first() != "search")) {
-        return false;
-    }
-
-    const QString pluginId = Utils::urlQueryItemValue(request->url(), "pluginId");
-    const QString method = Utils::urlQueryItemValue(request->url(), "method", "search");
-
-    SearchPluginFactory *factory = SearchPluginManager::instance()->getFactoryById(pluginId);
-
-    if (factory) {
-        if (method == "search") {
-            if (request->method() == QHttpRequest::HTTP_GET) {
-                SearchPlugin *plugin = factory->createPlugin(this);
-                addResponse(plugin, response);
-                plugin->search(PluginSettings(pluginId).values());
-            }
-            else if (request->method() == QHttpRequest::HTTP_POST) {
-                SearchPlugin *plugin = factory->createPlugin(this);
-                addResponse(plugin, response);
-                plugin->fetchMore(QtJson::Json::parse(request->body()).toMap());
-            }
-            else {
-                writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-            }
+    if (method == "getplugins") {
+        // Get plugins
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantList plugins = Qdl::getSearchPlugins();
+            const QByteArray json = QtJson::Json::serialize(plugins);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
         }
-        else if (request->method() == QHttpRequest::HTTP_POST) {
-            SearchPlugin *plugin = factory->createPlugin(this);
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "getplugin") {
+        // Get plugin
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString id = Utils::urlQueryItemValue(request->url(), "id");
 
-            if (QMetaObject::invokeMethod(plugin, method.toUtf8(), Qt::QueuedConnection, Q_ARG(QVariantMap,
-                            QtJson::Json::parse(request->body()).toMap()))) {
-                addResponse(plugin, response);
+            if (!id.isEmpty()) {
+                const QVariantMap plugin = Qdl::getSearchPlugin(id);
+
+                if (!plugin.isEmpty()) {
+                    // OK
+                    const QByteArray json = QtJson::Json::serialize(plugin);
+                    response->setHeader("Content-Type", "application/json");
+                    response->setHeader("Content-Length", QString::number(json.size()));
+                    response->writeHead(QHttpResponse::STATUS_OK);
+                    response->end(json);
+                }
+                else {
+                    // Not found
+                    response->writeHead(QHttpResponse::STATUS_NOT_FOUND);
+                    response->end();
+                }
             }
             else {
-                plugin->deleteLater();
-                writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "getpluginsettings") {
+        // Get plugin settings
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            const QString id = Utils::urlQueryItemValue(request->url(), "id");
+
+            if (!id.isEmpty()) {
+                // OK
+                const QVariantList settings = Qdl::getSearchPluginSettings(id);
+                const QByteArray json = QtJson::Json::serialize(settings);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "setpluginsettings") {
+        // Set plugin settings
+        if (request->method() == QHttpRequest::HTTP_PUT) {
+            const QString id = Utils::urlQueryItemValue(request->url(), "id");
+
+            if (!id.isEmpty()) {
+                const QVariantMap settings = QtJson::Json::parse(request->body()).toMap();
+
+                if (Qdl::setSearchPluginSettings(id, settings)) {
+                    // OK
+                    response->writeHead(QHttpResponse::STATUS_OK);
+                    response->end();
+                    return;
+                }
+            }
+
+            // Bad request
+            response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+            response->end();
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
     }
     else {
-        writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-    }
-
-    return true;
-}
-
-void SearchServer::addResponse(SearchPlugin *plugin, QHttpResponse *response) {
-    m_hash.insert(plugin, response);
-    connect(plugin, SIGNAL(error(QString)), this, SLOT(onSearchError(QString)));
-    connect(plugin, SIGNAL(searchCompleted(SearchResultList)),
-            this, SLOT(onSearchCompleted(SearchResultList)));
-    connect(plugin, SIGNAL(searchCompleted(SearchResultList, QVariantMap)),
-            this, SLOT(onSearchCompleted(SearchResultList, QVariantMap)));
-    connect(plugin, SIGNAL(settingsRequest(QString, QVariantList, QByteArray)),
-            this, SLOT(onSettingsRequest(QString, QVariantList, QByteArray)));
-    connect(response, SIGNAL(done()), this, SLOT(onResponseDone()));
-}
-
-QHttpResponse* SearchServer::getResponse(SearchPlugin *plugin) {
-    return m_hash.value(plugin);
-}
-
-void SearchServer::removeResponse(QHttpResponse *response) {
-    if (SearchPlugin *plugin = m_hash.key(response)) {
-        m_hash.remove(plugin);
-        plugin->deleteLater();
-        disconnect(response, 0, this, 0);
-    }
-}
-
-void SearchServer::onSearchCompleted(const SearchResultList &results) {
-    SearchPlugin *plugin = qobject_cast<SearchPlugin*>(sender());
-    QHttpResponse *response = getResponse(plugin);
-
-    if (response) {
-        QVariantMap result;
-        result["result"] = "searchCompleted";
-        result["items"] = searchResultsToVariantList(results);
-        writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(result));
-    }
-}
-
-void SearchServer::onSearchCompleted(const SearchResultList &results, const QVariantMap &nextParams) {
-    SearchPlugin *plugin = qobject_cast<SearchPlugin*>(sender());
-    QHttpResponse *response = getResponse(plugin);
-
-    if (response) {
-        QVariantMap result;
-        result["result"] = "searchCompleted";
-        result["items"] = searchResultsToVariantList(results);
-
-        if (!nextParams.isEmpty()) {
-            result["next"] = nextParams;
-        }
-
-        writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(result));
-    }
-}
-
-void SearchServer::onSearchError(const QString &errorString) {
-    SearchPlugin *plugin = qobject_cast<SearchPlugin*>(sender());
-    QHttpResponse *response = getResponse(plugin);
-
-    if (response) {
-        QVariantMap result;
-        result["result"] = "error";
-        result["error"] = errorString;
-        writeResponse(response, QHttpResponse::STATUS_INTERNAL_SERVER_ERROR, QtJson::Json::serialize(result));
-    }
-}
-
-void SearchServer::onSettingsRequest(const QString &title, const QVariantList &settings, const QByteArray &callback) {
-    SearchPlugin *plugin = qobject_cast<SearchPlugin*>(sender());
-    QHttpResponse *response = getResponse(plugin);
-
-    if (response) {
-        QVariantMap result;
-        result["result"] = "settingsRequest";
-        result["title"] = title;
-        result["settings"] = settings;
-        result["method"] = callback;
-        writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(result));
-    }
-}
-
-void SearchServer::onResponseDone() {
-    if (QHttpResponse *response = qobject_cast<QHttpResponse*>(sender())) {
-        removeResponse(response);
+        // Bad request
+        response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+        response->end();
     }
 }

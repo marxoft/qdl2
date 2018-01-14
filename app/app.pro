@@ -11,17 +11,22 @@ INCLUDEPATH += \
 
 HEADERS += \
     src/base/actionmodel.h \
+    src/base/archiveextractor.h \
+    src/base/archivepasswordmodel.h \
     src/base/captchatype.h \
     src/base/categories.h \
     src/base/categorymodel.h \
     src/base/categoryselectionmodel.h \
+    src/base/clipboardurlmodel.h \
     src/base/concurrenttransfersmodel.h \
-    src/base/downloadrequest.h \
     src/base/downloadrequester.h \
+    src/base/downloadrequestmodel.h \
     src/base/json.h \
     src/base/logger.h \
     src/base/loggerverbositymodel.h \
     src/base/networkproxytypemodel.h \
+    src/base/package.h \
+    src/base/qdl.h \
     src/base/searchmodel.h \
     src/base/searchresult.h \
     src/base/searchselectionmodel.h \
@@ -32,8 +37,8 @@ HEADERS += \
     src/base/transferitem.h \
     src/base/transferitemprioritymodel.h \
     src/base/transfermodel.h \
-    src/base/urlcheck.h \
     src/base/urlchecker.h \
+    src/base/urlcheckmodel.h \
     src/base/urlresult.h \
     src/base/urlretrievalmodel.h \
     src/base/urlretriever.h \
@@ -68,11 +73,17 @@ HEADERS += \
     src/plugins/xmlhttprequest.h
 
 SOURCES += \
+    src/base/archiveextractor.cpp \
+    src/base/archivepasswordmodel.cpp \
     src/base/categories.cpp \
     src/base/categorymodel.cpp \
+    src/base/clipboardurlmodel.cpp \
     src/base/downloadrequester.cpp \
+    src/base/downloadrequestmodel.cpp \
     src/base/json.cpp \
     src/base/logger.cpp \
+    src/base/package.cpp \
+    src/base/qdl.cpp \
     src/base/searchmodel.cpp \
     src/base/selectionmodel.cpp \
     src/base/stringmodel.cpp \
@@ -80,6 +91,7 @@ SOURCES += \
     src/base/transferitem.cpp \
     src/base/transfermodel.cpp \
     src/base/urlchecker.cpp \
+    src/base/urlcheckmodel.cpp \
     src/base/urlretrievalmodel.cpp \
     src/base/urlretriever.cpp \
     src/base/utils.cpp \
@@ -119,30 +131,22 @@ maemo5 {
         src/maemo5/aboutdialog.h \
         src/maemo5/aboutpluginsdialog.h \
         src/maemo5/addurlsdialog.h \
-        src/maemo5/archiveextractor.h \
-        src/maemo5/archivepasswordmodel.h \
         src/maemo5/archivepasswordsdialog.h \
-        src/maemo5/browser.h \
         src/maemo5/captchadialog.h \
         src/maemo5/categoriesdialog.h \
-        src/maemo5/clipboardurlmodel.h \
         src/maemo5/clipboardurlsdialog.h \
         src/maemo5/decaptchapluginsdialog.h \
         src/maemo5/definitions.h \
         src/maemo5/downloadrequestdialog.h \
-        src/maemo5/downloadrequestmodel.h \
-        src/maemo5/imagecache.h \
         src/maemo5/itemdelegate.h \
         src/maemo5/mainwindow.h \
         src/maemo5/multivalueselector.h \
         src/maemo5/networkproxydialog.h \
         src/maemo5/nocaptchadialog.h \
-        src/maemo5/package.h \
         src/maemo5/packagepropertiesdialog.h \
         src/maemo5/page.h \
         src/maemo5/plugindialog.h \
         src/maemo5/pluginsettingsdialog.h \
-        src/maemo5/qdl.h \
         src/maemo5/qmaemo5multilistpickselector.h \
         src/maemo5/recaptchapluginsdialog.h \
         src/maemo5/retrieveurlsdialog.h \
@@ -156,7 +160,6 @@ maemo5 {
         src/maemo5/textinputdialog.h \
         src/maemo5/transferpropertiesdialog.h \
         src/maemo5/urlcheckdialog.h \
-        src/maemo5/urlcheckmodel.h \
         src/maemo5/valueselector.h \
         src/maemo5/valueselectoraction.h
 
@@ -164,30 +167,22 @@ maemo5 {
         src/maemo5/aboutdialog.cpp \
         src/maemo5/aboutpluginsdialog.cpp \
         src/maemo5/addurlsdialog.cpp \
-        src/maemo5/archiveextractor.cpp \
-        src/maemo5/archivepasswordmodel.cpp \
         src/maemo5/archivepasswordsdialog.cpp \
-        src/maemo5/browser.cpp \
         src/maemo5/captchadialog.cpp \
         src/maemo5/categoriesdialog.cpp \
-        src/maemo5/clipboardurlmodel.cpp \
         src/maemo5/clipboardurlsdialog.cpp \
         src/maemo5/decaptchapluginsdialog.cpp \
         src/maemo5/downloadrequestdialog.cpp \
-        src/maemo5/downloadrequestmodel.cpp \
-        src/maemo5/imagecache.cpp \
         src/maemo5/itemdelegate.cpp \
         src/maemo5/main.cpp \
         src/maemo5/mainwindow.cpp \
         src/maemo5/multivalueselector.cpp \
         src/maemo5/networkproxydialog.cpp \
         src/maemo5/nocaptchadialog.cpp \
-        src/maemo5/package.cpp \
         src/maemo5/packagepropertiesdialog.cpp \
         src/maemo5/page.cpp \
         src/maemo5/plugindialog.cpp \
         src/maemo5/pluginsettingsdialog.cpp \
-        src/maemo5/qdl.cpp \
         src/maemo5/qmaemo5multilistpickselector.cpp \
         src/maemo5/recaptchapluginsdialog.cpp \
         src/maemo5/retrieveurlsdialog.cpp \
@@ -201,7 +196,6 @@ maemo5 {
         src/maemo5/textinputdialog.cpp \
         src/maemo5/transferpropertiesdialog.cpp \
         src/maemo5/urlcheckdialog.cpp \
-        src/maemo5/urlcheckmodel.cpp \
         src/maemo5/valueselector.cpp \
         src/maemo5/valueselectoraction.cpp
         
@@ -226,70 +220,7 @@ maemo5 {
         icon64 \
         target
 
-} else:symbian {
-    TARGET = qdl2
-    TARGET.UID3 = 0xE71CBF5C
-    TARGET.CAPABILITY += NetworkServices ReadUserData
-    TARGET.EPOCHEAPSIZE = 0x20000 0x8000000
-    TARGET.EPOCSTACKSIZE = 0x14000
-    
-    VERSION = 2.4.0
-    ICON = desktop/symbian/qdl2.svg
-    
-    MMP_RULES += "DEBUGGABLE_UDEBONLY"
-
-    CONFIG += qtcomponents
-    
-    QT += declarative
-    
-    INCLUDEPATH += src/symbian
-    
-    HEADERS += \
-        src/symbian/definitions.h \
-        src/symbian/maskeditem.h \
-        src/symbian/maskeffect.h \
-        src/symbian/package.h \
-        src/symbian/qdl.h \
-        src/symbian/screenorientationmodel.h \
-        src/symbian/settings.h \
-        src/symbian/transferlistmodel.h \
-        src/symbian/urlcheckmodel.h
-    
-    SOURCES += \
-        src/symbian/main.cpp \
-        src/symbian/maskeditem.cpp \
-        src/symbian/maskeffect.cpp \
-        src/symbian/package.cpp \
-        src/symbian/qdl.cpp \
-        src/symbian/settings.cpp \
-        src/symbian/transferlistmodel.cpp \
-        src/symbian/urlcheckmodel.cpp
-    
-    qml.sources = $$files(src/symbian/qml/*.qml)
-    qml.path = !:/Private/e71cbf5c/qml
-
-    images.sources = $$files(src/symbian/qml/images/*.png)
-    images.path = !:/Private/e71cbf5c/qml/images
-
-    icon.sources = desktop/symbian/qdl2.png
-    icon.path = C:/qdl2/icons
-    
-    vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
-    qtcomponentsdep = "; Default dependency to Qt Quick Components for Symbian library" \
-        "(0x200346DE), 1, 1, 0, {\"Qt Quick components for Symbian\"}"
-
-    qdl2_deployment.pkg_prerules += \
-        vendorinfo \
-        qtcomponentsdep
-
-    DEPLOYMENT.display_name = QDL
-    DEPLOYMENT += \
-        qdl2_deployment \
-        qml \
-        images \
-        icon
-
-} else:unix {
+}  else:unix {
     DEFINES += WEB_INTERFACE
     QT += dbus
     
@@ -307,29 +238,21 @@ maemo5 {
     HEADERS += \
         src/desktop/aboutdialog.h \
         src/desktop/addurlsdialog.h \
-        src/desktop/archiveextractor.h \
-        src/desktop/archivepasswordmodel.h \
-        src/desktop/browser.h \
         src/desktop/captchadialog.h \
         src/desktop/categorysettingspage.h \
-        src/desktop/clipboardurlmodel.h \
         src/desktop/clipboardurlsdialog.h \
         src/desktop/definitions.h \
         src/desktop/decaptchasettingspage.h \
         src/desktop/downloadrequestdialog.h \
-        src/desktop/downloadrequestmodel.h \
         src/desktop/generalsettingspage.h \
-        src/desktop/imagecache.h \
         src/desktop/interfacesettingspage.h \
         src/desktop/networksettingspage.h \
         src/desktop/nocaptchadialog.h \
         src/desktop/mainwindow.h \
-        src/desktop/package.h \
         src/desktop/packagepropertiesdialog.h \
         src/desktop/page.h \
         src/desktop/pluginsettingsdialog.h \
         src/desktop/pluginsettingspage.h \
-        src/desktop/qdl.h \
         src/desktop/recaptchasettingspage.h \
         src/desktop/retrieveurlsdialog.h \
         src/desktop/searchdialog.h \
@@ -342,35 +265,26 @@ maemo5 {
         src/desktop/texteditdialog.h \
         src/desktop/transferdelegate.h \
         src/desktop/transferpropertiesdialog.h \
-        src/desktop/urlcheckdialog.h \
-        src/desktop/urlcheckmodel.h
+        src/desktop/urlcheckdialog.h
 
     SOURCES += \
         src/desktop/aboutdialog.cpp \
         src/desktop/addurlsdialog.cpp \
-        src/desktop/archiveextractor.cpp \
-        src/desktop/archivepasswordmodel.cpp \
-        src/desktop/browser.cpp \
         src/desktop/captchadialog.cpp \
         src/desktop/categorysettingspage.cpp \
-        src/desktop/clipboardurlmodel.cpp \
         src/desktop/clipboardurlsdialog.cpp \
         src/desktop/decaptchasettingspage.cpp \
         src/desktop/downloadrequestdialog.cpp \
-        src/desktop/downloadrequestmodel.cpp \
         src/desktop/generalsettingspage.cpp \
-        src/desktop/imagecache.cpp \
         src/desktop/interfacesettingspage.cpp \
         src/desktop/networksettingspage.cpp \
         src/desktop/nocaptchadialog.cpp \
         src/desktop/main.cpp \
         src/desktop/mainwindow.cpp \
-        src/desktop/package.cpp \
         src/desktop/packagepropertiesdialog.cpp \
         src/desktop/page.cpp \
         src/desktop/pluginsettingsdialog.cpp \
         src/desktop/pluginsettingspage.cpp \
-        src/desktop/qdl.cpp \
         src/desktop/recaptchasettingspage.cpp \
         src/desktop/retrieveurlsdialog.cpp \
         src/desktop/searchdialog.cpp \
@@ -383,8 +297,7 @@ maemo5 {
         src/desktop/texteditdialog.cpp \
         src/desktop/transferdelegate.cpp \
         src/desktop/transferpropertiesdialog.cpp \
-        src/desktop/urlcheckdialog.cpp \
-        src/desktop/urlcheckmodel.cpp
+        src/desktop/urlcheckdialog.cpp
         
     dbus.path = /usr/share/dbus-1/services
     dbus.files = dbus/desktop/org.marxoft.qdl2.service
@@ -433,17 +346,14 @@ contains(DEFINES, WEB_INTERFACE) {
         src/qhttpserver/qhttpserver.h \
         src/qhttpserver/qhttpserverapi.h \
         src/qhttpserver/qhttpserverfwd.h \
-        src/webif/applicationserver.h \
         src/webif/categoryserver.h \
-        src/webif/decaptchapluginconfigserver.h \
+        src/webif/clipboardserver.h \
+        src/webif/decaptchaserver.h \
         src/webif/downloadrequestserver.h \
         src/webif/fileserver.h \
-        src/webif/imagecacheserver.h \
-        src/webif/recaptchapluginconfigserver.h \
+        src/webif/recaptchaserver.h \
         src/webif/searchserver.h \
-        src/webif/searchpluginconfigserver.h \
-        src/webif/serverresponse.h \
-        src/webif/servicepluginconfigserver.h \
+        src/webif/serviceserver.h \
         src/webif/settingsserver.h \
         src/webif/transferserver.h \
         src/webif/urlcheckserver.h \
@@ -456,16 +366,14 @@ contains(DEFINES, WEB_INTERFACE) {
         src/qhttpserver/qhttprequest.cpp \
         src/qhttpserver/qhttpresponse.cpp \
         src/qhttpserver/qhttpserver.cpp \
-        src/webif/applicationserver.cpp \
         src/webif/categoryserver.cpp \
-        src/webif/decaptchapluginconfigserver.cpp \
+        src/webif/clipboardserver.cpp \
+        src/webif/decaptchaserver.cpp \
         src/webif/downloadrequestserver.cpp \
         src/webif/fileserver.cpp \
-        src/webif/imagecacheserver.cpp \
-        src/webif/recaptchapluginconfigserver.cpp \
+        src/webif/recaptchaserver.cpp \
         src/webif/searchserver.cpp \
-        src/webif/searchpluginconfigserver.cpp \
-        src/webif/servicepluginconfigserver.cpp \
+        src/webif/serviceserver.cpp \
         src/webif/settingsserver.cpp \
         src/webif/transferserver.cpp \
         src/webif/urlcheckserver.cpp \

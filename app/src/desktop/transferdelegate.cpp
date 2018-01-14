@@ -25,7 +25,7 @@ TransferDelegate::TransferDelegate(QObject *parent) :
 }
 
 void TransferDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    if (index.column() == 2) {
+    if (index.column() == 3) {
         QStyleOptionProgressBar bar;
         bar.rect = option.rect;
         bar.minimum = 0;

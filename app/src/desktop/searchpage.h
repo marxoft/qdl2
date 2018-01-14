@@ -20,10 +20,10 @@
 #include "page.h"
 #include "searchmodel.h"
 
-class Browser;
 class QHBoxLayout;
 class QListView;
 class QSplitter;
+class QWebView;
 
 class SearchPage : public Page
 {
@@ -31,6 +31,7 @@ class SearchPage : public Page
 
 public:
     explicit SearchPage(QWidget *parent = 0);
+    ~SearchPage();
 
     virtual QString errorString() const;
 
@@ -44,12 +45,8 @@ protected:
     virtual void closeEvent(QCloseEvent *event);
 
 private Q_SLOTS:
-    void addUrl(const QModelIndex &index);
-    void copyUrl(const QModelIndex &index);
-    void retrieveUrls(const QModelIndex &index);
-    void fetchDownloadRequests(const QModelIndex &index);
-    
     void showContextMenu(const QPoint &pos);
+    void showBrowserContextMenu(const QPoint &pos);
     
     void showItemDetails(const QModelIndex &index);
     
@@ -58,15 +55,22 @@ private Q_SLOTS:
     void onModelStatusChanged();
 
 private:
+    void addUrl(const QString &url);
+    void copyUrl(const QString &url);
+    void retrieveUrls(const QString &url);
+    void fetchDownloadRequests(const QString &url);
+
     SearchModel *m_model;
     
     QSplitter *m_splitter;
     
     QListView *m_view;
     
-    Browser *m_browser;
+    QWebView *m_browser;
     
     QHBoxLayout *m_layout;
+
+    static const QByteArray STYLE_SHEET;
 };
 
 #endif // SEARCHPAGE_H

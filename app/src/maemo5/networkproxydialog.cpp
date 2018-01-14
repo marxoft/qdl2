@@ -95,4 +95,5 @@ void NetworkProxyDialog::accept() {
     Settings::setNetworkProxyPassword(m_passwordEdit->text());
     Settings::setNetworkProxyPort(m_portSpinBox->value());
     Settings::setNetworkProxy();
+    QDialog::accept();
 }

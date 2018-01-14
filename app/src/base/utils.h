@@ -39,6 +39,7 @@ public Q_SLOTS:
     static bool belongsToArchive(const QString &fileName, const QString &archiveFileName);
 
     static QString getSanitizedFileName(const QString &fileName);
+    static QString getSaveDirectory(const QString &directory);
     static QString getSaveFileName(const QString &fileName, const QString &outputDirectory);
 
     static QList< QPair<QString, QString> > urlQueryItems(const QUrl &url);

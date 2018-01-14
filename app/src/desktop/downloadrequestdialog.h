@@ -30,13 +30,13 @@ class DownloadRequestDialog : public QDialog
 {
     Q_OBJECT
 
-    Q_PROPERTY(DownloadRequestList results READ results)
+    Q_PROPERTY(DownloadResultList results READ results)
     Q_PROPERTY(QString resultsString READ resultsString)
 
 public:
     explicit DownloadRequestDialog(QWidget *parent = 0);
 
-    DownloadRequestList results() const;
+    DownloadResultList results() const;
     QString resultsString() const;
 
 public Q_SLOTS:

@@ -15,26 +15,6 @@ maemo5 {
         icon \
         plugin
 
-} else:symbian {
-    config.sources = qdl2-spankbang.json
-    config.path = !:/qdl2/plugins/services
-
-    icon.sources = qdl2-spankbang.jpg
-    icon.path = !:/qdl2/plugins/icons
-
-    plugin.sources = qdl2-spankbang.js
-    plugin.path = !:/qdl2/plugins/services
-
-    vendorinfo += "%{\"Stuart Howarth\"}" ":\"Stuart Howarth\""
-    spankbang_deployment.pkg_prerules += vendorinfo
-
-    DEPLOYMENT.display_name = QDL Plugins SpankBang
-    DEPLOYMENT += \
-        spankbang_deployment \
-        config \
-        icon \
-        plugin
-
 } else:unix {
     config.files = qdl2-spankbang.json
     config.path = /usr/share/qdl2/plugins/services

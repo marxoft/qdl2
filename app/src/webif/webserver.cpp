@@ -15,20 +15,20 @@
  */
 
 #include "webserver.h"
-#include "applicationserver.h"
 #include "categoryserver.h"
-#include "decaptchapluginconfigserver.h"
+#include "clipboardserver.h"
+#include "decaptchaserver.h"
 #include "definitions.h"
 #include "downloadrequestserver.h"
 #include "fileserver.h"
-#include "imagecacheserver.h"
-#include "recaptchapluginconfigserver.h"
+#include "json.h"
+#include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
 #include "qhttpserver.h"
+#include "recaptchaserver.h"
 #include "searchserver.h"
-#include "searchpluginconfigserver.h"
-#include "servicepluginconfigserver.h"
+#include "serviceserver.h"
 #include "settingsserver.h"
 #include "transferserver.h"
 #include "urlcheckserver.h"
@@ -39,8 +39,6 @@ WebServer* WebServer::self = 0;
 WebServer::WebServer() :
     QObject(),
     m_server(0),
-    m_imageServer(0),
-    m_searchServer(0),
     m_port(8080),
     m_authenticationEnabled(false),
     m_status(Idle)
@@ -159,14 +157,6 @@ void WebServer::init() {
         connect(m_server, SIGNAL(newRequest(QHttpRequest*,QHttpResponse*)),
                 this, SLOT(onNewRequest(QHttpRequest*,QHttpResponse*)));
     }
-
-    if (!m_imageServer) {
-        m_imageServer = new ImageCacheServer(this);
-    }
-
-    if (!m_searchServer) {
-        m_searchServer = new SearchServer(this);
-    }
 }
 
 void WebServer::onNewRequest(QHttpRequest *request, QHttpResponse *response) {
@@ -174,14 +164,13 @@ void WebServer::onNewRequest(QHttpRequest *request, QHttpResponse *response) {
         const QByteArray auth = request->header("authorization").section(" ", -1).toUtf8();
         
         if (auth != m_auth) {
-            response->setHeader("WWW-Authenticate", "Basic realm=\"cuteNews\"");
-            response->setHeader("Content-Length", "0");
+            response->setHeader("WWW-Authenticate", "Basic realm=\"QDL\"");
             response->writeHead(QHttpResponse::STATUS_UNAUTHORIZED);
             response->end();
             return;
         }
     }
-    
+
     request->storeBody();
     
     if (request->successful()) {
@@ -211,76 +200,42 @@ void WebServer::onRequestEnd() {
 }
 
 void WebServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    if (request->path().startsWith("/app")) {
-        if (ApplicationServer::handleRequest(request, response)) {
-            return;
-        }
+    const QString server = request->path().section("/", 1, 1).toLower();
+
+    if (server == "transfers") {
+        TransferServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/categories")) {
-        if (CategoryServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "categories") {
+        CategoryServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/images")) {
-        if (m_imageServer->handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "clipboard") {
+        ClipboardServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/decaptchaplugins")) {
-        if (DecaptchaPluginConfigServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "decaptcha") {
+        DecaptchaServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/recaptchaplugins")) {
-        if (RecaptchaPluginConfigServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "downloadrequests") {
+        DownloadRequestServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/searchplugins")) {
-        if (SearchPluginConfigServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "recaptcha") {
+        RecaptchaServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/serviceplugins")) {
-        if (ServicePluginConfigServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "search") {
+        SearchServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/downloadrequest")) {
-        if (DownloadRequestServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "services") {
+        ServiceServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/search")) {
-        if (m_searchServer->handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "settings") {
+        SettingsServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/settings")) {
-        if (SettingsServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "urlchecks") {
+        UrlCheckServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/transfers")) {
-        if (TransferServer::handleRequest(request, response)) {
-            return;
-        }
+    else if (server == "urlretrievals") {
+        UrlRetrievalServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/urlcheck")) {
-        if (UrlCheckServer::handleRequest(request, response)) {
-            return;
-        }
+    else {
+        FileServer::handleRequest(request, response);
     }
-    else if (request->path().startsWith("/urlretrieval")) {
-        if (UrlRetrievalServer::handleRequest(request, response)) {
-            return;
-        }
-    }
-    else if (FileServer::handleRequest(request, response)) {
-        return;
-    }
-    
-    response->setHeader("Content-Length", "0");
-    response->writeHead(QHttpResponse::STATUS_NOT_FOUND);
-    response->end();
 }

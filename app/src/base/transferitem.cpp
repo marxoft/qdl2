@@ -389,10 +389,6 @@ bool TransferItem::canCancel() const {
 }
 
 bool TransferItem::queue() {
-    if (!canStart()) {
-        return false;
-    }
-    
     foreach (TransferItem *child, m_childItems) {
         child->queue();
     }

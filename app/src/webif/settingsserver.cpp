@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,41 +19,52 @@
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
-#include "utils.h"
 
-bool SettingsServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    if (request->path() != "/settings") {
-        return false;
-    }
-    
-    if (request->method() == QHttpRequest::HTTP_GET) {
-        const QStringList settings =
-        Utils::urlQueryItemValue(request->url(), "settings").split(",", QString::SkipEmptyParts);
+void SettingsServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+     const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();   
 
-        if (settings.isEmpty()) {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-        }
-        else {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getSettings(settings)));
-        }
-        
-        return true;
-    }
-    
-    if (request->method() == QHttpRequest::HTTP_PUT) {
-        const QVariantMap settings = QtJson::Json::parse(QString::fromUtf8(request->body())).toMap();
-        
-        if ((settings.isEmpty()) || (!Qdl::setSettings(settings))) {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-        }
-        else {
-            writeResponse(response, QHttpResponse::STATUS_OK);
-        }
-        
-        return true;
-    }
-    
-    writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-    return true;
+     if (method == "getsettings") {
+         // Get settings
+         if (request->method() == QHttpRequest::HTTP_GET) {
+             // OK
+             const QVariantMap settings = Qdl::getSettings();
+             const QByteArray json = QtJson::Json::serialize(settings);
+             response->setHeader("Content-Type", "application/json");
+             response->setHeader("Content-Length", QString::number(json.size()));
+             response->writeHead(QHttpResponse::STATUS_OK);
+             response->end(json);
+         }
+         else {
+             // Method not allowed
+             response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+             response->end();
+         }
+     }
+     else if (method == "setsettings") {
+         // Set settings
+         if (request->method() == QHttpRequest::HTTP_PUT) {
+             const QVariantMap settings = QtJson::Json::parse(request->body()).toMap();
+
+             if ((!settings.isEmpty()) && (Qdl::setSettings(settings))) {
+                 // OK
+                 response->writeHead(QHttpResponse::STATUS_OK);
+                 response->end();
+             }
+             else {
+                 // Bad request
+                 response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                 response->end();
+             }
+         }
+         else {
+             // Method not allowed
+             response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+             response->end();
+         }
+     }
+     else {
+         // Bad request
+         response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+         response->end();
+     }
 }

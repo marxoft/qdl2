@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Stuart Howarth <showarth@marxoft.co.uk>
+ * Copyright (C) 2017 Stuart Howarth <showarth@marxoft.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -18,35 +18,36 @@
 #include "definitions.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
 #include <QFile>
 
-bool FileServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    if (request->method() != QHttpRequest::HTTP_GET) {
-        writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-        return true;
-    }
-    
+void FileServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
     QString filePath = request->path();
     const QString dir = filePath.left(filePath.lastIndexOf("/") + 1);
-    
+
     if (!WEB_INTERFACE_ALLOWED_PATHS.contains(dir)) {
         filePath = filePath.mid(filePath.indexOf("/") + 1);
         filePath.prepend(WEB_INTERFACE_PATH);
     }
-        
-    if (!QFile::exists(filePath)) {
-        return false;
+
+    if (QFile::exists(filePath)) {
+        QFile file(filePath);
+
+        if (file.open(QFile::ReadOnly)) {
+            // OK
+            response->setHeader("Content-Length", QString::number(file.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(file.readAll());
+            file.close();
+        }
+        else {
+            // Internal server error
+            response->writeHead(QHttpResponse::STATUS_INTERNAL_SERVER_ERROR);
+            response->end();
+        }
     }
-    
-    QFile file(filePath);
-    
-    if (file.open(QFile::ReadOnly)) {
-        writeResponse(response, QHttpResponse::STATUS_OK, file.readAll());
-        file.close();
-        return true;
+    else {
+        // Not found
+        response->writeHead(QHttpResponse::STATUS_NOT_FOUND);
+        response->end();
     }
-    
-    writeResponse(response, QHttpResponse::STATUS_INTERNAL_SERVER_ERROR);
-    return true;
 }

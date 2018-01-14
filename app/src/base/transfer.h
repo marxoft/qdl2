@@ -153,13 +153,13 @@ public:
     QString waitTimeString() const;
 
 public Q_SLOTS:
-    bool queue();
-    bool start();
-    bool pause();
-    bool cancel(bool deleteFiles = false);
+    virtual bool queue();
+    virtual bool start();
+    virtual bool pause();
+    virtual bool cancel(bool deleteFiles = false);
 
-    void restore(const QSettings &settings);
-    void save(QSettings &settings);
+    virtual void restore(const QSettings &settings);
+    virtual void save(QSettings &settings);
 
     bool submitCaptchaResponse(const QString &response);
     bool submitSettingsResponse(const QVariantMap &settings);

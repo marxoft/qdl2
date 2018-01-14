@@ -11,12 +11,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with plugin.program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 (function() {
     var request = null;
-    var plugin = ServicePlugin();
+    var plugin = new ServicePlugin();
 
     plugin.checkUrl = function(url) {
         if (url.substring(url.length - 4) == ".mp4") {

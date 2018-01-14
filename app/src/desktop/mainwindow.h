@@ -26,7 +26,6 @@ class QLabel;
 class QSpinBox;
 class QStackedWidget;
 class QTabBar;
-class QToolButton;
 class QTreeView;
 class QVBoxLayout;
 
@@ -36,6 +35,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+
+    virtual QSize sizeHint() const;
 
 protected:
     virtual void closeEvent(QCloseEvent *event);

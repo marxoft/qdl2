@@ -6,6 +6,6 @@ Terminal=false
 Name=QDL
 GenericName=Plugin-based download manager
 Comment=Download files from the internet
-Exec=/opt/qdl2/bin/qdl2
+Exec=qdl2
 Icon=/usr/share/icons/hicolor/64x64/apps/qdl2.png
 Categories=Network

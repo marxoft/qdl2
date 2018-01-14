@@ -39,7 +39,6 @@ GeneralSettingsPage::GeneralSettingsPage(QWidget *parent) :
     m_concurrentSpinBox(new QSpinBox(this)),
     m_commandCheckBox(new QCheckBox(tr("&Enable custom command"), this)),
     m_automaticCheckBox(new QCheckBox(tr("Start downloads &automatically"), this)),
-    m_subfoldersCheckBox(new QCheckBox(tr("Create &subfolders for downloads"), this)),
     m_clipboardCheckBox(new QCheckBox(tr("Monitor &clipboard for URLs"), this)),
     m_extractCheckBox(new QCheckBox(tr("&Extract archives"), this)),
     m_deleteCheckBox(new QCheckBox(tr("&Delete extracted archives"), this)),
@@ -61,7 +60,6 @@ GeneralSettingsPage::GeneralSettingsPage(QWidget *parent) :
     m_layout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
     m_layout->addRow(m_commandCheckBox);
     m_layout->addRow(m_automaticCheckBox);
-    m_layout->addRow(m_subfoldersCheckBox);
     m_layout->addRow(m_clipboardCheckBox);
     m_layout->addRow(m_extractCheckBox);
     m_layout->addRow(m_deleteCheckBox);
@@ -85,7 +83,6 @@ void GeneralSettingsPage::restore() {
     m_commandEdit->setText(Settings::customCommand());
     m_commandCheckBox->setChecked(Settings::customCommandEnabled());
     m_automaticCheckBox->setChecked(Settings::startTransfersAutomatically());
-    m_subfoldersCheckBox->setChecked(Settings::createSubfolders());
     m_clipboardCheckBox->setChecked(Settings::clipboardMonitorEnabled());
     m_extractCheckBox->setChecked(Settings::extractArchives());
     m_deleteCheckBox->setChecked(Settings::deleteExtractedArchives());
@@ -97,7 +94,6 @@ void GeneralSettingsPage::save() {
     Settings::setCustomCommand(m_commandEdit->text());
     Settings::setCustomCommandEnabled(m_commandCheckBox->isChecked());
     Settings::setStartTransfersAutomatically(m_automaticCheckBox->isChecked());
-    Settings::setCreateSubfolders(m_subfoldersCheckBox->isChecked());
     Settings::setClipboardMonitorEnabled(m_clipboardCheckBox->isChecked());
     Settings::setExtractArchives(m_extractCheckBox->isChecked());
     Settings::setDeleteExtractedArchives(m_deleteCheckBox->isChecked());

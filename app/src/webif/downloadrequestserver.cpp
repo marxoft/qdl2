@@ -19,85 +19,132 @@
 #include "qdl.h"
 #include "qhttprequest.h"
 #include "qhttpresponse.h"
-#include "serverresponse.h"
 
-bool DownloadRequestServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
-    const QStringList parts = request->path().split("/", QString::SkipEmptyParts);
-    
-    if ((parts.isEmpty()) || (parts.size() > 2) || ((parts.first() != "downloadrequest")
-                && (parts.first() != "downloadrequestcaptcha") && (parts.first() != "downloadrequestsettings"))) {
-        return false;
-    }
+void DownloadRequestServer::handleRequest(QHttpRequest *request, QHttpResponse *response) {
+    const QString method = request->path().mid(request->path().lastIndexOf("/") + 1).toLower();
 
-    if (parts.size() == 1) {
-        if (request->method() == QHttpRequest::HTTP_GET) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(Qdl::getDownloadRequests()));
-            return true;
-        }
-
+    if (method == "addrequests") {
+        // Add download requests
         if (request->method() == QHttpRequest::HTTP_POST) {
-            if (parts.first() == "downloadrequestcaptcha") {
-                if (Qdl::submitDownloadRequestCaptchaResponse(QString::fromUtf8(request->body()))) {
-                    writeResponse(response, QHttpResponse::STATUS_OK,
-                            QtJson::Json::serialize(Qdl::getDownloadRequests()));
-                }
-                else {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
-            }
-            if (parts.first() == "downloadrequestsettings") {
-                if (Qdl::submitDownloadRequestSettingsResponse(QtJson::Json::parse(request->body()).toMap())) {
-                    writeResponse(response, QHttpResponse::STATUS_OK,
-                            QtJson::Json::serialize(Qdl::getDownloadRequests()));
-                }
-                else {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
+            const QStringList urls = QtJson::Json::parse(request->body()).toStringList();
+
+            if (!urls.isEmpty()) {
+                // OK
+                Qdl::addDownloadRequests(urls);
+                const QVariantList requests = Qdl::getDownloadRequests();
+                const QByteArray json = QtJson::Json::serialize(requests);
+                response->setHeader("Content-Type", "application/json");
+                response->setHeader("Content-Length", QString::number(json.size()));
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end(json);
             }
             else {
-                const QStringList urls = QString::fromUtf8(request->body()).split(",", QString::SkipEmptyParts);
-                
-                if (urls.isEmpty()) {
-                    writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
-                }
-                else {
-                    Qdl::addDownloadRequests(urls);
-                    writeResponse(response, QHttpResponse::STATUS_CREATED);
-                }
-                
-                return true;
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
             }
         }
-
-        if (request->method() == QHttpRequest::HTTP_DELETE) {
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "clearrequests") {
+        // Clear download requests
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
             Qdl::clearDownloadRequests();
-            writeResponse(response, QHttpResponse::STATUS_OK);
-            return true;
-        }
-    }
-
-    if (request->method() == QHttpRequest::HTTP_GET) {
-        const QVariantMap data = Qdl::getDownloadRequest(parts.at(1));
-
-        if (!data.isEmpty()) {
-            writeResponse(response, QHttpResponse::STATUS_OK, QtJson::Json::serialize(data));
-            return true;
-        }
-
-        return false;
-    }
-
-    if (request->method() == QHttpRequest::HTTP_DELETE) {
-        if (Qdl::removeDownloadRequest(parts.at(1))) {
-            writeResponse(response, QHttpResponse::STATUS_OK);
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end();
         }
         else {
-            writeResponse(response, QHttpResponse::STATUS_BAD_REQUEST);
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
         }
-
-        return true;
     }
+    else if (method == "getrequests") {
+        // Get download requests
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantList requests = Qdl::getDownloadRequests();
+            const QByteArray json = QtJson::Json::serialize(requests);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "getstatus") {
+        // Get status
+        if (request->method() == QHttpRequest::HTTP_GET) {
+            // OK
+            const QVariantMap status = Qdl::getDownloadRequestsStatus();
+            const QByteArray json = QtJson::Json::serialize(status);
+            response->setHeader("Content-Type", "application/json");
+            response->setHeader("Content-Length", QString::number(json.size()));
+            response->writeHead(QHttpResponse::STATUS_OK);
+            response->end(json);
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "submitcaptcharesponse") {
+        // Submit captcha response
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QString captcha = QString::fromUtf8(request->body());
 
-    writeResponse(response, QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
-    return true;
+            if (Qdl::submitDownloadRequestCaptchaResponse(captcha)) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else if (method == "submitsettingsresponse") {
+        // Submit settings response
+        if (request->method() == QHttpRequest::HTTP_POST) {
+            const QVariantMap settings = QtJson::Json::parse(request->body()).toMap();
+
+            if (Qdl::submitDownloadRequestSettingsResponse(settings)) {
+                // OK
+                response->writeHead(QHttpResponse::STATUS_OK);
+                response->end();
+            }
+            else {
+                // Bad request
+                response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+                response->end();
+            }
+        }
+        else {
+            // Method not allowed
+            response->writeHead(QHttpResponse::STATUS_METHOD_NOT_ALLOWED);
+            response->end();
+        }
+    }
+    else {
+        // Bad request
+        response->writeHead(QHttpResponse::STATUS_BAD_REQUEST);
+        response->end();
+    }
 }

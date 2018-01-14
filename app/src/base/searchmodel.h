@@ -22,7 +22,6 @@
 #include <QAbstractListModel>
 
 class SearchPlugin;
-class QTimer;
 
 class SearchModel : public QAbstractListModel
 {

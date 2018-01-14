@@ -16,7 +16,6 @@
 
 #include "searchpage.h"
 #include "addurlsdialog.h"
-#include "browser.h"
 #include "downloadrequestdialog.h"
 #include "pluginsettingsdialog.h"
 #include "retrieveurlsdialog.h"
@@ -30,13 +29,18 @@
 #include <QListView>
 #include <QMenu>
 #include <QSplitter>
+#include <QWebHitTestResult>
+#include <QWebView>
+
+const QByteArray SearchPage::STYLE_SHEET = QByteArray("data:text/css;charset=utf-8;base64,")
+    + QByteArray("img { max-width: 100%; } iframe { max-width: 100%; }").toBase64();
 
 SearchPage::SearchPage(QWidget *parent) :
     Page(parent),
     m_model(new SearchModel(this)),
     m_splitter(new QSplitter(Qt::Horizontal, this)),
     m_view(new QListView(m_splitter)),
-    m_browser(new Browser(m_splitter)),
+    m_browser(new QWebView(m_splitter)),
     m_layout(new QHBoxLayout(this))
 {
     setWindowTitle(tr("Search"));
@@ -47,6 +51,11 @@ SearchPage::SearchPage(QWidget *parent) :
     m_view->setModel(m_model);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
     m_view->setUniformItemSizes(true);
+
+    m_browser->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_browser->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    m_browser->settings()->setAttribute(QWebSettings::JavascriptEnabled, false);
+    m_browser->settings()->setUserStyleSheetUrl(QUrl::fromEncoded(STYLE_SHEET));
     
     m_layout->addWidget(m_splitter);
     m_layout->setContentsMargins(0, 0, 0, 0);
@@ -59,6 +68,11 @@ SearchPage::SearchPage(QWidget *parent) :
     connect(m_view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     connect(m_view->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this, SLOT(showItemDetails(QModelIndex)));
+    connect(m_browser, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showBrowserContextMenu(QPoint)));
+}
+
+SearchPage::~SearchPage() {
+    QWebSettings::clearMemoryCaches();
 }
 
 QString SearchPage::errorString() const {
@@ -99,9 +113,9 @@ void SearchPage::search(const QString &pluginId) {
     m_model->search(pluginId);
 }
 
-void SearchPage::addUrl(const QModelIndex &index) {
+void SearchPage::addUrl(const QString &url) {
     AddUrlsDialog addDialog(this);
-    addDialog.setText(index.data(SearchModel::UrlRole).toString());
+    addDialog.setText(url);
 
     if (addDialog.exec() == QDialog::Accepted) {
         const QStringList urls = addDialog.urls();
@@ -109,24 +123,26 @@ void SearchPage::addUrl(const QModelIndex &index) {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }
 }
 
-void SearchPage::copyUrl(const QModelIndex &index) {
-    QApplication::clipboard()->setText(index.data(SearchModel::UrlRole).toString());
+void SearchPage::copyUrl(const QString &url) {
+    QApplication::clipboard()->setText(url);
 }
 
-void SearchPage::retrieveUrls(const QModelIndex &index) {
+void SearchPage::retrieveUrls(const QString &url) {
     RetrieveUrlsDialog retrieveDialog(this);
-    retrieveDialog.setText(index.data(SearchModel::UrlRole).toString());
+    retrieveDialog.setText(url);
 
     if (retrieveDialog.exec() == QDialog::Accepted) {
         const QStringList results = retrieveDialog.results();
@@ -141,9 +157,9 @@ void SearchPage::retrieveUrls(const QModelIndex &index) {
     }
 }
 
-void SearchPage::fetchDownloadRequests(const QModelIndex &index) {
+void SearchPage::fetchDownloadRequests(const QString &url) {
     DownloadRequestDialog dialog(this);
-    dialog.addUrl(index.data(SearchModel::UrlRole).toString());
+    dialog.addUrl(url);
     dialog.exec();
     const QString results = dialog.resultsString();
     dialog.clear();
@@ -175,16 +191,49 @@ void SearchPage::showContextMenu(const QPoint &pos) {
     }
     
     if (action == copyAction) {
-        copyUrl(index);
+        copyUrl(index.data(SearchModel::UrlRole).toString());
     }
     else if (action == addAction) {
-        addUrl(index);
+        addUrl(index.data(SearchModel::UrlRole).toString());
     }
     else if (action == retrieveAction) {
-        retrieveUrls(index);
+        retrieveUrls(index.data(SearchModel::UrlRole).toString());
     }
     else if (action == downloadAction) {
-        fetchDownloadRequests(index);
+        fetchDownloadRequests(index.data(SearchModel::UrlRole).toString());
+    }
+}
+
+void SearchPage::showBrowserContextMenu(const QPoint &pos) {
+    const QWebHitTestResult result = m_browser->page()->mainFrame()->hitTestContent(pos);
+    const QString url = result.linkUrl().toString();
+
+    if (url.isEmpty()) {
+        return;
+    }
+
+    QMenu menu(this);
+    QAction *copyAction = menu.addAction(QIcon::fromTheme("edit-copy"), tr("&Copy URL"));
+    QAction *addAction = menu.addAction(QIcon::fromTheme("list-add"), tr("&Add URL"));
+    QAction *retrieveAction = menu.addAction(QIcon::fromTheme("folder-remote"), tr("&Retrieve URLs"));
+    QAction *downloadAction = menu.addAction(QIcon::fromTheme("download"), tr("Retrieve &download requests"));
+    QAction *action = menu.exec(m_browser->mapToGlobal(pos));
+    
+    if (!action) {
+        return;
+    }
+    
+    if (action == copyAction) {
+        copyUrl(url);
+    }
+    else if (action == addAction) {
+        addUrl(url);
+    }
+    else if (action == retrieveAction) {
+        retrieveUrls(url);
+    }
+    else if (action == downloadAction) {
+        fetchDownloadRequests(url);
     }
 }
 

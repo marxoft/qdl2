@@ -63,8 +63,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_packageMenu(new QMenu(tr("Package"), this)),
     m_concurrentAction(new ValueSelectorAction(tr("Maximum concurrent DLs"), this)),
     m_nextAction(new ValueSelectorAction(tr("After current DLs"), this)),
-    m_queueAction(new QAction(tr("Start all DLs"), this)),
-    m_pauseAction(new QAction(tr("Pause all DLs"), this)),
     m_searchAction(new QAction(tr("Search"), this)),
     m_settingsAction(new QAction(tr("Settings"), this)),
     m_pluginsAction(new QAction(tr("Load plugins"), this)),
@@ -74,11 +72,15 @@ MainWindow::MainWindow(QWidget *parent) :
     m_lastPageAction(new QAction(tr("Last tab"), this)),
     m_nextPageAction(new QAction(tr("Next tab"), this)),
     m_previousPageAction(new QAction(tr("Previous tab"), this)),
+    m_scrollBottomAction(new QAction(tr("Scroll to bottom"), this)),
+    m_scrollTopAction(new QAction(tr("Scroll to top"), this)),
     m_addUrlsAction(new QAction(QIcon::fromTheme("general_add"), tr("Add URLs"), this)),
     m_importUrlsAction(new QAction(QIcon::fromTheme("general_toolbar_folder"), tr("Import URLs"), this)),
     m_retrieveUrlsAction(new QAction(QIcon::fromTheme("general_search"), tr("Retrieve URLs"), this)),
     m_clipboardUrlsAction(new QAction(QIcon::fromTheme("general_share"), tr("Clipboard URLs"), this)),
     m_downloadRequestAction(new QAction(QIcon::fromTheme("notes_save"), tr("Retrieve download requests"), this)),
+    m_queueAction(new QAction(QIcon("/etc/hildon/theme/mediaplayer/Play.png"), tr("Start all DLs"), this)),
+    m_pauseAction(new QAction(QIcon("/etc/hildon/theme/mediaplayer/Pause.png"), tr("Pause all DLs"), this)),
     m_propertiesAction(new QAction(QIcon::fromTheme("general_information"), tr("Properties"), this)),
     m_transferQueueAction(new QAction(tr("Start"), this)),
     m_transferPauseAction(new QAction(tr("Pause"), this)),
@@ -93,11 +95,11 @@ MainWindow::MainWindow(QWidget *parent) :
     m_stack(new QStackedWidget(m_widget)),
     m_view(new QTreeView(m_stack)),
     m_toolBar(new QToolBar(this)),
-    m_messageLabel(new QLabel(QString("%1DLs").arg(TransferModel::instance()->activeTransfers()), this)),
-    m_speedLabel(new QLabel(Utils::formatBytes(TransferModel::instance()->totalSpeed()) + "/s", this)),
+    m_messageLabel(new QLabel(this)),
     m_layout(new QVBoxLayout(m_widget))
 {
-    setWindowTitle("QDL");
+    setWindowTitle(QString("%1DLs | %2").arg(TransferModel::instance()->activeTransfers())
+            .arg(TransferModel::instance()->totalSpeedString()));
     setCentralWidget(m_widget);
     addToolBar(Qt::BottomToolBarArea, m_toolBar);
     addAction(m_searchAction);
@@ -107,11 +109,11 @@ MainWindow::MainWindow(QWidget *parent) :
     addAction(m_lastPageAction);
     addAction(m_nextPageAction);
     addAction(m_previousPageAction);
+    addAction(m_scrollBottomAction);
+    addAction(m_scrollTopAction);
 
     menuBar()->addAction(m_concurrentAction);
     menuBar()->addAction(m_nextAction);
-    menuBar()->addAction(m_queueAction);
-    menuBar()->addAction(m_pauseAction);
     menuBar()->addAction(m_searchAction);
     menuBar()->addAction(m_settingsAction);
     menuBar()->addAction(m_pluginsAction);
@@ -130,6 +132,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_lastPageAction->setShortcut(tr("Ctrl+Down"));
     m_nextPageAction->setShortcut(tr("Ctrl+Right"));
     m_previousPageAction->setShortcut(tr("Ctrl+Left"));
+    m_scrollBottomAction->setShortcut(tr("Shift+Down"));
+    m_scrollTopAction->setShortcut(tr("Shift+Up"));
     
     m_addUrlsAction->setShortcut(tr("Ctrl+N"));
     m_importUrlsAction->setShortcut(tr("Ctrl+O"));
@@ -176,20 +180,16 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!header->restoreState(Settings::transferViewHeaderState())) {
         const QFontMetrics fm = header->fontMetrics();
         header->resizeSection(0, 200);
-        header->resizeSection(2, fm.width("999.99MB of 999.99MB (99.99%)"));
-        header->resizeSection(3, fm.width("999.99KB/s"));
-        header->hideSection(1); // Hide priority column
+        header->resizeSection(3, fm.width("999.99MB of 999.99MB (99.99%)"));
+//        header->resizeSection(4, fm.width("999.99KB/s"));
     }
 
-    QLabel *speedIcon = new QLabel(m_toolBar);
-    speedIcon->setPixmap(QIcon::fromTheme("general_received").pixmap(m_toolBar->iconSize()));
-
-    QWidget *spacer = new QWidget(m_toolBar);
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    header->hideSection(1); // Hide category column
+    header->hideSection(2); // Hide priority column
+    header->hideSection(4); // Hide speed column
 
     m_messageLabel->setMargin(8);
-    m_speedLabel->setMargin(8);
-    
+
     m_toolBar->setAllowedAreas(Qt::BottomToolBarArea);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
@@ -198,11 +198,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_toolBar->addAction(m_retrieveUrlsAction);
     m_toolBar->addAction(m_clipboardUrlsAction);
     m_toolBar->addAction(m_downloadRequestAction);
+    m_toolBar->addAction(m_queueAction);
+    m_toolBar->addAction(m_pauseAction);
     m_toolBar->addAction(m_propertiesAction);
     m_toolBar->addWidget(m_messageLabel);
-    m_toolBar->addWidget(spacer);
-    m_toolBar->addWidget(m_speedLabel);
-    m_toolBar->addWidget(speedIcon);
     
     m_layout->addWidget(m_tabs);
     m_layout->addWidget(m_stack);
@@ -220,11 +219,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_transferMenu, SIGNAL(aboutToShow()), this, SLOT(setTransferMenuActions()));
     connect(m_packageMenu, SIGNAL(aboutToShow()), this, SLOT(setPackageMenuActions()));
     
-    
     connect(m_concurrentAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setMaximumConcurrentTransfers(QVariant)));
     connect(m_nextAction, SIGNAL(valueChanged(QVariant)), this, SLOT(setNextAction(QVariant)));
-    connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
-    connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
     connect(m_searchAction, SIGNAL(triggered()), this, SLOT(showSearchDialog()));
     connect(m_settingsAction, SIGNAL(triggered()), this, SLOT(showSettingsDialog()));
     connect(m_pluginsAction, SIGNAL(triggered()), this, SLOT(loadPlugins()));
@@ -235,12 +231,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_lastPageAction, SIGNAL(triggered()), this, SLOT(showLastPage()));
     connect(m_nextPageAction, SIGNAL(triggered()), this, SLOT(showNextPage()));
     connect(m_previousPageAction, SIGNAL(triggered()), this, SLOT(showPreviousPage()));
+    connect(m_scrollBottomAction, SIGNAL(triggered()), m_view, SLOT(scrollToBottom()));
+    connect(m_scrollTopAction, SIGNAL(triggered()), m_view, SLOT(scrollToTop()));
 
     connect(m_addUrlsAction, SIGNAL(triggered()), this, SLOT(showAddUrlsDialog()));
     connect(m_importUrlsAction, SIGNAL(triggered()), this, SLOT(showImportUrlsDialog()));
     connect(m_retrieveUrlsAction, SIGNAL(triggered()), this, SLOT(showRetrieveUrlsDialog()));
     connect(m_clipboardUrlsAction, SIGNAL(triggered()), this, SLOT(showClipboardUrlsDialog()));
     connect(m_downloadRequestAction, SIGNAL(triggered()), this, SLOT(showDownloadRequestDialog()));
+    connect(m_queueAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(queue()));
+    connect(m_pauseAction, SIGNAL(triggered()), TransferModel::instance(), SLOT(pause()));
     connect(m_propertiesAction, SIGNAL(triggered()), this, SLOT(showCurrentItemProperties()));
     
     connect(m_transferQueueAction, SIGNAL(triggered()), this, SLOT(queueCurrentTransfer()));
@@ -484,12 +484,14 @@ void MainWindow::showAddUrlsDialog() {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }
@@ -505,12 +507,14 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
         if (!urls.isEmpty()) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
-                checkDialog.addUrls(urls);
+                checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                  addDialog.postData());
+                        addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
             }
         }
     }
@@ -529,12 +533,14 @@ void MainWindow::showImportUrlsDialog() {
             if (!urls.isEmpty()) {
                 if (addDialog.usePlugins()) {
                     UrlCheckDialog checkDialog(this);
-                    checkDialog.addUrls(urls);
+                    checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
+                            addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                     checkDialog.exec();
                 }
                 else {
                     TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
-                                                      addDialog.postData());
+                            addDialog.postData(), addDialog.category(), addDialog.createSubfolder(),
+                            addDialog.priority(), addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
                 }
             }
         }
@@ -697,21 +703,19 @@ void MainWindow::loadPlugins() {
     const int count = decaptcha + recaptcha + search + services;
 
     if (count > 0) {
-        showMessage(tr("%1 new plugins found").arg(count));
+        showMessage(tr("%1 new plugin(s)").arg(count));
         
         if (search > 0) {
             m_searchAction->setEnabled(true);
         }
     }
     else {
-        showMessage(tr("No new plugins found"));
+        showMessage(tr("No new plugins"));
     }
 }
 
 void MainWindow::onActiveTransfersChanged(int active) {
-    if (m_stack->currentIndex() == 0) {
-        showMessage(QString("%1DLs").arg(active));
-    }
+    setWindowTitle(QString("%1DLs | %2").arg(active).arg(TransferModel::instance()->totalSpeedString()));
 }
 
 void MainWindow::onCurrentRowChanged(const QModelIndex &index) {
@@ -743,5 +747,6 @@ void MainWindow::onPageStatusChanged() {
 }
 
 void MainWindow::onTotalSpeedChanged(int speed) {
-    m_speedLabel->setText(Utils::formatBytes(speed) + "/s");
+    setWindowTitle(QString("%1DLs | %2/s").arg(TransferModel::instance()->activeTransfers())
+            .arg(Utils::formatBytes(speed)));
 }

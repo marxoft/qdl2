@@ -24,7 +24,7 @@ class SettingsServer
 {
 
 public:    
-    static bool handleRequest(QHttpRequest *request, QHttpResponse *response);
+    static void handleRequest(QHttpRequest *request, QHttpResponse *response);
 };
 
 #endif // SETTINGSSERVER_H

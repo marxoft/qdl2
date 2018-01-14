@@ -20,8 +20,6 @@
 
 #include <QAbstractListModel>
 #include <QStringList>
-#include <QVariantList>
-#include <QUrl>
 
 class UrlRetriever;
 
@@ -46,6 +44,8 @@ struct UrlRetrieval
     
     bool done;
 };
+
+typedef QList<UrlRetrieval> UrlRetrievalList;
 
 class UrlRetrievalModel : public QAbstractListModel
 {
@@ -133,7 +133,7 @@ private:
 
     UrlRetriever *m_retriever;
     
-    QList<UrlRetrieval> m_items;
+    UrlRetrievalList m_items;
     
     QHash<int, QByteArray> m_roles;
 
@@ -141,5 +141,8 @@ private:
 
     int m_index;
 };
+
+Q_DECLARE_METATYPE(UrlRetrieval)
+Q_DECLARE_METATYPE(UrlRetrievalList)
 
 #endif // URLRETRIEVALMODEL_H

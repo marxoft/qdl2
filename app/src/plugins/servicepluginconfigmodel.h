@@ -65,7 +65,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged(int count);
     
-protected:
+private:
     ServicePluginList m_items;
     QHash<int, QByteArray> m_roles;
 };
