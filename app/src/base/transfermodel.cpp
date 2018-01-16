@@ -411,7 +411,7 @@ TransferItem* TransferModel::get(const QVariant &index) const {
 
 TransferItem* TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
         const QString &postData, const QString &category, bool createSubfolder, int priority, const QString &customCommand,
-        bool overrideGlobalCommand) {
+        bool overrideGlobalCommand, bool startAutomatically) {
     Logger::log("TransferModel::append(): " + url + " " + requestMethod, Logger::LowVerbosity);
     const QString fileName = url.mid(url.lastIndexOf("/") + 1);
     TransferItem *package = findPackage(fileName);
@@ -449,7 +449,7 @@ TransferItem* TransferModel::append(const QString &url, const QString &requestMe
 
     connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onTransferDataChanged(TransferItem*, int)));
 
-    if (Settings::startTransfersAutomatically()) {
+    if (startAutomatically) {
         transfer->queue();
     }
 
@@ -458,19 +458,19 @@ TransferItem* TransferModel::append(const QString &url, const QString &requestMe
 
 QList<TransferItem*> TransferModel::append(const QStringList &urls, const QString &requestMethod,
         const QVariantMap &requestHeaders, const QString &postData, const QString &category, bool createSubfolder,
-        int priority, const QString &customCommand, bool overrideGlobalCommand) {
+        int priority, const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     QList<TransferItem*> transfers;
 
     foreach (const QString &url, urls) {
         transfers << append(url, requestMethod, requestHeaders, postData, category, createSubfolder, priority,
-                customCommand, overrideGlobalCommand);
+                customCommand, overrideGlobalCommand, startAutomatically);
     }
 
     return transfers;
 }
 
 TransferItem* TransferModel::append(const UrlResult &result, const QString &category, bool createSubfolder,
-        int priority, const QString &customCommand, bool overrideGlobalCommand) {
+        int priority, const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     Logger::log("TransferModel::append(): " + result.url + " " + result.fileName, Logger::LowVerbosity);
     TransferItem *package = findPackage(result.fileName);
 
@@ -503,7 +503,7 @@ TransferItem* TransferModel::append(const UrlResult &result, const QString &cate
 
     connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onTransferDataChanged(TransferItem*, int)));
 
-    if (Settings::startTransfersAutomatically()) {
+    if (startAutomatically) {
         transfer->queue();
     }
 
@@ -512,7 +512,7 @@ TransferItem* TransferModel::append(const UrlResult &result, const QString &cate
 
 QList<TransferItem*> TransferModel::append(const UrlResultList &results, const QString &packageName,
         const QString &category, bool createSubfolder, int priority, const QString &customCommand,
-        bool overrideGlobalCommand) {
+        bool overrideGlobalCommand, bool startAutomatically) {
     QList<TransferItem*> transfers;
 
     if (results.isEmpty()) {
@@ -547,7 +547,7 @@ QList<TransferItem*> TransferModel::append(const UrlResultList &results, const Q
         endInsertRows();
         connect(transfer, SIGNAL(dataChanged(TransferItem*, int)), this, SLOT(onTransferDataChanged(TransferItem*, int)));
         
-        if (Settings::startTransfersAutomatically()) {
+        if (startAutomatically) {
             transfer->queue();
         }
 

@@ -38,6 +38,8 @@ class Settings : public QObject
     Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins NOTIFY usePluginsChanged)
     Q_PROPERTY(QString loggerFileName READ loggerFileName WRITE setLoggerFileName NOTIFY loggerFileNameChanged)
     Q_PROPERTY(int loggerVerbosity READ loggerVerbosity WRITE setLoggerVerbosity NOTIFY loggerVerbosityChanged)
+    Q_PROPERTY(bool startTransfersAutomatically READ startTransfersAutomatically WRITE setStartTransfersAutomatically
+               NOTIFY startTransfersAutomaticallyChanged)
     Q_PROPERTY(QString serverHost READ serverHost WRITE setServerHost NOTIFY serverHostChanged)
     Q_PROPERTY(int serverPort READ serverPort WRITE setServerPort NOTIFY serverPortChanged)
     Q_PROPERTY(bool serverAuthenticationEnabled READ serverAuthenticationEnabled WRITE setServerAuthenticationEnabled
@@ -59,8 +61,6 @@ class Settings : public QObject
                NOTIFY archivePasswordsChanged)
     Q_PROPERTY(int maximumConcurrentTransfers READ maximumConcurrentTransfers WRITE setMaximumConcurrentTransfers
                NOTIFY maximumConcurrentTransfersChanged)
-    Q_PROPERTY(bool startTransfersAutomatically READ startTransfersAutomatically WRITE setStartTransfersAutomatically
-               NOTIFY startTransfersAutomaticallyChanged)
     Q_PROPERTY(int nextAction READ nextAction WRITE setNextAction NOTIFY nextActionChanged)
     Q_PROPERTY(bool networkProxyEnabled READ networkProxyEnabled WRITE setNetworkProxyEnabled
                NOTIFY networkProxyEnabledChanged)
@@ -94,6 +94,8 @@ public:
     static QString loggerFileName();
     static int loggerVerbosity();
 
+    static bool startTransfersAutomatically();
+
     static QString serverHost();
     static int serverPort();
     static bool serverAuthenticationEnabled();
@@ -115,7 +117,6 @@ public:
     QStringList archivePasswords() const;
 
     int maximumConcurrentTransfers() const;
-    bool startTransfersAutomatically() const;
 
     int nextAction() const;
 
@@ -143,6 +144,8 @@ public Q_SLOTS:
     static void setLoggerFileName(const QString &fileName);
     static void setLoggerVerbosity(int verbosity);
 
+    static void setStartTransfersAutomatically(bool enabled);
+
     static void setServerHost(const QString &host);
     static void setServerPort(int port);
     static void setServerAuthenticationEnabled(bool enabled);
@@ -167,8 +170,6 @@ public Q_SLOTS:
 
     void setNextAction(int action, bool saveNow = true);
 
-    void setStartTransfersAutomatically(bool enabled, bool saveNow = true);
-
     void setNetworkProxyEnabled(bool enabled, bool saveNow = true);
     void setNetworkProxyType(int type, bool saveNow = true);
     void setNetworkProxyHost(const QString &host, bool saveNow = true);
@@ -192,16 +193,16 @@ Q_SIGNALS:
     void decaptchaPluginChanged(const QString &pluginId);
     void defaultCategoryChanged(const QString &category);
     void defaultServicePluginChanged(const QString &pluginId);
+    void loggerFileNameChanged(const QString &fileName);
+    void loggerVerbosityChanged(int verbosity);
+    void startTransfersAutomaticallyChanged(bool enabled);
     void usePluginsChanged(bool enabled);
     void downloadPathChanged(const QString &path);
     void extractArchivesChanged(bool enabled);
     void deleteExtractedArchivesChanged(bool enabled);
     void archivePasswordsChanged(const QStringList &passwords);
-    void loggerFileNameChanged(const QString &fileName);
-    void loggerVerbosityChanged(int verbosity);
     void maximumConcurrentTransfersChanged(int maximum);
     void nextActionChanged(int action);
-    void startTransfersAutomaticallyChanged(bool enabled);
     void networkProxyEnabledChanged(bool enabled);
     void networkProxyTypeChanged(int type);
     void networkProxyHostChanged(const QString &host);
@@ -232,7 +233,6 @@ private:
 
     int m_maximumConcurrentTransfers;
     int m_nextAction;
-    bool m_startTransfersAutomatically;
 
     bool m_networkProxyEnabled;
     int m_networkProxyType;

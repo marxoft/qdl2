@@ -379,13 +379,15 @@ void MainWindow::showAddUrlsDialog() {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
                 checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
                         addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
             }
         }
     }
@@ -402,13 +404,15 @@ void MainWindow::showAddUrlsDialog(const QStringList &urls) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
                 checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
                         addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
             }
         }
     }
@@ -428,13 +432,15 @@ void MainWindow::showImportUrlsDialog() {
                 if (addDialog.usePlugins()) {
                     UrlCheckDialog checkDialog(this);
                     checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                            addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                            addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                            addDialog.startAutomatically());
                     checkDialog.exec();
                 }
                 else {
                     TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
                             addDialog.postData(), addDialog.category(), addDialog.createSubfolder(),
-                            addDialog.priority(), addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                            addDialog.priority(), addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                            addDialog.startAutomatically());
                 }
             }
         }

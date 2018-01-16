@@ -51,6 +51,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_subfolderCheckBox(0),
     m_commandCheckBox(0),
     m_pluginCheckBox(0),
+    m_autoCheckBox(0),
     m_methodTab(0),
     m_methodEdit(0),
     m_postEdit(0),
@@ -62,6 +63,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_createSubfolder(Settings::createSubfolders()),
     m_customCommandOverrideEnabled(false),
     m_usePlugins(Settings::usePlugins()),
+    m_startAutomatically(Settings::startTransfersAutomatically()),
     m_priority(TransferItem::NormalPriority)
 {
     setWindowTitle(tr("Add URLs"));
@@ -100,6 +102,7 @@ void AddUrlsDialog::accept() {
     Settings::setDefaultCategory(category());
     Settings::setCreateSubfolders(createSubfolder());
     Settings::setUsePlugins(usePlugins());
+    Settings::setStartTransfersAutomatically(startAutomatically());
     QDialog::accept();
 }
 
@@ -231,6 +234,18 @@ void AddUrlsDialog::setRequestMethod(const QString &method) {
     }
 }
 
+bool AddUrlsDialog::startAutomatically() const {
+    return m_startAutomatically;
+}
+
+void AddUrlsDialog::setStartAutomatically(bool enabled) {
+    m_startAutomatically = enabled;
+
+    if (m_autoCheckBox) {
+        m_autoCheckBox->setChecked(enabled);
+    }
+}
+
 QString AddUrlsDialog::text() const {
     return m_urlsEdit->toPlainText();
 }
@@ -347,6 +362,8 @@ void AddUrlsDialog::showSettingsTab() {
         m_commandCheckBox->setChecked(customCommandOverrideEnabled());
         m_pluginCheckBox = new QCheckBox(tr("Use plugins"), widget);
         m_pluginCheckBox->setChecked(usePlugins());
+        m_autoCheckBox = new QCheckBox(tr("Start automatically"), widget);
+        m_autoCheckBox->setChecked(startAutomatically());
         QVBoxLayout *layout = new QVBoxLayout(widget);
         layout->addWidget(m_subfolderCheckBox);
         layout->addWidget(m_categorySelector);
@@ -355,6 +372,7 @@ void AddUrlsDialog::showSettingsTab() {
         layout->addWidget(m_commandEdit);
         layout->addWidget(m_commandCheckBox);
         layout->addWidget(m_pluginCheckBox);
+        layout->addWidget(m_autoCheckBox);
         layout->setContentsMargins(0, 0, 0, 0);
         m_settingsTab->setWidget(widget);
         m_settingsTab->setWidgetResizable(true);
@@ -366,6 +384,7 @@ void AddUrlsDialog::showSettingsTab() {
         connect(m_subfolderCheckBox, SIGNAL(toggled(bool)), this, SLOT(onCreateSubfolderChanged(bool)));
         connect(m_commandCheckBox, SIGNAL(toggled(bool)), this, SLOT(onCustomCommandOverrideEnabledChanged(bool)));
         connect(m_pluginCheckBox, SIGNAL(toggled(bool)), this, SLOT(onUsePluginsChanged(bool)));
+        connect(m_autoCheckBox, SIGNAL(toggled(bool)), this, SLOT(onStartAutomaticallyChanged(bool)));
     }
 
     m_stack->setCurrentWidget(m_settingsTab);
@@ -441,6 +460,10 @@ void AddUrlsDialog::onRequestMethodChanged(const QString &method) {
     m_method = method;
     m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(((!method.isEmpty()) || (usePlugins()))
                                                           && (!text().isEmpty()));
+}
+
+void AddUrlsDialog::onStartAutomaticallyChanged(bool enabled) {
+    m_startAutomatically = enabled;
 }
 
 void AddUrlsDialog::onUrlsChanged() {

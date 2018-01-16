@@ -47,6 +47,7 @@ class AddUrlsDialog : public QDialog
     Q_PROPERTY(TransferItem::Priority priority READ priority WRITE setPriority)
     Q_PROPERTY(QVariantMap requestHeaders READ requestHeaders WRITE setRequestHeaders)
     Q_PROPERTY(QString requestMethod READ requestMethod WRITE setRequestMethod)
+    Q_PROPERTY(bool startAutomatically READ startAutomatically WRITE setStartAutomatically)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(QStringList urls READ urls WRITE setUrls)
     Q_PROPERTY(bool usePlugins READ usePlugins WRITE setUsePlugins)
@@ -68,6 +69,8 @@ public:
     QVariantMap requestHeaders() const;
     
     QString requestMethod() const;
+
+    bool startAutomatically() const;
 
     QString text() const;
     
@@ -93,6 +96,8 @@ public Q_SLOTS:
     void addRequestHeader(const QString &name, const QVariant &value);
     
     void setRequestMethod(const QString &method);
+
+    void setStartAutomatically(bool enabled);
     
     void setText(const QString &t);
 
@@ -150,6 +155,7 @@ private:
     QCheckBox *m_subfolderCheckBox;
     QCheckBox *m_commandCheckBox;
     QCheckBox *m_pluginCheckBox;
+    QCheckBox *m_autoCheckBox;
         
     QFormLayout *m_urlsLayout;
     

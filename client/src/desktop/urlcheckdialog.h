@@ -36,10 +36,10 @@ public:
 public Q_SLOTS:
     void addUrl(const QString &url, const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     void addUrls(const QStringList &urls, const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     
     virtual void accept();
     virtual void reject();

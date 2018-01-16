@@ -129,13 +129,15 @@ void SearchPage::addUrl(const QString &url) {
             if (addDialog.usePlugins()) {
                 UrlCheckDialog checkDialog(this);
                 checkDialog.addUrls(urls, addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
                 checkDialog.exec();
             }
             else {
                 TransferModel::instance()->append(urls, addDialog.requestMethod(), addDialog.requestHeaders(),
                         addDialog.postData(), addDialog.category(), addDialog.createSubfolder(), addDialog.priority(),
-                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled());
+                        addDialog.customCommand(), addDialog.customCommandOverrideEnabled(),
+                        addDialog.startAutomatically());
             }
         }
     }

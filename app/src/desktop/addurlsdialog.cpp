@@ -53,6 +53,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_subfolderCheckBox(new QCheckBox(tr("Create sub&folder"), m_urlsTab)),
     m_commandCheckBox(new QCheckBox(tr("&Override global custom command"), m_urlsTab)),
     m_pluginCheckBox(new QCheckBox(tr("Use &plugins"), m_urlsTab)),
+    m_autoCheckBox(new QCheckBox(tr("Start &automatically"), m_urlsTab)),
     m_urlsLayout(new QFormLayout(m_urlsTab)),
     m_methodTab(0),
     m_methodEdit(0),
@@ -87,6 +88,8 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_subfolderCheckBox->setChecked(Settings::createSubfolders());
 
     m_pluginCheckBox->setChecked(Settings::usePlugins());
+
+    m_autoCheckBox->setChecked(Settings::startTransfersAutomatically());
     
     m_urlsLayout->addRow(m_urlsEdit);
     m_urlsLayout->addRow(tr("&Category:"), m_categorySelector);
@@ -95,6 +98,7 @@ AddUrlsDialog::AddUrlsDialog(QWidget *parent) :
     m_urlsLayout->addRow(m_commandCheckBox);
     m_urlsLayout->addRow(m_subfolderCheckBox);
     m_urlsLayout->addRow(m_pluginCheckBox);
+    m_urlsLayout->addRow(m_autoCheckBox);
     
     m_stack->addWidget(m_urlsTab);
     
@@ -117,6 +121,7 @@ void AddUrlsDialog::accept() {
     Settings::setDefaultCategory(category());
     Settings::setCreateSubfolders(createSubfolder());
     Settings::setUsePlugins(usePlugins());
+    Settings::setStartTransfersAutomatically(startAutomatically());
     QDialog::accept();
 }
 
@@ -216,6 +221,14 @@ void AddUrlsDialog::setRequestMethod(const QString &method) {
     if (m_methodEdit) {
         m_methodEdit->setText(m_method);
     }
+}
+
+bool AddUrlsDialog::startAutomatically() const {
+    return m_autoCheckBox->isChecked();
+}
+
+void AddUrlsDialog::setStartAutomatically(bool enabled) {
+    m_autoCheckBox->setChecked(enabled);
 }
 
 QString AddUrlsDialog::text() const {

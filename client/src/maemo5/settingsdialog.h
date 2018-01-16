@@ -65,7 +65,6 @@ private:
     
     QCheckBox *m_clipboardCheckBox;
     QCheckBox *m_commandCheckBox;
-    QCheckBox *m_automaticCheckBox;
     QCheckBox *m_extractCheckBox;
     QCheckBox *m_deleteCheckBox;
 

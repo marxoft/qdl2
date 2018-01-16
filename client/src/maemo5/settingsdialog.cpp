@@ -44,7 +44,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_commandEdit(new QLineEdit(Settings::instance()->customCommand(), m_container)),
     m_clipboardCheckBox(new QCheckBox(tr("Monitor clipboard for URLs"), m_container)),
     m_commandCheckBox(new QCheckBox(tr("Enable custom command"), m_container)),
-    m_automaticCheckBox(new QCheckBox(tr("Start downloads automatically"), m_container)),
     m_extractCheckBox(new QCheckBox(tr("Extract archives"), m_container)),
     m_deleteCheckBox(new QCheckBox(tr("Delete extracted archives"), m_container)),
     m_connectionButton(new QPushButton(tr("Server connection"), m_container)),
@@ -69,7 +68,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_concurrentSelector->setValue(Settings::instance()->maximumConcurrentTransfers());
     m_clipboardCheckBox->setChecked(Settings::clipboardMonitorEnabled());
     m_commandCheckBox->setChecked(Settings::instance()->customCommandEnabled());
-    m_automaticCheckBox->setChecked(Settings::instance()->startTransfersAutomatically());
     m_extractCheckBox->setChecked(Settings::instance()->extractArchives());
     m_deleteCheckBox->setChecked(Settings::instance()->deleteExtractedArchives());
 
@@ -83,7 +81,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
                                         .arg(midColor).arg(tr("Server - General")), m_container));
     m_vbox->addWidget(m_downloadPathButton);
     m_vbox->addWidget(m_concurrentSelector);
-    m_vbox->addWidget(m_automaticCheckBox);
     m_vbox->addWidget(new QLabel(tr("Custom command (%f for filename)"), m_container));
     m_vbox->addWidget(m_commandEdit);
     m_vbox->addWidget(m_commandCheckBox);
@@ -126,7 +123,6 @@ void SettingsDialog::accept() {
     Settings::instance()->setMaximumConcurrentTransfers(m_concurrentSelector->currentValue().toInt(), false);
     Settings::instance()->setCustomCommand(m_commandEdit->text(), false);
     Settings::instance()->setCustomCommandEnabled(m_commandCheckBox->isChecked(), false);
-    Settings::instance()->setStartTransfersAutomatically(m_automaticCheckBox->isChecked(), false);
     Settings::instance()->setExtractArchives(m_extractCheckBox->isChecked(), false);
     Settings::instance()->setDeleteExtractedArchives(m_deleteCheckBox->isChecked(), false);
     Settings::instance()->save();

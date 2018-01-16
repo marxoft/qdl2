@@ -36,7 +36,9 @@ void UrlCheckServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
                 const int priority = properties.value("priority", TransferItem::NormalPriority).toInt();
                 const QString customCommand = properties.value("customCommand").toString();
                 const bool overrideGlobalCommand = properties.value("customCommandOverrideEnabled", false).toBool();
-                Qdl::addUrlChecks(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+                const bool startAutomatically = properties.value("startAutomatically", false).toBool();
+                Qdl::addUrlChecks(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+                        startAutomatically);
                 const QVariantList checks = Qdl::getUrlChecks();
                 const QByteArray json = QtJson::Json::serialize(checks);
                 response->setHeader("Content-Type", "application/json");

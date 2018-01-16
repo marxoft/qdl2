@@ -37,7 +37,6 @@ Settings::Settings() :
     m_deleteExtractedArchives(false),
     m_maximumConcurrentTransfers(1),
     m_nextAction(0),
-    m_startTransfersAutomatically(true),
     m_networkProxyEnabled(false),
     m_networkProxyType(0),
     m_networkProxyPort(80),
@@ -162,6 +161,20 @@ void Settings::setLoggerVerbosity(int verbosity) {
         
         if (self) {
             emit self->loggerVerbosityChanged(verbosity);
+        }
+    }
+}
+
+bool Settings::startTransfersAutomatically() {
+    return value("startTransfersAutomatically", true).toBool();
+}
+
+void Settings::setStartTransfersAutomatically(bool enabled) {
+    if (enabled != startTransfersAutomatically()) {
+        setValue("startTransfersAutomatically", enabled);
+
+        if (self) {
+            emit self->startTransfersAutomaticallyChanged(enabled);
         }
     }
 }
@@ -395,25 +408,6 @@ void Settings::setMaximumConcurrentTransfers(int maximum, bool saveNow) {
     }
 }
 
-bool Settings::startTransfersAutomatically() const {
-    return m_startTransfersAutomatically;
-}
-
-void Settings::setStartTransfersAutomatically(bool enabled, bool saveNow) {
-    if (enabled != startTransfersAutomatically()) {
-        m_startTransfersAutomatically = enabled;
-        emit startTransfersAutomaticallyChanged(enabled);
-
-        if (saveNow) {
-            QVariantMap data;
-            data["startTransfersAutomatically"] = enabled;
-            Request *request = new Request(this);
-            request->put("/settings/setSettings", data);
-            connect(request, SIGNAL(finished(Request*)), this, SLOT(onRequestFinished(Request*)));
-        }
-    }
-}
-
 int Settings::nextAction() const {
     return m_nextAction;
 }
@@ -582,7 +576,6 @@ void Settings::save() {
     data["deleteExtractedArchives"] = deleteExtractedArchives();
     data["archivePasswords"] = archivePasswords();
     data["maximumConcurrentTransfers"] = maximumConcurrentTransfers();
-    data["startTransfersAutomatically"] = startTransfersAutomatically();
     data["nextAction"] = nextAction();
     data["networkProxyEnabled"] = networkProxyEnabled();
     data["networkProxyType"] = networkProxyType();
@@ -608,7 +601,6 @@ void Settings::onRequestFinished(Request *request) {
             setDeleteExtractedArchives(result.value("deleteExtractedArchives", false).toBool(), false);
             setArchivePasswords(result.value("archivePasswords").toStringList(), false);
             setMaximumConcurrentTransfers(result.value("maximumConcurrentTransfers", 0).toInt(), false);
-            setStartTransfersAutomatically(result.value("startTransfersAutomatically", true).toBool(), false);
             setNextAction(result.value("nextAction", 0).toInt(), false);
             setNetworkProxyEnabled(result.value("networkProxyEnabled", false).toBool(), false);
             setNetworkProxyType(result.value("networkProxyType", 0).toInt(), false);

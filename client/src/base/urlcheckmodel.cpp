@@ -43,6 +43,7 @@ UrlCheckModel::UrlCheckModel() :
     m_roles[PriorityRole] = "priority";
     m_roles[CustomCommandRole] = "customCommand";
     m_roles[CustomCommandOverrideEnabledRole] = "customCommandOverrideEnabled";
+    m_roles[StartAutomaticallyRole] = "startAutomatically";
     m_roles[IsCheckedRole] = "checked";
     m_roles[IsOkRole] = "ok";
 #if QT_VERSION < 0x050000
@@ -269,6 +270,8 @@ QVariant UrlCheckModel::data(const QModelIndex &index, int role) const {
         return m_items.at(index.row()).customCommand;
     case CustomCommandOverrideEnabledRole:
         return m_items.at(index.row()).customCommandOverrideEnabled;
+    case StartAutomaticallyRole:
+        return m_items.at(index.row()).startAutomatically;
     case IsCheckedRole:
         return m_items.at(index.row()).checked;
     case IsOkRole:
@@ -313,12 +316,13 @@ int UrlCheckModel::match(int start, const QByteArray &role, const QVariant &valu
 }
 
 void UrlCheckModel::append(const QString &url, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
-    append(QStringList() << url, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
+    append(QStringList() << url, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+            startAutomatically);
 }
 
 void UrlCheckModel::append(const QStringList &urls, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     QVariantMap data;
     data["urls"] = urls;
     data["category"] = category;
@@ -326,6 +330,7 @@ void UrlCheckModel::append(const QStringList &urls, const QString &category, boo
     data["priority"] = priority;
     data["customCommand"] = customCommand;
     data["customCommandOverrideEnabled"] = overrideGlobalCommand;
+    data["startAutomatically"] = startAutomatically;
     Request *request = new Request(this);
     request->post("/urlchecks/addChecks", data);
     connect(request, SIGNAL(finished(Request*)), this, SLOT(onAppendRequestFinished(Request*)));
@@ -413,6 +418,7 @@ void UrlCheckModel::onChecksRequestFinished(Request *request) {
                     check.value("priority", TransferItem::NormalPriority).toInt(),
                     check.value("customCommand").toString(),
                     check.value("customCommandOverrideEnabled", false).toBool(),
+                    check.value("startAutomatically", false).toBool(),
                     check.value("checked", false).toBool(), check.value("ok", false).toBool());
         }
 

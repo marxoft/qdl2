@@ -447,7 +447,7 @@ TransferItem* TransferModel::get(const QVariant &index) const {
 
 void TransferModel::append(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
                            const QString &postData, const QString &category, bool createSubfolder, int priority,
-                           const QString &customCommand, bool overrideGlobalCommand) {
+                           const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     QVariantMap data;
     data["url"] = url;
     data["requestMethod"] = requestMethod;
@@ -458,6 +458,7 @@ void TransferModel::append(const QString &url, const QString &requestMethod, con
     data["priority"] = priority;
     data["customCommand"] = customCommand;
     data["customCommandOverrideEnabled"] = overrideGlobalCommand;
+    data["startAutomatically"] = startAutomatically;
     Request *request = new Request(this);
     request->post("/transfers/addTransfer", data);
     connect(request, SIGNAL(finished(Request*)), this, SLOT(onAppendRequestFinished(Request*)));
@@ -465,7 +466,7 @@ void TransferModel::append(const QString &url, const QString &requestMethod, con
 
 void TransferModel::append(const QStringList &urls, const QString &requestMethod, const QVariantMap &requestHeaders,
                            const QString &postData, const QString &category, bool createSubfolder, int priority,
-                           const QString &customCommand, bool overrideGlobalCommand) {
+                           const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     QVariantMap data;
     data["urls"] = urls;
     data["requestMethod"] = requestMethod;
@@ -476,6 +477,7 @@ void TransferModel::append(const QStringList &urls, const QString &requestMethod
     data["priority"] = priority;
     data["customCommand"] = customCommand;
     data["customCommandOverrideEnabled"] = overrideGlobalCommand;
+    data["startAutomatically"] = startAutomatically;
     Request *request = new Request(this);
     request->post("/transfers/addTransfers", data);
     connect(request, SIGNAL(finished(Request*)), this, SLOT(onAppendRequestFinished(Request*)));

@@ -80,13 +80,15 @@ UrlCheckDialog::UrlCheckDialog(QWidget *parent) :
 }
 
 void UrlCheckDialog::addUrl(const QString &url, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
-    UrlCheckModel::instance()->append(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
+    UrlCheckModel::instance()->append(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+            startAutomatically);
 }
 
 void UrlCheckDialog::addUrls(const QStringList &urls, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
-    UrlCheckModel::instance()->append(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
+    UrlCheckModel::instance()->append(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+            startAutomatically);
 }
 
 void UrlCheckDialog::accept() {

@@ -51,12 +51,12 @@ public Q_SLOTS:
             const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
             const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     Q_SCRIPTABLE static QVariantList addTransfers(const QStringList &urls, const QString &requestMethod = QString("GET"),
             const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
             const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     Q_SCRIPTABLE static QVariantList getTransfers(int offset = 0, int limit = -1);
     Q_SCRIPTABLE static QVariantMap getTransfersStatus();
     Q_SCRIPTABLE static QVariantMap getTransfer(const QString &id);
@@ -106,7 +106,8 @@ public Q_SLOTS:
 
     Q_SCRIPTABLE static QVariantList addUrlChecks(const QStringList &urls, const QString &category = QString(),
             bool createSubfolder = false, int priority = TransferItem::NormalPriority,
-            const QString &customCommand = QString(), bool overrideGlobalCommand = false);
+            const QString &customCommand = QString(), bool overrideGlobalCommand = false,
+            bool startAutomatically = false);
     Q_SCRIPTABLE static void clearUrlChecks();
     Q_SCRIPTABLE static QVariantList getUrlChecks();
     Q_SCRIPTABLE static QVariantMap getUrlChecksStatus();

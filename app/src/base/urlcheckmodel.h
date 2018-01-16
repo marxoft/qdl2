@@ -28,19 +28,21 @@ struct UrlCheck
         createSubfolder(false),
         priority(TransferItem::NormalPriority),
         customCommandOverrideEnabled(false),
+        startAutomatically(false),
         checked(false),
         ok(false)
     {
     }
     
     UrlCheck(const QString &u, const QString &cat = QString(), bool cs = false, int p = TransferItem::NormalPriority,
-           const QString &com = QString(), bool ov = false) :
+           const QString &com = QString(), bool ov = false, bool sa = false) :
         url(u),
         category(cat),
         createSubfolder(cs),
         priority(p),
         customCommand(com),
         customCommandOverrideEnabled(ov),
+        startAutomatically(sa),
         checked(false),
         ok(false)
     {
@@ -52,6 +54,7 @@ struct UrlCheck
     int priority;
     QString customCommand;
     bool customCommandOverrideEnabled;
+    bool startAutomatically;
     bool checked;
     bool ok;
 };
@@ -86,6 +89,7 @@ public:
         PriorityRole,
         CustomCommandRole,
         CustomCommandOverrideEnabledRole,
+        StartAutomaticallyRole,
         IsCheckedRole,
         IsOkRole
     };
@@ -153,10 +157,10 @@ public:
 public Q_SLOTS:
     void append(const QString &url, const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     void append(const QStringList &urls, const QString &category = QString(), bool createSubfolder = false,
             int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-            bool overrideGlobalCommand = false);
+            bool overrideGlobalCommand = false, bool startAutomatically = false);
     bool remove(int row);
     void cancel();
     void clear();

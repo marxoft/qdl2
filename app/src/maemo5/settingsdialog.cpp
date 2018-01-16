@@ -43,7 +43,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_concurrentSelector(new ValueSelector(tr("Maximum concurrent downloads"), m_container)),
     m_commandEdit(new QLineEdit(Settings::customCommand(), m_container)),
     m_commandCheckBox(new QCheckBox(tr("Enable custom command"), m_container)),
-    m_automaticCheckBox(new QCheckBox(tr("Start downloads automatically"), m_container)),
     m_subfoldersCheckBox(new QCheckBox(tr("Create subfolders for downloads"), m_container)),
     m_clipboardCheckBox(new QCheckBox(tr("Monitor clipboard for URLs"), m_container)),
     m_extractCheckBox(new QCheckBox(tr("Extract archives"), m_container)),
@@ -69,7 +68,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     m_concurrentSelector->setModel(m_concurrentModel);
     m_concurrentSelector->setValue(Settings::maximumConcurrentTransfers());
     m_commandCheckBox->setChecked(Settings::customCommandEnabled());
-    m_automaticCheckBox->setChecked(Settings::startTransfersAutomatically());
     m_subfoldersCheckBox->setChecked(Settings::createSubfolders());
     m_clipboardCheckBox->setChecked(Settings::clipboardMonitorEnabled());
     m_extractCheckBox->setChecked(Settings::extractArchives());
@@ -81,7 +79,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
                                         .arg(midColor).arg(tr("General")), m_container));
     m_vbox->addWidget(m_downloadPathButton);
     m_vbox->addWidget(m_concurrentSelector);
-    m_vbox->addWidget(m_automaticCheckBox);
     m_vbox->addWidget(m_subfoldersCheckBox);
     m_vbox->addWidget(m_clipboardCheckBox);
     m_vbox->addWidget(new QLabel(tr("Custom command (%f for filename)"), m_container));
@@ -126,7 +123,6 @@ void SettingsDialog::accept() {
     Settings::setMaximumConcurrentTransfers(m_concurrentSelector->currentValue().toInt());
     Settings::setCustomCommand(m_commandEdit->text());
     Settings::setCustomCommandEnabled(m_commandCheckBox->isChecked());
-    Settings::setStartTransfersAutomatically(m_automaticCheckBox->isChecked());
     Settings::setCreateSubfolders(m_subfoldersCheckBox->isChecked());
     Settings::setClipboardMonitorEnabled(m_clipboardCheckBox->isChecked());    
     Settings::setExtractArchives(m_extractCheckBox->isChecked());

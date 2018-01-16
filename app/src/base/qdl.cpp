@@ -239,9 +239,9 @@ void Qdl::closeWindow() {
 
 QVariantMap Qdl::addTransfer(const QString &url, const QString &requestMethod, const QVariantMap &requestHeaders,
         const QString &postData, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     if (TransferItem *transfer = TransferModel::instance()->append(url, requestMethod, requestHeaders, postData,
-                category, createSubfolder, priority, customCommand, overrideGlobalCommand)) {
+                category, createSubfolder, priority, customCommand, overrideGlobalCommand, startAutomatically)) {
         return transfer->itemDataWithRoleNames();
     }
 
@@ -250,11 +250,12 @@ QVariantMap Qdl::addTransfer(const QString &url, const QString &requestMethod, c
 
 QVariantList Qdl::addTransfers(const QStringList &urls, const QString &requestMethod, const QVariantMap &requestHeaders,
         const QString &postData, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     QVariantList transfers;
 
     foreach (const TransferItem *transfer, TransferModel::instance()->append(urls, requestMethod, requestHeaders,
-                postData, category, createSubfolder, priority, customCommand, overrideGlobalCommand)) {
+                postData, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+                startAutomatically)) {
         transfers << transfer->itemDataWithRoleNames();
     }
 
@@ -772,8 +773,9 @@ bool Qdl::setSettings(const QVariantMap &settings) {
 }
 
 QVariantList Qdl::addUrlChecks(const QStringList &urls, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
-    UrlCheckModel::instance()->append(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
+    UrlCheckModel::instance()->append(urls, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+            startAutomatically);
     return getUrlChecks();
 }
 

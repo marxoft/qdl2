@@ -35,6 +35,7 @@ UrlCheckModel::UrlCheckModel() :
     m_roles[PriorityRole] = "priority";
     m_roles[CustomCommandRole] = "customCommand";
     m_roles[CustomCommandOverrideEnabledRole] = "customCommandOverrideEnabled";
+    m_roles[StartAutomaticallyRole] = "startAutomatically";
     m_roles[IsCheckedRole] = "checked";
     m_roles[IsOkRole] = "ok";
 #if QT_VERSION < 0x050000
@@ -207,6 +208,8 @@ QVariant UrlCheckModel::data(const QModelIndex &index, int role) const {
         return m_items.at(index.row()).customCommand;
     case CustomCommandOverrideEnabledRole:
         return m_items.at(index.row()).customCommandOverrideEnabled;
+    case StartAutomaticallyRole:
+        return m_items.at(index.row()).startAutomatically;
     case IsCheckedRole:
         return m_items.at(index.row()).checked;
     case IsOkRole:
@@ -251,10 +254,11 @@ int UrlCheckModel::match(int start, const QByteArray &role, const QVariant &valu
 }
 
 void UrlCheckModel::append(const QString &url, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     Logger::log("UrlCheckModel::append(): " + url, Logger::LowVerbosity);
     beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
-    m_items << UrlCheck(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+    m_items << UrlCheck(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand,
+            startAutomatically);
     endInsertRows();
     emit countChanged(rowCount());
     emit progressChanged(progress());
@@ -265,9 +269,9 @@ void UrlCheckModel::append(const QString &url, const QString &category, bool cre
 }
 
 void UrlCheckModel::append(const QStringList &urls, const QString &category, bool createSubfolder, int priority,
-        const QString &customCommand, bool overrideGlobalCommand) {
+        const QString &customCommand, bool overrideGlobalCommand, bool startAutomatically) {
     foreach (const QString &url, urls) {
-        append(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand);
+        append(url, category, createSubfolder, priority, customCommand, overrideGlobalCommand, startAutomatically);
     }
 }
 
@@ -398,7 +402,7 @@ void UrlCheckModel::onUrlChecked(const UrlResult &result) {
     emit dataChanged(idx, idx);
     const UrlCheck &check = m_items.at(m_index);
     TransferModel::instance()->append(result, check.category, check.createSubfolder, check.priority,
-            check.customCommand, check.customCommandOverrideEnabled);
+            check.customCommand, check.customCommandOverrideEnabled, check.startAutomatically);
     next();
 }
 
@@ -417,7 +421,7 @@ void UrlCheckModel::onUrlChecked(const UrlResultList &results, const QString &pa
 
     if (!results.isEmpty()) {
         TransferModel::instance()->append(results, packageName, check.category, check.createSubfolder,
-                check.priority, check.customCommand, check.customCommandOverrideEnabled);
+                check.priority, check.customCommand, check.customCommandOverrideEnabled, check.startAutomatically);
     }
 
     next();

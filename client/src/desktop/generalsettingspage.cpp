@@ -38,7 +38,6 @@ GeneralSettingsPage::GeneralSettingsPage(QWidget *parent) :
     m_passwordButton(new QPushButton(QIcon::fromTheme("list-add"), tr("&Add"), this)),
     m_concurrentSpinBox(new QSpinBox(this)),
     m_commandCheckBox(new QCheckBox(tr("&Enable custom command"), this)),
-    m_automaticCheckBox(new QCheckBox(tr("Start downloads &automatically"), this)),
     m_extractCheckBox(new QCheckBox(tr("&Extract archives"), this)),
     m_deleteCheckBox(new QCheckBox(tr("&Delete extracted archives"), this)),
     m_passwordView(new QListView(this)),
@@ -58,7 +57,6 @@ GeneralSettingsPage::GeneralSettingsPage(QWidget *parent) :
     m_layout->addRow(tr("&Maximum concurrent downloads:"), m_concurrentSpinBox);
     m_layout->addRow(tr("&Custom command (%f for filename):"), m_commandEdit);
     m_layout->addRow(m_commandCheckBox);
-    m_layout->addRow(m_automaticCheckBox);
     m_layout->addRow(m_extractCheckBox);
     m_layout->addRow(m_deleteCheckBox);
     m_layout->addRow(new QLabel(tr("Archive passwords:"), this));
@@ -80,7 +78,6 @@ void GeneralSettingsPage::restore() {
     m_concurrentSpinBox->setValue(Settings::instance()->maximumConcurrentTransfers());
     m_commandEdit->setText(Settings::instance()->customCommand());
     m_commandCheckBox->setChecked(Settings::instance()->customCommandEnabled());
-    m_automaticCheckBox->setChecked(Settings::instance()->startTransfersAutomatically());
     m_extractCheckBox->setChecked(Settings::instance()->extractArchives());
     m_deleteCheckBox->setChecked(Settings::instance()->deleteExtractedArchives());
 }
@@ -90,7 +87,6 @@ void GeneralSettingsPage::save() {
     Settings::instance()->setMaximumConcurrentTransfers(m_concurrentSpinBox->value(), false);
     Settings::instance()->setCustomCommand(m_commandEdit->text(), false);
     Settings::instance()->setCustomCommandEnabled(m_commandCheckBox->isChecked(), false);
-    Settings::instance()->setStartTransfersAutomatically(m_automaticCheckBox->isChecked(), false);
     Settings::instance()->setExtractArchives(m_extractCheckBox->isChecked(), false);
     Settings::instance()->setDeleteExtractedArchives(m_deleteCheckBox->isChecked(), false);
 }

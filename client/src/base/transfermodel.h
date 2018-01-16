@@ -99,12 +99,12 @@ public Q_SLOTS:
                 const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
                 const QString &category = QString(), bool createSubfolder = false,
                 int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-                bool overrideGlobalCommand = false);
+                bool overrideGlobalCommand = false, bool startAutomatically = false);
     void append(const QStringList &urls, const QString &requestMethod = QString("GET"),
                 const QVariantMap &requestHeaders = QVariantMap(), const QString &postData = QString(),
                 const QString &category = QString(), bool createSubfolder = false,
                 int priority = TransferItem::NormalPriority, const QString &customCommand = QString(),
-                bool overrideGlobalCommand = false);
+                bool overrideGlobalCommand = false, bool startAutomatically = false);
     
     void reload();
     void queue();

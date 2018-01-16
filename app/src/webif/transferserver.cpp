@@ -40,8 +40,9 @@ void TransferServer::handleRequest(QHttpRequest *request, QHttpResponse *respons
                 const int priority = properties.value("priority", TransferItem::NormalPriority).toInt();
                 const QString customCommand = properties.value("customCommand").toString();
                 const bool overrideGlobalCommand = properties.value("customCommandOverrideEnabled", false).toBool();
+                const bool startAutomatically = properties.value("startAutomatically", false).toBool();
                 const QVariantMap transfer = Qdl::addTransfer(url, method, headers, data, category, createSubfolder,
-                        priority, customCommand, overrideGlobalCommand);
+                        priority, customCommand, overrideGlobalCommand, startAutomatically);
                 const QByteArray json = QtJson::Json::serialize(transfer);
                 response->setHeader("Content-Type", "application/json");
                 response->setHeader("Content-Length", QString::number(json.size()));

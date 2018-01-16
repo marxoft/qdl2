@@ -64,7 +64,6 @@ private:
     QLineEdit *m_commandEdit;
     
     QCheckBox *m_commandCheckBox;
-    QCheckBox *m_automaticCheckBox;
     QCheckBox *m_subfoldersCheckBox;
     QCheckBox *m_clipboardCheckBox;
     QCheckBox *m_extractCheckBox;
