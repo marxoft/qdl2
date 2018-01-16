@@ -20,6 +20,7 @@
 #include "imagecache.h"
 #include "request.h"
 #include "utils.h"
+#include <QTimer>
 
 Transfer::Transfer(QObject *parent) :
     TransferItem(parent),
@@ -917,6 +918,10 @@ void Transfer::reloadRequestFinished(Request *request) {
     if (request->status() == Request::Finished) {
         restore(request->result().toMap());
         emit loaded(this);
+
+        if (autoReloadEnabled()) {
+            QTimer::singleShot(RELOAD_INTERVAL, this, SLOT(reload()));
+        }
     }
     else if (request->status() == Request::Error) {
         if (request->statusCode() == 404) {

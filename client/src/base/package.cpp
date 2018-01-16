@@ -15,8 +15,10 @@
  */
 
 #include "package.h"
+#include "definitions.h"
 #include "request.h"
 #include "transfer.h"
+#include <QTimer>
 
 Package::Package(QObject *parent) :
     TransferItem(parent),
@@ -493,6 +495,10 @@ void Package::reloadRequestFinished(Request *request) {
     if (request->status() == Request::Finished) {
         restore(request->result().toMap());
         emit loaded(this);
+
+        if (autoReloadEnabled()) {
+            QTimer::singleShot(RELOAD_INTERVAL, this, SLOT(reload()));
+        }
     }
     else if (request->status() == Request::Error) {
         if (request->statusCode() == 404) {

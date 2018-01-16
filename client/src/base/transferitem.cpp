@@ -15,8 +15,10 @@
  */
 
 #include "transferitem.h"
+#include "definitions.h"
 #include "package.h"
 #include "request.h"
+#include <QTimer>
 
 class TransferItemRoleNames : public QHash<int, QByteArray>
 {
@@ -25,6 +27,7 @@ public:
     TransferItemRoleNames() :
         QHash<int, QByteArray>()
     {
+        insert(TransferItem::AutoReloadEnabledRole, "autoReloadEnabled");
         insert(TransferItem::BytesTransferredRole, "bytesTransferred");
         insert(TransferItem::CanCancelRole, "canCancel");
         insert(TransferItem::CanPauseRole, "canPause");
@@ -82,6 +85,7 @@ QHash<int, QByteArray> TransferItem::roles = TransferItemRoleNames();
 
 TransferItem::TransferItem(QObject *parent) :
     QObject(parent),
+    m_autoReloadEnabled(false),
     m_expanded(false),
     m_row(-1),
     m_parentItem(0)
@@ -161,6 +165,8 @@ QString TransferItem::statusString(TransferItem::Status status) {
 
 QVariant TransferItem::data(int role) const {
     switch (role) {
+    case AutoReloadEnabledRole:
+        return autoReloadEnabled();
     case CanCancelRole:
         return canCancel();
     case CanPauseRole:
@@ -188,6 +194,9 @@ QVariant TransferItem::data(const QByteArray &roleName) const {
 
 bool TransferItem::setData(int role, const QVariant &value) {
     switch (role) {
+    case AutoReloadEnabledRole:
+        setAutoReloadEnabled(value.toBool());
+        return true;
     case ExpandedRole:
         setExpanded(value.toBool());
         return true;
@@ -202,6 +211,7 @@ bool TransferItem::setData(const QByteArray &roleName, const QVariant &value) {
 
 QMap<int, QVariant> TransferItem::itemData() const {
     QMap<int, QVariant> map;
+    map[AutoReloadEnabledRole] = autoReloadEnabled();
     map[CanCancelRole] = canCancel();
     map[CanPauseRole] = canPause();
     map[CanStartRole] = canStart();
@@ -215,6 +225,7 @@ QMap<int, QVariant> TransferItem::itemData() const {
 
 QVariantMap TransferItem::itemDataWithRoleNames() const {
     QVariantMap map;
+    map[roles.value(AutoReloadEnabledRole)] = autoReloadEnabled();
     map[roles.value(CanCancelRole)] = canCancel();
     map[roles.value(CanPauseRole)] = canPause();
     map[roles.value(CanStartRole)] = canStart();
@@ -276,6 +287,21 @@ QString TransferItem::itemTypeString() const {
         return tr("Transfer");
     default:
         return tr("Unknown");
+    }
+}
+
+bool TransferItem::autoReloadEnabled() const {
+    return m_autoReloadEnabled;
+}
+
+void TransferItem::setAutoReloadEnabled(bool enabled) {
+    if (enabled != autoReloadEnabled()) {
+        m_autoReloadEnabled = enabled;
+        emit dataChanged(this, AutoReloadEnabledRole);
+
+        if (enabled) {
+            QTimer::singleShot(RELOAD_INTERVAL, this, SLOT(reload()));
+        }
     }
 }
 
@@ -485,6 +511,10 @@ void TransferItem::reloadRequestFinished(Request *request) {
         }
 
         emit loaded(this);
+
+        if (autoReloadEnabled()) {
+            QTimer::singleShot(RELOAD_INTERVAL, this, SLOT(reload()));
+        }
     }
     else if (request->status() == Request::Error) {
         emit error(this, request->errorString());

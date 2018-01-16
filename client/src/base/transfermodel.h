@@ -20,8 +20,6 @@
 #include "transferitem.h"
 #include <QAbstractItemModel>
 
-class QTimer;
-
 class TransferModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -118,8 +116,6 @@ public Q_SLOTS:
     bool cancel(const QModelIndex &index, bool deleteFiles = false);
 
 private Q_SLOTS:
-    void reloadActiveTransfers();
-
     void onPackageDataChanged(TransferItem *package, int role);
     void onTransferDataChanged(TransferItem *transfer, int role);
 
@@ -131,7 +127,6 @@ private Q_SLOTS:
 
     void onPackagesLoaded();
     void onPackageLoaded(TransferItem *package);
-    void onTransferLoaded(TransferItem *transfer);
     
     void onAppendRequestFinished(Request *request);
     void onMoveRequestFinished(Request *request);
@@ -149,8 +144,6 @@ Q_SIGNALS:
 private:
     TransferModel();
 
-    QTimer* reloadTimer();
-
     void addActiveTransfer(TransferItem *transfer);
     void removeActiveTransfer(TransferItem *transfer);
 
@@ -159,7 +152,6 @@ private:
     static const QString MIME_TYPE;
 
     TransferItem *m_packages;
-    QTimer *m_reloadTimer;
 
     QList<TransferItem*> m_activeTransfers;
 

@@ -18,12 +18,10 @@
 #include "definitions.h"
 #include "package.h"
 #include "request.h"
-#include "settings.h"
 #include "transfer.h"
 #include "utils.h"
 #include <QDataStream>
 #include <QMimeData>
-#include <QTimer>
 
 TransferModel* TransferModel::self = 0;
 
@@ -32,7 +30,6 @@ const QString TransferModel::MIME_TYPE("application/x-qdl2transfermodeldatalist"
 TransferModel::TransferModel() :
     QAbstractItemModel(),
     m_packages(new TransferItem(this)),
-    m_reloadTimer(0),
     m_autoReloadEnabled(false)
 {
 #if QT_VERSION < 0x050000
@@ -413,24 +410,17 @@ void TransferModel::setAutoReloadEnabled(bool enabled) {
         m_autoReloadEnabled = enabled;
         emit autoReloadEnabledChanged(enabled);
 
-        if (enabled) {
-            reloadTimer()->start();
-        }
-        else {
-            reloadTimer()->stop();
+        for (int i = 0; i < m_packages->rowCount(); i++) {
+            if (const TransferItem *package = m_packages->childItem(i)) {
+                for (int j = 0; j < package->rowCount(); j++) {
+                    if (TransferItem *transfer = package->childItem(j)) {
+                        transfer->setAutoReloadEnabled((enabled)
+                                && (transfer->data(TransferItem::StatusRole).toInt() >= TransferItem::WaitingInactive));
+                    }
+                }
+            }
         }
     }
-}
-
-QTimer* TransferModel::reloadTimer() {
-    if (!m_reloadTimer) {
-        m_reloadTimer = new QTimer(this);
-        m_reloadTimer->setInterval(RELOAD_INTERVAL);
-        m_reloadTimer->setSingleShot(true);
-        connect(m_reloadTimer, SIGNAL(timeout()), this, SLOT(reloadActiveTransfers()));
-    }
-
-    return m_reloadTimer;
 }
 
 int TransferModel::totalSpeed() const {
@@ -536,51 +526,11 @@ bool TransferModel::cancel(const QModelIndex &index, bool deleteFiles) {
     return false;
 }
 
-void TransferModel::reloadActiveTransfers() {
-    foreach (TransferItem *transfer, m_activeTransfers) {
-        transfer->reload();
-    }
-
-    const int maximum = Settings::instance()->maximumConcurrentTransfers() - activeTransfers();
-    int count = 0;
-
-    if (maximum > 0) {
-        for (int p = TransferItem::HighestPriority; p <= TransferItem::LowestPriority; p++) {
-            for (int i = 0; i < m_packages->rowCount(); i++) {
-                if (const TransferItem *package = m_packages->childItem(i)) {
-                    for (int j = 0; j < package->rowCount(); j++) {
-                        if (TransferItem *transfer = package->childItem(j)) {
-                            if ((transfer->data(TransferItem::PriorityRole) == p)
-                                    && (transfer->data(TransferItem::StatusRole) == TransferItem::Queued)) {
-                                transfer->reload();
-                                ++count;
-
-                                if (count == maximum) {
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if ((activeTransfers() == 0) && (count == 0)) {
-        reloadTimer()->stop();
-    }
-}
-
 void TransferModel::addActiveTransfer(TransferItem *transfer) {
     if (!m_activeTransfers.contains(transfer)) {
         m_activeTransfers.append(transfer);
-        transfer->start();
         emit activeTransfersChanged(activeTransfers());
         emit totalSpeedChanged(totalSpeed());
-
-        if (autoReloadEnabled()) {
-            reloadTimer()->start();
-        }
     }
 }
 
@@ -679,19 +629,21 @@ void TransferModel::onPackageStatusChanged(TransferItem *package) {
 void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
     switch (transfer->data(TransferItem::StatusRole).toInt()) {
     case TransferItem::Queued:
-        if (autoReloadEnabled()) {
-            reloadTimer()->start();
-        }
-
+        transfer->setAutoReloadEnabled(autoReloadEnabled());
+        break;
+    case TransferItem::WaitingInactive:
+        transfer->setAutoReloadEnabled(autoReloadEnabled());
+        removeActiveTransfer(transfer);
         break;
     case TransferItem::Paused:
-    case TransferItem::WaitingInactive:
     case TransferItem::Failed:
     case TransferItem::Completed:
+        transfer->setAutoReloadEnabled(false);
         removeActiveTransfer(transfer);
         break;
     case TransferItem::Canceled:
     case TransferItem::CanceledAndDeleted:
+        transfer->setAutoReloadEnabled(false);
         removeActiveTransfer(transfer);
         
         if (TransferItem *package = transfer->parentItem()) {
@@ -711,14 +663,17 @@ void TransferModel::onTransferStatusChanged(TransferItem *transfer) {
 
         break;
     case TransferItem::AwaitingCaptchaResponse:
+        transfer->setAutoReloadEnabled(autoReloadEnabled());
         addActiveTransfer(transfer);
         emit captchaRequest(transfer);
         break;
     case TransferItem::AwaitingSettingsResponse:
+        transfer->setAutoReloadEnabled(autoReloadEnabled());
         addActiveTransfer(transfer);
         emit settingsRequest(transfer);
         break;
     default:
+        transfer->setAutoReloadEnabled(autoReloadEnabled());
         addActiveTransfer(transfer);
         break;
     }
@@ -751,8 +706,6 @@ void TransferModel::onPackagesLoaded() {
                             this, SLOT(onTransferDataChanged(TransferItem*, int)), Qt::UniqueConnection);
                     connect(transfer, SIGNAL(error(TransferItem*, QString)),
                             this, SLOT(onTransferError(TransferItem*, QString)), Qt::UniqueConnection);
-                    connect(transfer, SIGNAL(loaded(TransferItem*)), this, SLOT(onTransferLoaded(TransferItem*)),
-                            Qt::UniqueConnection);
                     onTransferStatusChanged(transfer);
                 }
             }
@@ -769,16 +722,8 @@ void TransferModel::onPackageLoaded(TransferItem *package) {
                     this, SLOT(onTransferDataChanged(TransferItem*, int)), Qt::UniqueConnection);
             connect(transfer, SIGNAL(error(TransferItem*, QString)),
                     this, SLOT(onTransferError(TransferItem*, QString)), Qt::UniqueConnection);
-            connect(transfer, SIGNAL(loaded(TransferItem*)), this, SLOT(onTransferLoaded(TransferItem*)),
-                    Qt::UniqueConnection);
             onTransferStatusChanged(transfer);
         }
-    }
-}
-
-void TransferModel::onTransferLoaded(TransferItem*) {
-    if ((autoReloadEnabled()) && (activeTransfers() > 0)) {
-        reloadTimer()->start();
     }
 }
 

@@ -28,6 +28,7 @@ class TransferItem : public QObject
     Q_OBJECT
 
     Q_PROPERTY(ItemType itemType READ itemType)
+    Q_PROPERTY(bool autoReloadEnabled READ autoReloadEnabled WRITE setAutoReloadEnabled)
     Q_PROPERTY(bool canStart READ canStart)
     Q_PROPERTY(bool canPause READ canPause)
     Q_PROPERTY(bool canCancel READ canCancel)
@@ -53,7 +54,8 @@ public:
     };
     
     enum Roles {
-        BytesTransferredRole = Qt::UserRole + 1,
+        AutoReloadEnabledRole = Qt::UserRole + 1,
+        BytesTransferredRole,
         CanCancelRole,
         CanPauseRole,
         CanStartRole,
@@ -152,6 +154,9 @@ public:
     virtual ItemType itemType() const;
     QString itemTypeString() const;
 
+    bool autoReloadEnabled() const;
+    void setAutoReloadEnabled(bool enabled);
+
     virtual bool canStart() const;
     virtual bool canPause() const;
     virtual bool canCancel() const;
@@ -208,6 +213,7 @@ protected:
     
     static QHash<int, QByteArray> roles;
 
+    bool m_autoReloadEnabled;
     bool m_expanded;
 
     int m_row;
