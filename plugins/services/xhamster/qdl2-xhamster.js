@@ -35,7 +35,7 @@
             if (request.readyState == 4) {
                 try {
                     var vars = JSON.parse(request.responseText.split("flashVars = ")[1].split(";\n")[0]);
-                    var fileName = vars.title;
+                    var fileName = decodeHtml(vars.title);
                     
                     if (fileName) {
                         plugin.urlChecked(new UrlResult(url, fileName + ".mp4"));
@@ -74,7 +74,7 @@
                     if (settings.useDefaultVideoFormat) {
                         for (var i = Math.max(0, VIDEO_FORMATS.indexOf(format)); i < VIDEO_FORMATS.length; i++) {
                             try {
-                                var videoUrl = sources[VIDEO_FORMATS[i]];
+                                var videoUrl = sources[VIDEO_FORMATS[i]].replace(/&amp;/g, "&");
                                 
                                 if (videoUrl) {
                                     plugin.downloadRequest(new NetworkRequest(videoUrl));
@@ -93,7 +93,7 @@
                         
                         for (var i = 0; i < VIDEO_FORMATS.length; i++) {
                             try {
-                                var videoUrl = sources[VIDEO_FORMATS[i]];
+                                var videoUrl = sources[VIDEO_FORMATS[i]].replace(/&amp;/g, "&");
                                 
                                 if (videoUrl) {
                                     options.push({"label": VIDEO_FORMATS[i].toUpperCase(), "value": videoUrl});
