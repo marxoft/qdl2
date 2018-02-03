@@ -16,23 +16,8 @@
             "type": "list",
             "label": "Default video format",
             "key": "videoFormat",
-            "value": "1080p",
-            "options": [
-                {
-                    "label": "720P",
-                    "value": "1080p"
-                },
-
-                {
-                    "label": "480P",
-                    "value": "720p"
-                },
-
-                {
-                    "label": "240P",
-                    "value": "480p"
-                }
-            ]
+            "value": "4K",
+            "options": ["4K", "1080P", "720P", "480P", "320P", "240P"]
         }
     ]
 }
