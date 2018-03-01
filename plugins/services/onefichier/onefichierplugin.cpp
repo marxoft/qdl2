@@ -123,15 +123,14 @@ void OneFichierPlugin::checkUrlIsValid() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
-    const QString fileName = response.section("File Name :</td>", 1, 1)
-                                     .section("class=\"normal\">", 1, 1)
-                                     .section('<', 0, 0);
 
-    if (fileName.isEmpty()) {
-        emit error(tr("File not found"));
+    QRegExp re("File Name :</td>\\s+<td class=\"normal\">([^<]+)");
+
+    if (re.indexIn(response) >= 0) {
+        emit urlChecked(UrlResult(reply->request().url().toString(), re.cap(1)));
     }
     else {
-        emit urlChecked(UrlResult(reply->request().url().toString(), fileName));
+        emit error(tr("File not found"));
     }
 
     reply->deleteLater();
@@ -230,33 +229,40 @@ void OneFichierPlugin::checkDownloadRequest() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else {
-        QRegExp re("must wait \\d+ minutes");
+        QRegExp re("must wait (\\d+) minutes");
         
         if (re.indexIn(response) >= 0) {
-            const int mins = re.cap().section("must wait ", 1, 1).section(' ', 0, 0).toInt();
+            const int mins = re.cap(1).toInt();
             
             if (mins > 0) {
-                emit waitRequest(mins * 61000, true);
+                emit waitRequest(mins * 60000, true);
             }
             else {
                 emit error(tr("Unknown error"));
             }
         }
         else {
-            getDownloadLink(reply->request().url());
+            re.setPattern("name=\"adzone\" value=\"([^\"]+)");
+
+            if (re.indexIn(response) >= 0) {
+                getDownloadLink(reply->request().url(), QByteArray("adzone=" + re.cap(1).toUtf8()));
+            }
+            else {
+                emit error(tr("Unknown error"));
+            }
         }
     }
 
     reply->deleteLater();
 }
 
-void OneFichierPlugin::getDownloadLink(const QUrl &url) {
+void OneFichierPlugin::getDownloadLink(const QUrl &url, const QByteArray &postData) {
     m_redirects = 0;
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("User-Agent", "Wget/1.13.4 (linux-gnu)");
     request.setRawHeader("Connection", "Keep-Alive");
-    QNetworkReply *reply = networkAccessManager()->post(request, QByteArray());
+    QNetworkReply *reply = networkAccessManager()->post(request, postData);
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadLink()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -304,13 +310,13 @@ void OneFichierPlugin::checkDownloadLink() {
         emit downloadRequest(QNetworkRequest(FILE_REGEXP.cap()));
     }
     else {
-        QRegExp re("must wait \\d+ minutes");
+        QRegExp re("must wait (\\d+) minutes");
         
         if (re.indexIn(response) >= 0) {
-            const int mins = re.cap().section("must wait ", 1, 1).section(' ', 0, 0).toInt();
+            const int mins = re.cap(1).toInt();
             
             if (mins > 0) {
-                emit waitRequest(mins * 61000, true);
+                emit waitRequest(mins * 60000, true);
             }
             else {
                 emit error(tr("Unknown error"));

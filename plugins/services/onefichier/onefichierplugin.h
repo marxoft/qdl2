@@ -61,7 +61,7 @@ private:
 
     void followRedirect(const QUrl &url, const char* slot);
 
-    void getDownloadLink(const QUrl &url);
+    void getDownloadLink(const QUrl &url, const QByteArray &postData);
 
     void login(const QString &username, const QString &password);
 
