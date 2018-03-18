@@ -51,7 +51,7 @@
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
                 try {
-                    var formats = JSON.parse(/var qualityItems_\d+\s*=\s*(\[[^\[]+\])/.exec(request.responseText)[1]);
+                    var formats = JSON.parse(/"mediaDefinitions":\s*(\[[^\[]+\])/.exec(request.responseText)[1]);
 
                     if (!formats.length) {
                         plugin.error(qsTr("No video formats found"));
@@ -59,27 +59,29 @@
                     }
                     
                     if (settings.useDefaultVideoFormat) {
-                        var format = settings.videoFormat || "quality1080p";
+                        var format = settings.videoFormat || "1080";
                         
-                        for (var i = formats.length - 1; i > 0; i--) {
-                            if (formats[i].id == format) {
-                                plugin.downloadRequest(new NetworkRequest(formats[i].url));
+                        for (var i = 0; i < formats.length; i++) {
+                            if ((formats[i].quality == format) && (formats[i].videoUrl)) {
+                                plugin.downloadRequest(new NetworkRequest(formats[i].videoUrl));
                                 return;
                             }
                         }
                         
-                        plugin.downloadRequest(new NetworkRequest(formats[formats.length - 1].url));
+                        plugin.downloadRequest(new NetworkRequest(formats[0].videoUrl));
                     }
                     else {
                         var list = {"type": "list", "label": qsTr("Video format"), "key": "format"};
                         var options = [];
                         
-                        for (var i = formats.length - 1; i >= 0; i--) {
-                            options.push({"label": formats[i].text.toUpperCase(), "value": formats[i].url});
+                        for (var i = 0; i < formats.length; i++) {
+                            if (formats[i].videoUrl) {
+                                options.push({"label": formats[i].quality + "P", "value": formats[i].videoUrl});
+                            }
                         }
                         
                         list["options"] = options;
-                        list["value"] = formats[formats.length - 1].url;
+                        list["value"] = formats[0].videoUrl;
                         plugin.settingsRequest(qsTr("Choose video format"), [list], function(s) {
                             plugin.downloadRequest(new NetworkRequest(s.format));
                         });
