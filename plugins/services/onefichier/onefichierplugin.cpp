@@ -23,7 +23,7 @@
 #include <QtPlugin>
 #endif
 
-const QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w-\\d+\\.1fichier\\.com/[^'\"]+");
+const QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w+-\\d+\\.1fichier\\.com/[^'\"]+");
 const QString OneFichierPlugin::LOGIN_URL("https://1fichier.com/login.pl");
 
 const int OneFichierPlugin::MAX_REDIRECTS = 8;
