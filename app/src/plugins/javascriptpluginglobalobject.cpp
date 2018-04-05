@@ -293,6 +293,7 @@ QString JavaScriptPluginGlobalObject::decodeHtml(const QString &text) const {
     t.replace("&yuml;", "&#255;");
     t.replace("&quot;", "&#34;");
     t.replace("&amp;", "&#38;");
+    t.replace("&apos;", "&#39");
     t.replace("&lt;", "&#60;");
     t.replace("&gt;", "&#62;");
     t.replace("&OElig;", "&#338;");
