@@ -174,10 +174,12 @@ void OpenloadPlugin::checkDownloadRequest(bool ok) {
         return;
     }
 
-    QRegExp re("id=\"stream[^\"]+\">([^<]+)");
-    
+    const QString id = webPage()->mainFrame()->url().path().section(QRegExp("/(f|embed)/"), 1, 1)
+        .section("/", 0, 0);
+    const QRegExp re(QString("%1~\\d+~[\\d\\.]+~[a-zA-Z0-9]+").arg(id));
+
     if (re.indexIn(webPage()->mainFrame()->toHtml()) != -1) {
-        emit downloadRequest(QNetworkRequest(STREAM_URL + re.cap(1)));
+        emit downloadRequest(QNetworkRequest(STREAM_URL + re.cap()));
     }
     else {
         emit error(tr("No video stream URL found"));
