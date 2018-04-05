@@ -59,7 +59,7 @@
                     }
 
                     if (!formats.length) {
-                        plugin.error(tr("No video formats found"));
+                        plugin.error(qsTr("No video formats found"));
                         return;
                     }
                     
