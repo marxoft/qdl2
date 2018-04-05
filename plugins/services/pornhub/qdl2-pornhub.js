@@ -25,7 +25,7 @@
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
                 try {
-                    var fileName = request.responseText.split("twitter:title\" content=\"")[1].split("\"")[0];
+                    var fileName = request.responseText.split("og:title\" content=\"")[1].split("\"")[0];
                     
                     if (fileName) {
                         plugin.urlChecked(new UrlResult(url, fileName + ".mp4"));
