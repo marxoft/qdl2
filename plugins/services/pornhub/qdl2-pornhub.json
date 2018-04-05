@@ -3,7 +3,7 @@
     "name": "Pornhub",
     "icon": "qdl2-pornhub.jpg",
     "version": 1,
-    "regExp": "http(s|)://www\\.pornhub\\.com/view_video\\.php\\?viewkey=\\w+",
+    "regExp": "http(s|)://www\\.pornhub\\.com/(view_video\\.php\\?viewkey=|embed/)[a-zA-Z0-9]+",
     "settings": [
         {
             "type": "boolean",
