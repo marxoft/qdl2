@@ -335,7 +335,7 @@ void KeepToSharePlugin::checkWaitTime() {
             }
             else {
                 const QString waitString = response.section("Please wait", 1, 1)
-                                                    .section("to download this file", 0, 0).trimmed();
+                                                   .section("to download this file", 0, 0).trimmed();
 
                 if (waitString.isEmpty()) {
                     emit error(tr("Unknown error"));
@@ -360,9 +360,9 @@ void KeepToSharePlugin::checkWaitTime() {
     reply->deleteLater();
 }
 
-void KeepToSharePlugin::submitCaptchaResponse(const QString &, const QString &response) {
+void KeepToSharePlugin::submitCaptchaResponse(const QString &challenge, const QString &response) {
     m_redirects = 0;
-    const QString data = QString("YII_CSRF_TOKEN=%1&UniversalCaptchaForm[verifyCode]=&g-recaptcha-response=%2&free=1&freeDownloadRequest=1&uniqueId=%3").arg(m_token).arg(response).arg(m_fileId);
+    const QString data = QString("YII_CSRF_TOKEN=%1&UniversalCaptchaForm[verifyCode]=%2&g-recaptcha-response=%3&free=1&freeDownloadRequest=1&uniqueId=%4").arg(m_token).arg(challenge).arg(response).arg(m_fileId);
     QNetworkRequest request(m_url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("Referer", m_url.toString().toUtf8());
