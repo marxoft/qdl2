@@ -19,12 +19,12 @@
             "value": "1080P",
             "options": [
                 {
-                    "label": "1080P",
+                    "label": "1080P HD",
                     "value": "1080P"
                 },
 
                 {
-                    "label": "720P",
+                    "label": "720P HD",
                     "value": "720P"
                 },
                 

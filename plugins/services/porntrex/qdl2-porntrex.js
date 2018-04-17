@@ -15,7 +15,7 @@
  */
 
 (function() {
-    var FILE_NAME_REGEXP = /<title>(.+)<\/title>/
+    var FILE_NAME_REGEXP = /"og:title" content="([^"]+)/;
     var VIDEO_FORMATS = ["video_alt_url3", "video_alt_url2", "video_alt_url", "video_url"];
     var request = null;
     var plugin = new ServicePlugin();
