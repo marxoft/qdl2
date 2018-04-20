@@ -3,6 +3,6 @@
     "version": 1,
     "name": "Vpornex",
     "icon": "qdl2-vpornex.jpg",
-    "regExp": "http(s|)://vpornex\\.com/.+"
+    "regExp": "http(s|)://(www\\.|)vpornex\\.com/.+"
 }
 
