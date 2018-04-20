@@ -25,8 +25,7 @@
                 try {
                     var response = request.responseText;
                     var results = [];
-                    var posts = response.substring(response.indexOf("<main id=\"main\""), response.indexOf("</main>"))
-                        .split("<div id=\"post-");
+                    var posts = response.split("<aside")[0].split("<article");
 
                     for (var i = 1; i < posts.length; i++) {
                         var post = posts[i];
@@ -34,10 +33,10 @@
                         try {
                             var url = /href="([^"]+)"/.exec(post)[1];
                             var name = /title="([^"]+)"/.exec(post)[1];
-                            var thumbnail = /src="([^"]+)"/.exec(post)[1];
+                            var thumbnail = /data-src="([^"]+)"/.exec(post)[1];
                             var duration = /fa-clock-o"><\/i> (\d{2}:\d{2})/.exec(post)[1];
                             var html = "<a href='" + url + "'><img width='320' height='180' src='" + thumbnail
-                                + "' /><p>Duration: " + duration + "</p>";
+                                + "'></a><p>Duration: " + duration + "</p>";
                             
                             results.push(new SearchResult(name, html, url));
                         }
