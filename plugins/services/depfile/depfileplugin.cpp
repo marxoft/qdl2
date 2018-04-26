@@ -134,8 +134,8 @@ void DepFilePlugin::checkUrlIsValid() {
 
     const QString response = QString::fromUtf8(reply->readAll());
     const QString fileName = response.section("File name:</th>", 1, 1)
-                                     .section("<td>", 1, 1)
-                                     .section('<', 0, 0);
+                                     .section("</td>", 0, 0)
+                                     .section('>', -1);
 
     if (fileName.isEmpty()) {
         emit error(tr("File not found"));
