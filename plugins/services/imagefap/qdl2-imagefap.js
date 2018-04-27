@@ -74,7 +74,7 @@
     var plugin = new ServicePlugin();
 
     plugin.checkUrl = function(url) {
-        if (/(\/gallery\.php\?gid=\d+|\/pictures\/\d+)/.test(url)) {
+        if (/(\/gallery\.php\?gid=\d+|\/pictures\/\d+|\/gallery\/\d+)/.test(url)) {
             checkGalleryUrl(url);
         }
         else {
