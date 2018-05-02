@@ -63,8 +63,15 @@
                     }
                     
                     if (!formats.length) {
-                        plugin.error(qsTr("No video formats found"));
-                        return;
+                        var f = /video_url: '([^']+)/.exec(response);
+
+                        if (f) {
+                            formats.push({"label": qsTr("Default"), "value": f[1]});
+                        }
+                        else {
+                            plugin.error(qsTr("No video formats found"));
+                            return;
+                        }
                     }
                     
                     if (settings.useDefaultVideoFormat) {
