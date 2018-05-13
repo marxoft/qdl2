@@ -23,7 +23,9 @@
         request.onreadystatechange = function() {
             if (request.readyState == 4) {
                 try {
-                    var fileName = /"og:title" content="([^"]+)"/.exec(request.responseText)[1];
+                    var fileName =
+                        decodeURIComponent(/document\.getElementById\('dlbutton'\).href = "[^"]+"[^"]+"\/([^"]+)/
+                            .exec(request.responseText)[1]);
                     plugin.urlChecked(new UrlResult(url, fileName));
                 }
                 catch(e) {
