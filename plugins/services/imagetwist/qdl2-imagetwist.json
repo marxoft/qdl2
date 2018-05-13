@@ -1,0 +1,7 @@
+{
+    "type": "js",
+    "name": "ImageTwist",
+    "icon": "qdl2-imagetwist.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)imagetwist\\.com/\\w+"
+}
