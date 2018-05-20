@@ -105,7 +105,7 @@
         plugin.downloadRequest(new NetworkRequest(url));
     };
 
-    plugin.cancelCurrenOperation = function() {
+    plugin.cancelCurrentOperation = function() {
         if (request) {
             request.abort();
             request = null;
