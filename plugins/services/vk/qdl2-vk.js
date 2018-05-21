@@ -82,7 +82,7 @@
         request.send();
     }
     
-    function getVideoDownloadRequest(url) {
+    function getVideoDownloadRequest(url, settings) {
         var infoUrl = getVideoInfoUrl(url);
 
         if (!infoUrl) {
