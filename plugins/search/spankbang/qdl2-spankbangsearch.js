@@ -35,7 +35,7 @@
                         try {
                             var url = BASE_URL + /href="([^"]+)/.exec(post)[1];
                             var name = /<div class="inf">(.+)<\/div>/.exec(post)[1].replace(/<[^>]+>/g, "").trim();
-                            var thumbnail = PROTOCOL + /src="([^"]+)/.exec(post)[1].replace("/200/", "/320/");
+                            var thumbnail = PROTOCOL + /data-src="([^"]+)/.exec(post)[1].replace("/250/", "/320/");
                             var duration = /class="i-len">([^<]+)/.exec(post)[1];
                             var quality;
 
@@ -46,7 +46,7 @@
                                 quality = "SD";
                             }
 
-                            var html = "<a href='" + url + "'><img width='320' height='180' src='" + thumbnail + "'/>"
+                            var html = "<a href='" + url + "'><img width='320' height='180' src='" + thumbnail + "'/></a>"
                             + "<p>Quality: " + quality + "</p><p>Duration: " + duration + " min</p>";
                             results.push(new SearchResult(name, html, url));
                         }
