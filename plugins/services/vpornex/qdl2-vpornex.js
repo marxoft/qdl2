@@ -24,14 +24,20 @@
             if (request.readyState == 4) {
                 try {
                     var response = request.responseText;
-                    var fileName = /itemprop="name">([^<]+)/.exec(response)[1] + ".mp4";
-                    var rvUrl = /http(s|):\/\/(www\.|)rapidvideo\.com\/(\?v=|v\/|e\/)[0-9A-Z]+/.exec(response)[0];
-                    
-                    if ((fileName) && (rvUrl)) {
-                        plugin.urlChecked(new UrlResult(rvUrl, fileName));
+                    var fileName = decodeHtml(/itemprop="name">([^<]+)/.exec(response)[1]) + ".mp4";
+
+                    try {
+                        var cvUrl = /http(s|):\/\/(www\.|)cloudvideo\.tv\/(embed-[a-zA-Z0-9]+\.html|[a-zA-Z0-9]+(\.html|))/.exec(response)[0];
+                        plugin.urlChecked(new UrlResult(cvUrl, fileName));
                     }
-                    else {
-                        plugin.error(qsTr("No video URL found"));
+                    catch(e) {
+                        try {
+                            var rvUrl = /http(s|):\/\/(www\.|)rapidvideo\.com\/(\?v=|v\/|e\/)[0-9A-Z]+/.exec(response)[0];
+                            plugin.urlChecked(new UrlResult(rvUrl, fileName));
+                        }
+                        catch(e) {
+                            plugin.error(qsTr("No video URL found"));
+                        }
                     }
                 }
                 catch(e) {
