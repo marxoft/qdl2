@@ -1,0 +1,23 @@
+{
+    "type": "js",
+    "name": "CloudVideo.tv",
+    "icon": "qdl2-cloudvideo.jpg",
+    "version": 1,
+    "regExp": "http(s|)://(www\\.|)cloudvideo\\.tv/(embed-[a-zA-Z0-9]+\\.html|[a-zA-Z0-9]+(\\.html|))$",
+    "settings": [
+        {
+            "type": "boolean",
+            "key": "useDefaultFormat",
+            "value": false,
+            "label": "Use default video format"
+        },
+
+        {
+            "type": "list",
+            "key": "format",
+            "value": "720p",
+            "label": "Default video format",
+            "options": ["720p", "288p"]
+        }
+    ]
+}
