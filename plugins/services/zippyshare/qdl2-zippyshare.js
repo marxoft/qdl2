@@ -44,7 +44,8 @@
             if (request.readyState == 4) {
                 try {
                     var href = url.substring(0, url.indexOf("/v/"))
-                        + eval(/document\.getElementById\('dlbutton'\).href = ([^;]+)/.exec(request.responseText)[1]);
+                        + eval(/document\.getElementById\('dlbutton'\).href = ([^;]+)/.exec(request.responseText)[1]
+                            .replace("a() + b() + c() + d", "10"));
                     plugin.downloadRequest(new NetworkRequest(href));
                 }
                 catch(e) {
