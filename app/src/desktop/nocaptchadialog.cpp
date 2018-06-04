@@ -57,6 +57,7 @@ NoCaptchaDialog::NoCaptchaDialog(QWidget *parent) :
 
     m_timer->setInterval(1000);
 
+    m_view->setStyleSheet("background: #fff");
     m_view->setPage(new NoCaptchaWebPage(m_view));
 
     m_layout->addWidget(m_view);

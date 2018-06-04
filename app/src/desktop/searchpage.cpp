@@ -52,6 +52,7 @@ SearchPage::SearchPage(QWidget *parent) :
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
     m_view->setUniformItemSizes(true);
 
+    m_browser->setStyleSheet("background: #fff");
     m_browser->setContextMenuPolicy(Qt::CustomContextMenu);
     m_browser->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     m_browser->settings()->setAttribute(QWebSettings::JavascriptEnabled, false);
