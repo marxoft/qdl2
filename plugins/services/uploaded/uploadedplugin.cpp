@@ -32,7 +32,7 @@ const QString UploadedPlugin::BASE_FILE_URL("http://uploaded.net/file/");
 const QString UploadedPlugin::NOT_FOUND_URL("http://uploaded.net/404");
 const QString UploadedPlugin::CAPTCHA_URL("http://uploaded.net/io/ticket/captcha/");
 const QString UploadedPlugin::RECAPTCHA_PLUGIN_ID("qdl2-googlerecaptcha");
-const QString UploadedPlugin::RECAPTCHA_KEY("6Lcqz78SAAAAAPgsTYF3UlGf2QFQCNuPMenuyHF3");
+const QString UploadedPlugin::RECAPTCHA_KEY("6Le1WUIUAAAAAG0gEh0atRevv3TT-WP4HW8FLMoe");
 
 const int UploadedPlugin::MAX_REDIRECTS = 8;
 
@@ -303,10 +303,9 @@ void UploadedPlugin::checkDownloadRequest() {
     reply->deleteLater();
 }
 
-void UploadedPlugin::submitCaptchaResponse(const QString &challenge, const QString &response) {
+void UploadedPlugin::submitCaptchaResponse(const QString &, const QString &response) {
     m_redirects = 0;
-    const QString data = QString("recaptcha_challenge_field=%1&recaptcha_response_field=%2")
-                                .arg(challenge).arg(response);
+    const QString data("g-recaptcha-response=" + response);
     QNetworkRequest request(CAPTCHA_URL + m_fileId);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("Accept", "text/javascript, text/html, application/xml, text/xml, */*");
@@ -368,7 +367,7 @@ void UploadedPlugin::checkCaptcha() {
         const QString errorString = map.value("err").toString();
 
         if (errorString == "captcha") {
-            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
+            emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, RECAPTCHA_KEY, "submitCaptchaResponse");
         }
         else if ((errorString == "limit-dl") || (errorString.contains(QRegExp("max|Download-Slots|Free-Downloads",
                  Qt::CaseInsensitive)))) {
@@ -419,7 +418,7 @@ void UploadedPlugin::checkLogin() {
 }
 
 void UploadedPlugin::sendCaptchaRequest() {
-    emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::Image, RECAPTCHA_KEY, "submitCaptchaResponse");
+    emit captchaRequest(RECAPTCHA_PLUGIN_ID, CaptchaType::NoCaptcha, RECAPTCHA_KEY, "submitCaptchaResponse");
 }
 
 void UploadedPlugin::startWaitTimer(int msecs, const char* slot) {
