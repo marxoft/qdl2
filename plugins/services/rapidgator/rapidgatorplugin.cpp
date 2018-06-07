@@ -28,11 +28,11 @@
 #include <QtPlugin>
 #endif
 
-const QRegExp RapidGatorPlugin::FILE_REGEXP("http://pr\\d+\\.rapidgator\\.net//\\?r=download/index&session_id=[^'\"]+");
+const QRegExp RapidGatorPlugin::FILE_REGEXP("http(s|)://pr\\d+\\.rapidgator\\.net//\\?r=download/index&session_id=[^'\"]+");
 const QString RapidGatorPlugin::LOGIN_URL("https://rapidgator.net/auth/login");
-const QString RapidGatorPlugin::SESSION_ID_URL("http://rapidgator.net/download/AjaxStartTimer");
-const QString RapidGatorPlugin::DOWNLOAD_LINK_URL("http://rapidgator.net/download/AjaxGetDownloadLink");
-const QString RapidGatorPlugin::CAPTCHA_URL("http://rapidgator.net/download/captcha");
+const QString RapidGatorPlugin::SESSION_ID_URL("https://rapidgator.net/download/AjaxStartTimer");
+const QString RapidGatorPlugin::DOWNLOAD_LINK_URL("https://rapidgator.net/download/AjaxGetDownloadLink");
+const QString RapidGatorPlugin::CAPTCHA_URL("https://rapidgator.net/download/captcha");
 const QString RapidGatorPlugin::RECAPTCHA_PLUGIN_ID("qdl2-solvemediarecaptcha");
 const QString RapidGatorPlugin::RECAPTCHA_KEY("oy3wKTaFP368dkJiGUqOVjBR2rOOR7GR");
 
