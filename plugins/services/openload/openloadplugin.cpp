@@ -145,7 +145,7 @@ void OpenloadPlugin::checkUrlIsValid() {
     }
 
     const QString response = QString::fromUtf8(reply->readAll());
-    const QString fileName = response.section("name=\"og:title\" content=\"", 1, 1).section("\"", 0, 0);
+    const QString fileName = response.section("name=\"description\" content=\"", 1, 1).section("\"", 0, 0);
 
     if (fileName.isEmpty()) {
         emit error(tr("File not found"));
