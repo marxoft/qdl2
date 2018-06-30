@@ -24,6 +24,7 @@
 #endif
 
 const QRegExp OneFichierPlugin::FILE_REGEXP("http(s|)://\\w+-\\d+\\.1fichier\\.com/[^'\"]+");
+const QString OneFichierPlugin::LINK_CHECK_URL("https://1fichier.com/check_links.pl");
 const QString OneFichierPlugin::LOGIN_URL("https://1fichier.com/login.pl");
 
 const int OneFichierPlugin::MAX_REDIRECTS = 8;
@@ -77,9 +78,10 @@ bool OneFichierPlugin::cancelCurrentOperation() {
 
 void OneFichierPlugin::checkUrl(const QString &url, const QVariantMap &) {
     m_redirects = 0;
-    QNetworkRequest request(QUrl::fromUserInput(url.left(url.indexOf("?&"))));
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
-    QNetworkReply *reply = networkAccessManager()->get(request);
+    const QString link = QUrl::fromUserInput(url.left(url.indexOf("?&"))).toString();
+    QNetworkRequest request(LINK_CHECK_URL);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkReply *reply = networkAccessManager()->post(request, "links[]=" + link.toUtf8());
     connect(reply, SIGNAL(finished()), this, SLOT(checkUrlIsValid()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
 }
@@ -95,11 +97,7 @@ void OneFichierPlugin::checkUrlIsValid() {
     const QString redirect = getRedirect(reply);
 
     if (!redirect.isEmpty()) {
-        if (FILE_REGEXP.indexIn(redirect) == 0) {
-            emit urlChecked(UrlResult(reply->request().url().toString(),
-                            redirect.mid(redirect.lastIndexOf("/") + 1)));
-        }
-        else if (m_redirects < MAX_REDIRECTS) {
+        if (m_redirects < MAX_REDIRECTS) {
             followRedirect(redirect, SLOT(checkUrlIsValid()));
         }
         else {
@@ -122,12 +120,10 @@ void OneFichierPlugin::checkUrlIsValid() {
         return;
     }
 
-    const QString response = QString::fromUtf8(reply->readAll());
+    const QStringList parts = QString::fromUtf8(reply->readAll()).split(";", QString::SkipEmptyParts);
 
-    QRegExp re("File Name :</td>\\s+<td class=\"normal\">([^<]+)");
-
-    if (re.indexIn(response) >= 0) {
-        emit urlChecked(UrlResult(reply->request().url().toString(), re.cap(1)));
+    if (parts.size() > 1) {
+        emit urlChecked(UrlResult(parts.first(), parts.at(1)));
     }
     else {
         emit error(tr("File not found"));
@@ -171,7 +167,6 @@ void OneFichierPlugin::getDownloadRequest(const QString &url, const QVariantMap 
 void OneFichierPlugin::fetchDownloadRequest(const QUrl &url) {
     m_redirects = 0;
     QNetworkRequest request(url);
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadRequest()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
@@ -180,7 +175,6 @@ void OneFichierPlugin::fetchDownloadRequest(const QUrl &url) {
 void OneFichierPlugin::followRedirect(const QUrl &url, const char* slot) {
     m_redirects++;
     QNetworkRequest request(url);
-    request.setRawHeader("Accept-Language", "en-GB,en-US;q=0.8,en;q=0.6");
     QNetworkReply *reply = networkAccessManager()->get(request);
     connect(reply, SIGNAL(finished()), this, slot);
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));
@@ -260,8 +254,6 @@ void OneFichierPlugin::getDownloadLink(const QUrl &url, const QByteArray &postDa
     m_redirects = 0;
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    request.setRawHeader("User-Agent", "Wget/1.13.4 (linux-gnu)");
-    request.setRawHeader("Connection", "Keep-Alive");
     QNetworkReply *reply = networkAccessManager()->post(request, postData);
     connect(reply, SIGNAL(finished()), this, SLOT(checkDownloadLink()));
     connect(this, SIGNAL(currentOperationCanceled()), reply, SLOT(deleteLater()));

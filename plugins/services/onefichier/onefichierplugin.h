@@ -66,6 +66,7 @@ private:
     void login(const QString &username, const QString &password);
 
     static const QRegExp FILE_REGEXP;
+    static const QString LINK_CHECK_URL;
     static const QString LOGIN_URL;
 
     static const int MAX_REDIRECTS;
