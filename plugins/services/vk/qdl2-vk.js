@@ -42,7 +42,7 @@
 
     function getVideoInfoUrl(url) {
         try {
-            return "https://vk.com/al_video.php?act=show&al=1&module=video&video=" + url.split("/video")[1];
+            return "https://vk.com/al_video.php?act=show&al=1&module=community_videos&video=" + url.split("/video")[1];
         }
         catch(e) {
             return null;
@@ -78,6 +78,7 @@
         }
 
         request.open("GET", infoUrl);
+        request.setRequestHeader("Referer", url);
         request.setRequestHeader("User-Agent", USER_AGENT);
         request.send();
     }
@@ -136,6 +137,7 @@
         }
 
         request.open("GET", infoUrl);
+        request.setRequestHeader("Referer", url);
         request.setRequestHeader("User-Agent", USER_AGENT);
         request.send();
     }
@@ -200,6 +202,7 @@
         }
 
         request.open("POST", "https://vk.com/al_video.php");
+        request.setRequestHeader("Referer", url);
         request.setRequestHeader("User-Agent", USER_AGENT);
         request.send("act=load_videos_silent&al=1&need_albums=0&rowlen=3&snippet_video=0&oid=-" + oid + "&section="
             + section + "&offset=" + (results ? results.length : 0));
